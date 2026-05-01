@@ -19,7 +19,7 @@ class Order extends Model
         'user_discount_id',
         'subtotal',
         'discount_amount',
-        'total_price',
+        'total_price_after_discount',
         'payment_gateway_ref',
         'status',
     ];
@@ -29,7 +29,7 @@ class Order extends Model
         return [
             'subtotal' => 'decimal:2',
             'discount_amount' => 'decimal:2',
-            'total_price' => 'decimal:2',
+            'total_price_after_discount' => 'decimal:2',
             'created_at' => 'datetime',
         ];
     }

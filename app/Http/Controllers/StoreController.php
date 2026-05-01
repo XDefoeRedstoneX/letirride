@@ -10,9 +10,6 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use App\Models\Order;
 use App\Models\OrderDetail;
-use App\Models\VoucherCode;
-use Midtrans\Snap;
-use Midtrans\Config;
 
 class StoreController extends Controller
 {
@@ -68,23 +65,24 @@ class StoreController extends Controller
         try {
             $totalPrice = collect($cart)->sum(fn($item) => $item['price'] * $item['quantity']);
 
+            $invoiceNumber = 'INV-' . date('Ymd') . '-' . strtoupper(Str::random(6));
+
             $order = Order::create([
-                'invoice_   id' => 'INV-' . date('Ymd') . '-' . strtoupper(Str::random(6)),
+                'noinv' => $invoiceNumber,
                 'user_id' => Auth::id(),
-                'total_price' => $totalPrice,
+                'subtotal' => $totalPrice,
+                'discount_amount' => 0,
+                'total_price_after_discount' => $totalPrice,
                 'payment_gateway_ref' => null,
                 'status' => 'pending',
-                'paid_at' => null,
             ]);
 
             foreach ($cart as $product_id => $item) {
                 OrderDetail::create([
                     'order_id' => $order->id,
                     'product_id' => $product_id,
-                    'product_name' => $item['name'],
                     'quantity' => $item['quantity'],
-                    'price' => $item['price'],
-                    'subtotal' => $item['price'] * $item['quantity'],
+                    'total_price_in_cart' => $item['price'] * $item['quantity'],
                 ]);
             }
 
@@ -108,7 +106,7 @@ class StoreController extends Controller
             // Create Midtrans Transaction
             $params = [
                 'transaction_details' => [
-                    'order_id' => $order->invoice_number,
+                    'order_id' => $order->noinv,
                     'gross_amount' => $totalPrice,
                 ],
                 'item_details' => $item_details,
@@ -122,7 +120,7 @@ class StoreController extends Controller
             ];
 
             $snapToken = \Midtrans\Snap::getSnapToken($params);
-            $order->payment_url = $snapToken; // Store token to use in the modal later
+            $order->payment_gateway_ref = $snapToken;
             $order->save();
 
             DB::commit();

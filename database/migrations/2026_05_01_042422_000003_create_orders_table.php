@@ -18,7 +18,7 @@ return new class extends Migration
             $table->foreignId('user_discount_id')->nullable()->constrained()->nullOnDelete();
             $table->decimal('subtotal', 12, 2);
             $table->decimal('discount_amount', 12, 2)->default(0);
-            $table->decimal('total_price', 12, 2);
+            $table->decimal('total_price_after_discount', 12, 2);
             $table->string('payment_gateway_ref')->nullable();
             $table->string('status')->default('pending');
             $table->timestamp('created_at')->useCurrent();

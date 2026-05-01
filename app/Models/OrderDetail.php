@@ -16,14 +16,14 @@ class OrderDetail extends Model
         'order_id',
         'product_id',
         'quantity',
-        'total_price',
+        'total_price_in_cart',
     ];
 
     protected function casts(): array
     {
         return [
             'quantity' => 'integer',
-            'total_price' => 'decimal:2',
+            'total_price_in_cart' => 'decimal:2',
         ];
     }
 

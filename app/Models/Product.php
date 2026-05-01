@@ -8,6 +8,8 @@ use Illuminate\Database\Eloquent\Model;
 #[Fillable(['category_id', 'name', 'description', 'price', 'point_reward', 'is_active'])]
 class Product extends Model
 {
+    public $timestamps = false;
+
     protected function casts(): array
     {
         return [
@@ -19,10 +21,5 @@ class Product extends Model
     public function category()
     {
         return $this->belongsTo(Category::class);
-    }
-
-    public function voucherCodes()
-    {
-        return $this->hasMany(VoucherCode::class);
     }
 }
