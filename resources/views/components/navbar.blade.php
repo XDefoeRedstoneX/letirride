@@ -1,5 +1,5 @@
-<nav x-data="{ 
-    mobileMenuOpen: false, 
+<nav x-data="{
+    mobileMenuOpen: false,
     userMenuOpen: false,
     isAuthenticated: {{ Auth::check() ? 'true' : 'false' }},
     theme: 'light',
@@ -76,7 +76,7 @@
 
                 @auth
                     <!-- Cart Trolley with Badge -->
-                    <a href="{{ route('cart') }}" class="relative w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center hover:bg-white/10 transition-all group">
+                    <a href="{{ route('viewCart') }}" class="relative w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center hover:bg-white/10 transition-all group">
                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="pixel-render"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.56-7.43H5.94"/></svg>
                         <span x-show="cartCount > 0" x-text="cartCount" class="absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-600 text-white text-[10px] font-black rounded-full flex items-center justify-center border-2 border-background"></span>
                     </a>
@@ -90,8 +90,8 @@
                             <span class="text-xs font-black uppercase tracking-widest hidden lg:block">{{ Auth::user()->username }}</span>
                             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="pixel-render transition-transform" :class="open ? 'rotate-180' : ''"><path d="m6 9 6 6 6-6"/></svg>
                         </button>
-                        
-                        <div x-show="open" @click.away="open = false" 
+
+                        <div x-show="open" @click.away="open = false"
                              class="absolute right-0 mt-3 w-56 menu-opaque border border-border shadow-2xl rounded-2xl overflow-hidden py-2 z-[100]"
                              x-transition:enter="transition ease-out duration-200"
                              x-transition:enter-start="opacity-0 scale-95 -translate-y-2"

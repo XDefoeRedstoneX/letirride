@@ -18,9 +18,24 @@ use Midtrans\Config;
 
 class StoreController extends Controller
 {
-    public function store()
+    public function showStore()
     {
-        return view('store');
+        $products = Product::query()
+            ->with('category')
+            ->where('is_active', true)
+            ->get()
+            ->map(function (Product $product) {
+                return [
+                    'id' => $product->id,
+                    'name' => $product->name,
+                    'price' => (float) $product->price,
+                    'category' => $product->category?->name ?? 'Other',
+                    'image' => $product->image ? asset('products/' . ltrim($product->image, '/')) : asset('products/soundcloud.svg'),
+                ];
+            })
+            ->values();
+
+        return view('pages.products', compact('products'));
     }
 
     public function addCart(Request $request, $productId){
@@ -142,7 +157,7 @@ class StoreController extends Controller
 
             $snapToken = \Midtrans\Snap::getSnapToken($params);
             $order->payment_url = $snapToken; // Store token to use in the modal later
-            $order->save();
+              $order->save();
 
             DB::commit();
 
