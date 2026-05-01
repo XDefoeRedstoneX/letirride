@@ -6,6 +6,204 @@
 @source '../**/*.js';
 
 @theme {
-    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
-        'Segoe UI Symbol', 'Noto Color Emoji';
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: 'Geist', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'Geist Mono', ui-monospace, monospace;
+  
+  /* PXShop Custom Colors */
+  --color-neon-green: #39ff14;
+  --color-neon-pink: #ff006e;
+  --color-neon-cyan: #00f5ff;
+  --color-neon-yellow: #ffe600;
+  --color-neon-purple: #bf00ff;
+  --color-midnight: #0a0e27;
+  --color-deep-navy: #0f1537;
+  --color-city-dark: #141a3d;
+  --color-city-mid: #1e2755;
+  --color-city-light: #2a3470;
+  --color-pixel-gold: #ffd700;
+  --color-pixel-silver: #c0c0c0;
+  --color-pixel-bronze: #cd7f32;
+  --color-rarity-common: #9ca3af;
+  --color-rarity-uncommon: #22c55e;
+  --color-rarity-rare: #3b82f6;
+  --color-rarity-epic: #a855f7;
+  --color-rarity-legendary: #f59e0b;
+
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  
+  --radius-lg: var(--radius);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-sm: calc(var(--radius) - 4px);
+}
+
+:root {
+  --radius: 0.625rem;
+  --background: #f8fafc;
+  --foreground: #0f172a;
+  --card: #ffffff;
+  --card-foreground: #0f172a;
+  --popover: #ffffff;
+  --popover-foreground: #0f172a;
+  --primary: #3b82f6;
+  --primary-foreground: #ffffff;
+  --secondary: #f1f5f9;
+  --secondary-foreground: #1e293b;
+  --muted: #f1f5f9;
+  --muted-foreground: #64748b;
+  --accent: #f1f5f9;
+  --accent-foreground: #0f172a;
+  --destructive: #ef4444;
+  --border: #e2e8f0;
+  --input: #e2e8f0;
+  --ring: #3b82f6;
+}
+
+.dark {
+  --background: #020617;
+  --foreground: #f8fafc;
+  --card: #0f172a;
+  --card-foreground: #f8fafc;
+  --popover: #0f172a;
+  --popover-foreground: #f8fafc;
+  --primary: #3b82f6;
+  --primary-foreground: #ffffff;
+  --secondary: #1e293b;
+  --secondary-foreground: #f8fafc;
+  --muted: #1e293b;
+  --muted-foreground: #94a3b8;
+  --accent: #1e293b;
+  --accent-foreground: #f8fafc;
+  --destructive: #7f1d1d;
+  --border: #1e293b;
+  --input: #1e293b;
+  --ring: #3b82f6;
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+}
+
+/* Custom Pixel Animations & Styles */
+.pixel-render {
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}
+
+@keyframes pop-up {
+  0% { opacity: 0; transform: scale(0.9) translateY(10px); }
+  100% { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.animate-pop-up {
+  @media (min-width: 768px) {
+    animation: pop-up 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+}
+
+@keyframes glow-pulse {
+  0% { filter: drop-shadow(0 0 2px currentColor); }
+  50% { filter: drop-shadow(0 0 10px currentColor); }
+  100% { filter: drop-shadow(0 0 2px currentColor); }
+}
+
+.animate-glow {
+  animation: glow-pulse 2s infinite;
+}
+
+/* Scrollbar Hide */
+.scrollbar-hide::-webkit-scrollbar {
+    display: none;
+}
+.scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+@layer utilities {
+  .pixel-render {
+    image-rendering: pixelated;
+  }
+  
+  .pixel-border {
+    box-shadow: 
+      0 -4px 0 0 black,
+      0 4px 0 0 black,
+      -4px 0 0 0 black,
+      4px 0 0 0 black;
+  }
+}
+
+/* Neon Buttons & Focus (tambahan dari referensi) */
+@layer components {
+  .btn-neon-primary {
+    @apply bg-primary text-primary-foreground font-bold py-2 px-4 rounded-xl transition-all;
+    box-shadow: 0 0 8px var(--primary), 0 0 16px var(--primary) inset;
+  }
+  .btn-neon-primary:hover {
+    box-shadow: 0 0 12px var(--primary), 0 0 24px var(--primary) inset;
+  }
+
+  .btn-neon-accent {
+    @apply bg-accent text-accent-foreground font-bold py-2 px-4 rounded-xl transition-all;
+    box-shadow: 0 0 8px var(--accent), 0 0 16px var(--accent) inset;
+  }
+  .btn-neon-accent:hover {
+    box-shadow: 0 0 12px var(--accent), 0 0 24px var(--accent) inset;
+  }
+
+  .focus-ring {
+    @apply outline-none ring-2 ring-primary/50 transition-shadow;
+  }
+}
+
+/* Gacha Carousel Animation */
+@keyframes gacha-spin {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+@keyframes gacha-decelerate {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(var(--gacha-stop-position, -2000px)); }
+}
+
+.gacha-spinning {
+  animation: gacha-spin 1s linear infinite;
+}
+
+.gacha-decelerating {
+  animation: gacha-decelerate 3s cubic-bezier(0.2, 0.8, 0.3, 1) forwards;
+}
+
+@keyframes reveal-bounce {
+  0% { transform: scale(0.3); opacity: 0; }
+  50% { transform: scale(1.1); }
+  70% { transform: scale(0.95); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.animate-reveal-bounce {
+  animation: reveal-bounce 0.6s ease-out forwards;
+}
+
+@keyframes legendary-glow {
+  0%, 100% { box-shadow: 0 0 20px #f59e0b, 0 0 40px #f59e0b60; }
+  50% { box-shadow: 0 0 30px #f59e0b, 0 0 60px #f59e0b80; }
+}
+
+.animate-legendary-glow {
+  animation: legendary-glow 1.5s ease-in-out infinite;
 }

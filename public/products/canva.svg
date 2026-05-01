@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#051a1a"/>
+      <stop offset="100%" stop-color="#0d2b2b"/>
+    </linearGradient>
+  </defs>
+  <rect width="200" height="200" rx="16" fill="url(#bg)"/>
+  <!-- Design palette - geometric pixel style -->
+  <g>
+    <!-- Main circle/palette shape -->
+    <circle cx="100" cy="100" r="55" fill="none" stroke="#00d4aa" stroke-width="4"/>
+    <circle cx="100" cy="100" r="50" fill="#00d4aa" opacity="0.08"/>
+    <!-- Color dots on palette -->
+    <circle cx="78" cy="72" r="10" fill="#ff6b6b" opacity="0.9"/>
+    <rect x="73" y="67" width="10" height="10" rx="2" fill="#ff6b6b"/>
+    <circle cx="110" cy="65" r="10" fill="#ffd93d" opacity="0.9"/>
+    <rect x="105" y="60" width="10" height="10" rx="2" fill="#ffd93d"/>
+    <circle cx="130" cy="88" r="10" fill="#6bcb77" opacity="0.9"/>
+    <rect x="125" y="83" width="10" height="10" rx="2" fill="#6bcb77"/>
+    <circle cx="125" cy="118" r="10" fill="#4d96ff" opacity="0.9"/>
+    <rect x="120" y="113" width="10" height="10" rx="2" fill="#4d96ff"/>
+    <!-- Palette hole -->
+    <circle cx="85" cy="110" r="10" fill="#051a1a"/>
+    <!-- Brush stroke -->
+    <rect x="40" y="130" width="4" height="25" rx="1" fill="#00d4aa" opacity="0.5" transform="rotate(-30, 42, 142)"/>
+    <rect x="44" y="132" width="4" height="22" rx="1" fill="#00d4aa" opacity="0.4" transform="rotate(-30, 46, 143)"/>
+  </g>
+  <!-- Bottom accent -->
+  <rect x="50" y="165" width="100" height="2" rx="1" fill="#00d4aa" opacity="0.3"/>
+</svg>

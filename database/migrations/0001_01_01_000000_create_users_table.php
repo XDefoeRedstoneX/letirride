@@ -13,10 +13,18 @@ return new class extends Migration
     {
         Schema::create('users', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
+            $table->string('name'); // This will be used for username as well or I can add username
+            $table->string('username')->unique();
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
+            $table->string('role')->default('customer'); // "customer" | "admin"
+            $table->string('profile_picture')->nullable();
+            $table->double('balance')->default(0);
+            $table->integer('points')->default(0);
+            $table->boolean('banned')->default(false);
+            $table->boolean('frozen')->default(false);
+            $table->boolean('email_notifications')->default(true);
             $table->rememberToken();
             $table->timestamps();
         });
