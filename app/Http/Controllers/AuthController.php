@@ -27,7 +27,7 @@ class AuthController extends Controller
             $request->session()->regenerate();
             return redirect()->intended(route('ganti'));
         }
-        return back()->with('loginError', 'Email atau password salah!');
+        return back()->with('loginError', 'Wrong credentials!');
     }
 
     public function logout(Request $request){
@@ -46,7 +46,7 @@ class AuthController extends Controller
 
         $creds['password'] = md5($creds['password']);
         \App\Models\User::create($creds);
-        return redirect(route('login'))->with('success', 'Registrasi berhasil! Silakan login.');
+        return redirect(route('login'))->with('success', 'Registration successful! Please login.');
     }
 
     //SETTINGS
@@ -56,7 +56,7 @@ class AuthController extends Controller
         ]);
 
         Auth::user()->update($request->only('email'));
-        return back()->with('success', 'Email berhasil diubah!');
+        return back()->with('success', 'Email updated successfully!');
     }
 
     public function changePassword(Request $request){
@@ -65,7 +65,7 @@ class AuthController extends Controller
         ]);
 
         Auth::user()->update(['password' => md5($request->password)]);
-        return back()->with('success', 'Password berhasil diubah!');
+        return back()->with('success', 'Password updated successfully!');
     }
 
 }

@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
             $table->decimal('total_price', 12, 2);
-            $table->string('payment_gateway_ref');
+            $table->string('payment_gateway_ref')->nullable();
             $table->string('status')->default('pending');
             $table->timestamps();
         });
