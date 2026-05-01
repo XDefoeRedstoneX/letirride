@@ -19,6 +19,9 @@ class DatabaseSeeder extends Seeder
         $this->seedCategories();
         $this->seedProducts();
         $this->seedDiscountTypes();
+        $this->seedPointShopItems();
+        $this->seedPointShopPurchases($now);
+        
         $this->seedUserDiscounts();
         $this->seedGachaPools();
         $this->seedOrders($now);
@@ -103,24 +106,20 @@ class DatabaseSeeder extends Seeder
     }
 
     private function seedCategories(): void
-    {
-        if (! Schema::hasTable('categories')) {
-            return;
-        }
+        {
+            if (! Schema::hasTable('categories')) {
+                return;
+            }
 
-        DB::table('categories')->upsert([
-            ['id' => 1, 'name' => 'Steam Wallet', 'slug' => 'steam-wallet'],
-            ['id' => 2, 'name' => 'Netflix Subscription', 'slug' => 'netflix-subscription'],
-            ['id' => 3, 'name' => 'Spotify Premium', 'slug' => 'spotify-premium'],
-            ['id' => 4, 'name' => 'PlayStation Network', 'slug' => 'playstation-network'],
-            ['id' => 5, 'name' => 'Xbox Live Gold', 'slug' => 'xbox-live-gold'],
-            ['id' => 6, 'name' => 'Nintendo eShop', 'slug' => 'nintendo-eshop'],
-            ['id' => 7, 'name' => 'Valorant Points', 'slug' => 'valorant-points'],
-            ['id' => 8, 'name' => 'Mobile Legends Diamonds', 'slug' => 'ml-diamonds'],
-            ['id' => 9, 'name' => 'Genshin Impact Genesis', 'slug' => 'genshin-genesis'],
-            ['id' => 10, 'name' => 'Discord Nitro', 'slug' => 'discord-nitro'],
-        ], ['id'], ['name', 'slug']);
-    }
+            DB::table('categories')->upsert([
+                ['id' => 1, 'name' => 'Gaming', 'slug' => 'gaming'],
+                ['id' => 2, 'name' => 'Entertainment', 'slug' => 'entertainment'],
+                ['id' => 3, 'name' => 'Software & Utilities', 'slug' => 'software-utilities'],
+                ['id' => 4, 'name' => 'Gift Cards', 'slug' => 'gift-cards'],
+                ['id' => 5, 'name' => 'Mobile Top-Up', 'slug' => 'mobile-top-up'],
+                ['id' => 6, 'name' => 'Other', 'slug' => 'other'],
+            ], ['id'], ['name', 'slug']);
+        }
 
     private function seedProducts(): void
     {
@@ -130,23 +129,23 @@ class DatabaseSeeder extends Seeder
 
         $productsHasImg = Schema::hasColumn('products', 'img');
 
+        // UPDATED: category_id values now map only to 1 through 6
         $rows = [
             ['id' => 1, 'category_id' => 1, 'name' => 'Steam Wallet $10', 'description' => 'Adds $10 to Steam', 'price' => 10.00, 'point_reward' => 100, 'is_active' => true],
             ['id' => 2, 'category_id' => 1, 'name' => 'Steam Wallet $50', 'description' => 'Adds $50 to Steam', 'price' => 50.00, 'point_reward' => 500, 'is_active' => true],
             ['id' => 3, 'category_id' => 2, 'name' => 'Netflix 1 Month (HD)', 'description' => 'Standard 1 Month', 'price' => 15.49, 'point_reward' => 150, 'is_active' => true],
-            ['id' => 4, 'category_id' => 3, 'name' => 'Spotify 3 Months', 'description' => 'Premium Code', 'price' => 29.97, 'point_reward' => 300, 'is_active' => true],
-            ['id' => 5, 'category_id' => 4, 'name' => 'PSN $25', 'description' => 'PS Store Credit', 'price' => 25.00, 'point_reward' => 250, 'is_active' => true],
-            ['id' => 6, 'category_id' => 7, 'name' => '1000 Valorant Points', 'description' => 'Riot Games VP', 'price' => 9.99, 'point_reward' => 100, 'is_active' => true],
-            ['id' => 7, 'category_id' => 8, 'name' => '500 ML Diamonds', 'description' => 'Moonton Diamonds', 'price' => 10.00, 'point_reward' => 100, 'is_active' => true],
-            ['id' => 8, 'category_id' => 9, 'name' => 'Welkin Moon', 'description' => '30 Days Genshin', 'price' => 4.99, 'point_reward' => 50, 'is_active' => true],
-            ['id' => 9, 'category_id' => 10, 'name' => 'Discord Nitro 1 Year', 'description' => 'Full Nitro', 'price' => 99.99, 'point_reward' => 1000, 'is_active' => true],
-            ['id' => 10, 'category_id' => 5, 'name' => 'Xbox Game Pass 1 Month', 'description' => 'Ultimate Pass', 'price' => 16.99, 'point_reward' => 160, 'is_active' => true],
+            ['id' => 4, 'category_id' => 2, 'name' => 'Spotify 3 Months', 'description' => 'Premium Code', 'price' => 29.97, 'point_reward' => 300, 'is_active' => true],
+            ['id' => 5, 'category_id' => 1, 'name' => 'PSN $25', 'description' => 'PS Store Credit', 'price' => 25.00, 'point_reward' => 250, 'is_active' => true],
+            ['id' => 6, 'category_id' => 1, 'name' => '1000 Valorant Points', 'description' => 'Riot Games VP', 'price' => 9.99, 'point_reward' => 100, 'is_active' => true],
+            ['id' => 7, 'category_id' => 5, 'name' => '500 ML Diamonds', 'description' => 'Moonton Diamonds', 'price' => 10.00, 'point_reward' => 100, 'is_active' => true],
+            ['id' => 8, 'category_id' => 1, 'name' => 'Welkin Moon', 'description' => '30 Days Genshin', 'price' => 4.99, 'point_reward' => 50, 'is_active' => true],
+            ['id' => 9, 'category_id' => 2, 'name' => 'Discord Nitro 1 Year', 'description' => 'Full Nitro', 'price' => 99.99, 'point_reward' => 1000, 'is_active' => true],
+            ['id' => 10, 'category_id' => 1, 'name' => 'Xbox Game Pass 1 Month', 'description' => 'Ultimate Pass', 'price' => 16.99, 'point_reward' => 160, 'is_active' => true],
         ];
 
         if ($productsHasImg) {
             $rows = array_map(function (array $row) {
                 $row['img'] = null;
-
                 return $row;
             }, $rows);
         }
@@ -206,17 +205,18 @@ class DatabaseSeeder extends Seeder
             return;
         }
 
+        // UPDATED: target_category_id values now map only to 1 through 6
         DB::table('discount_types')->upsert([
             ['id' => 1, 'name' => '10% Off All', 'type' => 'percent', 'value' => 10.00, 'target_category_id' => null],
             ['id' => 2, 'name' => '5% Off Steam', 'type' => 'percent', 'value' => 5.00, 'target_category_id' => 1],
             ['id' => 3, 'name' => '$2 Off Netflix', 'type' => 'percent', 'value' => 2.00, 'target_category_id' => 2],
-            ['id' => 4, 'name' => '20% Off PSN', 'type' => 'percent', 'value' => 20.00, 'target_category_id' => 4],
+            ['id' => 4, 'name' => '20% Off PSN', 'type' => 'percent', 'value' => 20.00, 'target_category_id' => 1],
             ['id' => 5, 'name' => '$5 Welcome Bonus', 'type' => 'percent', 'value' => 5.00, 'target_category_id' => null],
-            ['id' => 6, 'name' => 'Half Price Discord', 'type' => 'percent', 'value' => 50.00, 'target_category_id' => 10],
-            ['id' => 7, 'name' => '$1 Off Valorant', 'type' => 'percent', 'value' => 1.00, 'target_category_id' => 7],
-            ['id' => 8, 'name' => '15% Off Xbox', 'type' => 'percent', 'value' => 15.00, 'target_category_id' => 5],
+            ['id' => 6, 'name' => 'Half Price Discord', 'type' => 'percent', 'value' => 50.00, 'target_category_id' => 2],
+            ['id' => 7, 'name' => '$1 Off Valorant', 'type' => 'percent', 'value' => 1.00, 'target_category_id' => 1],
+            ['id' => 8, 'name' => '15% Off Xbox', 'type' => 'percent', 'value' => 15.00, 'target_category_id' => 1],
             ['id' => 9, 'name' => 'Whale Discount', 'type' => 'percent', 'value' => 25.00, 'target_category_id' => null],
-            ['id' => 10, 'name' => 'Free Welkin', 'type' => 'percent', 'value' => 4.99, 'target_category_id' => 9],
+            ['id' => 10, 'name' => 'Free Welkin', 'type' => 'percent', 'value' => 4.99, 'target_category_id' => 1],
         ], ['id'], ['name', 'type', 'value', 'target_category_id']);
     }
 
@@ -385,5 +385,110 @@ class DatabaseSeeder extends Seeder
             ['id' => 9, 'question' => 'Can I stack discounts?', 'answer' => 'No, only one discount code can be used per order.'],
             ['id' => 10, 'question' => 'How do I contact support?', 'answer' => 'Open a ticket in the Support dashboard.'],
         ], ['id'], ['question', 'answer']);
+    }
+
+    private function seedPointShopItems(): void
+    {
+        if (! Schema::hasTable('point_shop_items')) {
+            return;
+        }
+
+        DB::table('point_shop_items')->upsert([
+            [
+                'id' => 1, 
+                'name' => 'Buy $5 Welcome Bonus', 
+                'description' => 'Instantly get a $5 discount code!', 
+                'point_cost' => 500, 
+                'reward_type' => 'discount_code', 
+                'discount_type_id' => 5, // Links to your $5 Welcome Bonus
+                'img' => null, 
+                'is_active' => true
+            ],
+            [
+                'id' => 2, 
+                'name' => 'Whale Status Ticket', 
+                'description' => 'Unlock the massive 25% Whale Discount.', 
+                'point_cost' => 5000, 
+                'reward_type' => 'discount_code', 
+                'discount_type_id' => 9, // Links to your Whale Discount
+                'img' => null, 
+                'is_active' => true
+            ],
+            [
+                'id' => 3, 
+                'name' => 'Free Welkin Pass', 
+                'description' => 'Redeem your points for a free Welkin Moon code!', 
+                'point_cost' => 1000, 
+                'reward_type' => 'discount_code', 
+                'discount_type_id' => 10, // Links to your Free Welkin discount
+                'img' => null, 
+                'is_active' => true
+            ],
+        ], ['id'], ['name', 'description', 'point_cost', 'reward_type', 'discount_type_id', 'img', 'is_active']);
+    }
+
+    private function seedPointShopPurchases($now): void
+    {
+        if (! Schema::hasTable('point_shop_purchases')) {
+            return;
+        }
+
+        DB::table('point_shop_purchases')->upsert([
+            [
+                'id' => 1, 
+                'user_id' => 2, // Bob Jones
+                'point_shop_item_id' => 1, // Bought the $5 Welcome Bonus
+                'points_spent' => 500, 
+                'created_at' => clone $now->subDays(1)
+            ],
+            [
+                'id' => 2, 
+                'user_id' => 4, // Diana Prince
+                'point_shop_item_id' => 2, // Bought the Whale Status Ticket
+                'points_spent' => 5000, 
+                'created_at' => clone $now->subHours(5)
+            ],
+            [
+                'id' => 3, 
+                'user_id' => 8, // Hannah Abbott
+                'point_shop_item_id' => 3, // Bought the Free Welkin Pass
+                'points_spent' => 1000, 
+                'created_at' => clone $now->subMinutes(30)
+            ],
+        ], ['id'], ['user_id', 'point_shop_item_id', 'points_spent', 'created_at']);
+    }
+
+    private function seedFavorites($now): void
+    {
+        if (! Schema::hasTable('favorites')) {
+            return;
+        }
+
+        DB::table('favorites')->upsert([
+            [
+                'id' => 1, 
+                'user_id' => 1, // Alice
+                'product_id' => 3, // Netflix 1 Month
+                'created_at' => clone $now->subDays(5)
+            ],
+            [
+                'id' => 2, 
+                'user_id' => 1, // Alice
+                'product_id' => 9, // Discord Nitro
+                'created_at' => clone $now->subDays(2)
+            ],
+            [
+                'id' => 3, 
+                'user_id' => 2, // Bob
+                'product_id' => 1, // Steam Wallet $10
+                'created_at' => clone $now->subHours(12)
+            ],
+            [
+                'id' => 4, 
+                'user_id' => 8, // Hannah
+                'product_id' => 8, // Welkin Moon
+                'created_at' => clone $now
+            ],
+        ], ['id'], ['user_id', 'product_id', 'created_at']);
     }
 }
