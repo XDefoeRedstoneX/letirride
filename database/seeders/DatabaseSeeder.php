@@ -128,7 +128,9 @@ class DatabaseSeeder extends Seeder
             return;
         }
 
-        DB::table('products')->upsert([
+        $productsHasImg = Schema::hasColumn('products', 'img');
+
+        $rows = [
             ['id' => 1, 'category_id' => 1, 'name' => 'Steam Wallet $10', 'description' => 'Adds $10 to Steam', 'price' => 10.00, 'point_reward' => 100, 'is_active' => true],
             ['id' => 2, 'category_id' => 1, 'name' => 'Steam Wallet $50', 'description' => 'Adds $50 to Steam', 'price' => 50.00, 'point_reward' => 500, 'is_active' => true],
             ['id' => 3, 'category_id' => 2, 'name' => 'Netflix 1 Month (HD)', 'description' => 'Standard 1 Month', 'price' => 15.49, 'point_reward' => 150, 'is_active' => true],
@@ -139,7 +141,22 @@ class DatabaseSeeder extends Seeder
             ['id' => 8, 'category_id' => 9, 'name' => 'Welkin Moon', 'description' => '30 Days Genshin', 'price' => 4.99, 'point_reward' => 50, 'is_active' => true],
             ['id' => 9, 'category_id' => 10, 'name' => 'Discord Nitro 1 Year', 'description' => 'Full Nitro', 'price' => 99.99, 'point_reward' => 1000, 'is_active' => true],
             ['id' => 10, 'category_id' => 5, 'name' => 'Xbox Game Pass 1 Month', 'description' => 'Ultimate Pass', 'price' => 16.99, 'point_reward' => 160, 'is_active' => true],
-        ], ['id'], ['category_id', 'name', 'description', 'price', 'point_reward', 'is_active']);
+        ];
+
+        if ($productsHasImg) {
+            $rows = array_map(function (array $row) {
+                $row['img'] = null;
+
+                return $row;
+            }, $rows);
+        }
+
+        $updateColumns = ['category_id', 'name', 'description', 'price', 'point_reward', 'is_active'];
+        if ($productsHasImg) {
+            $updateColumns[] = 'img';
+        }
+
+        DB::table('products')->upsert($rows, ['id'], $updateColumns);
     }
 
     private function seedProductKeys(): void
@@ -190,16 +207,16 @@ class DatabaseSeeder extends Seeder
         }
 
         DB::table('discount_types')->upsert([
-            ['id' => 1, 'name' => '10% Off All', 'type' => 'percentage', 'value' => 10.00, 'target_category_id' => null],
-            ['id' => 2, 'name' => '5% Off Steam', 'type' => 'percentage', 'value' => 5.00, 'target_category_id' => 1],
-            ['id' => 3, 'name' => '$2 Off Netflix', 'type' => 'fixed_amount', 'value' => 2.00, 'target_category_id' => 2],
-            ['id' => 4, 'name' => '20% Off PSN', 'type' => 'percentage', 'value' => 20.00, 'target_category_id' => 4],
-            ['id' => 5, 'name' => '$5 Welcome Bonus', 'type' => 'fixed_amount', 'value' => 5.00, 'target_category_id' => null],
-            ['id' => 6, 'name' => 'Half Price Discord', 'type' => 'percentage', 'value' => 50.00, 'target_category_id' => 10],
-            ['id' => 7, 'name' => '$1 Off Valorant', 'type' => 'fixed_amount', 'value' => 1.00, 'target_category_id' => 7],
-            ['id' => 8, 'name' => '15% Off Xbox', 'type' => 'percentage', 'value' => 15.00, 'target_category_id' => 5],
-            ['id' => 9, 'name' => 'Whale Discount', 'type' => 'percentage', 'value' => 25.00, 'target_category_id' => null],
-            ['id' => 10, 'name' => 'Free Welkin', 'type' => 'fixed_amount', 'value' => 4.99, 'target_category_id' => 9],
+            ['id' => 1, 'name' => '10% Off All', 'type' => 'percent', 'value' => 10.00, 'target_category_id' => null],
+            ['id' => 2, 'name' => '5% Off Steam', 'type' => 'percent', 'value' => 5.00, 'target_category_id' => 1],
+            ['id' => 3, 'name' => '$2 Off Netflix', 'type' => 'percent', 'value' => 2.00, 'target_category_id' => 2],
+            ['id' => 4, 'name' => '20% Off PSN', 'type' => 'percent', 'value' => 20.00, 'target_category_id' => 4],
+            ['id' => 5, 'name' => '$5 Welcome Bonus', 'type' => 'percent', 'value' => 5.00, 'target_category_id' => null],
+            ['id' => 6, 'name' => 'Half Price Discord', 'type' => 'percent', 'value' => 50.00, 'target_category_id' => 10],
+            ['id' => 7, 'name' => '$1 Off Valorant', 'type' => 'percent', 'value' => 1.00, 'target_category_id' => 7],
+            ['id' => 8, 'name' => '15% Off Xbox', 'type' => 'percent', 'value' => 15.00, 'target_category_id' => 5],
+            ['id' => 9, 'name' => 'Whale Discount', 'type' => 'percent', 'value' => 25.00, 'target_category_id' => null],
+            ['id' => 10, 'name' => 'Free Welkin', 'type' => 'percent', 'value' => 4.99, 'target_category_id' => 9],
         ], ['id'], ['name', 'type', 'value', 'target_category_id']);
     }
 
@@ -246,17 +263,14 @@ class DatabaseSeeder extends Seeder
         }
 
         DB::table('gacha_pools')->upsert([
-            ['id' => 1, 'prize_name' => 'Grand Prize: 50% Off Discord', 'discount_type_id' => 6, 'points_reward' => null, 'base_win_chance' => 1.5000, 'is_grand_prize' => true],
-            ['id' => 2, 'prize_name' => 'Epic: 20% Off PSN', 'discount_type_id' => 4, 'points_reward' => null, 'base_win_chance' => 5.0000, 'is_grand_prize' => false],
-            ['id' => 3, 'prize_name' => 'Rare: $5 Off Anywhere', 'discount_type_id' => 5, 'points_reward' => null, 'base_win_chance' => 10.0000, 'is_grand_prize' => false],
-            ['id' => 4, 'prize_name' => 'Common: 100 Points', 'discount_type_id' => null, 'points_reward' => 100, 'base_win_chance' => 30.0000, 'is_grand_prize' => false],
-            ['id' => 5, 'prize_name' => 'Common: 50 Points', 'discount_type_id' => null, 'points_reward' => 50, 'base_win_chance' => 40.0000, 'is_grand_prize' => false],
-            ['id' => 6, 'prize_name' => 'Dud: 10 Points', 'discount_type_id' => null, 'points_reward' => 10, 'base_win_chance' => 13.5000, 'is_grand_prize' => false],
-            ['id' => 7, 'prize_name' => 'Grand Prize: Free Welkin', 'discount_type_id' => 10, 'points_reward' => null, 'base_win_chance' => 1.0000, 'is_grand_prize' => true],
-            ['id' => 8, 'prize_name' => 'Rare: 15% Off Xbox', 'discount_type_id' => 8, 'points_reward' => null, 'base_win_chance' => 7.5000, 'is_grand_prize' => false],
-            ['id' => 9, 'prize_name' => 'Common: $1 Off Valo', 'discount_type_id' => 7, 'points_reward' => null, 'base_win_chance' => 15.0000, 'is_grand_prize' => false],
-            ['id' => 10, 'prize_name' => 'Legendary: Whale Status', 'discount_type_id' => 9, 'points_reward' => null, 'base_win_chance' => 0.5000, 'is_grand_prize' => true],
-        ], ['id'], ['prize_name', 'discount_type_id', 'points_reward', 'base_win_chance', 'is_grand_prize']);
+            ['id' => 1, 'prize_name' => 'Grand Prize: 50% Off Discord', 'discount_type_id' => 6, 'rarity_item' => 'grand_prize', 'base_win_chance' => 1.5000],
+            ['id' => 2, 'prize_name' => 'Epic: 20% Off PSN', 'discount_type_id' => 4, 'rarity_item' => 'epic', 'base_win_chance' => 5.0000],
+            ['id' => 3, 'prize_name' => 'Rare: $5 Off Anywhere', 'discount_type_id' => 5, 'rarity_item' => 'rare', 'base_win_chance' => 10.0000],
+            ['id' => 7, 'prize_name' => 'Grand Prize: Free Welkin', 'discount_type_id' => 10, 'rarity_item' => 'grand_prize', 'base_win_chance' => 1.0000],
+            ['id' => 8, 'prize_name' => 'Rare: 15% Off Xbox', 'discount_type_id' => 8, 'rarity_item' => 'rare', 'base_win_chance' => 7.5000],
+            ['id' => 9, 'prize_name' => 'Common: $1 Off Valo', 'discount_type_id' => 7, 'rarity_item' => 'common', 'base_win_chance' => 15.0000],
+            ['id' => 10, 'prize_name' => 'Legendary: Whale Status', 'discount_type_id' => 9, 'rarity_item' => 'legendary', 'base_win_chance' => 0.5000],
+        ], ['id'], ['prize_name', 'discount_type_id', 'rarity_item', 'base_win_chance']);
     }
 
     private function seedOrders($now): void

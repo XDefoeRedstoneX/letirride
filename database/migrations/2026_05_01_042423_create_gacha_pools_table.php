@@ -15,9 +15,8 @@ return new class extends Migration
             $table->id();
             $table->string('prize_name');
             $table->foreignId('discount_type_id')->nullable()->constrained()->nullOnDelete();
-            $table->integer('points_reward')->nullable();
+            $table->string('rarity_item');
             $table->decimal('base_win_chance', 5, 2);
-            $table->boolean('is_grand_prize');
         });
     }
 

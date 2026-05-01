@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 
-#[Fillable(['category_id', 'name', 'description', 'price', 'point_reward', 'is_active', 'image'])]
+#[Fillable(['category_id', 'name', 'description', 'price', 'point_reward', 'img', 'is_active'])]
 class Product extends Model
 {
     public $timestamps = false;
