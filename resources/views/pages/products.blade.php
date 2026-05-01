@@ -41,7 +41,7 @@
         <div class="flex flex-col space-y-4">
             @auth
                 <div>
-                    <h1 class="text-3xl font-black tracking-tighter uppercase leading-none">Welcome, <span class="text-primary">{{ Auth::user()->username }}</span></h1>
+                    <h1 class="text-3xl font-black tracking-tighter uppercase leading-none">Welcome, <span class="text-primary">{{ Auth::user()->name }}</span></h1>
                     <p class="text-muted-foreground text-xs font-bold uppercase tracking-widest mt-2">What are you looking for today?</p>
                 </div>
             @else

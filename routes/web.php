@@ -25,6 +25,12 @@ Route::middleware('auth')->group(function () {
     Route::post('/update-profile', [App\Http\Controllers\AuthController::class, 'updateProfile'])->name('updateProfile');
     Route::post('/change-password', [App\Http\Controllers\AuthController::class, 'changePassword'])->name('changePassword');
 });
+    Route::get('/terms', function () {
+        return view('pages.terms-of-service');
+    })->name('terms-of-service');
+    Route::get('/privacy', function () {
+        return view('pages.privacy-policy');
+    })->name('privacy-policy');
     Route::get('/about', function () {
         return view('pages.about');
     })->name('about');

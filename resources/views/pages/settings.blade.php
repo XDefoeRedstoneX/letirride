@@ -79,7 +79,7 @@
                     @csrf
                     <div class="space-y-2">
                         <label class="text-sm font-medium">Display Name</label>
-                        <input type="text" name="name" x-model="profileName" class="w-full px-4 py-2 bg-background border border-border rounded-xl focus:ring-2 focus:ring-primary/50 outline-none transition-all">
+                        <input type="text" name="name" value="{{ Auth::user()->name}}" x-model="profileName" class="w-full px-4 py-2 bg-background border border-border rounded-xl focus:ring-2 focus:ring-primary/50 outline-none transition-all">
                     </div>
 
                     <div class="space-y-2">

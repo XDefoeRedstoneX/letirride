@@ -17,22 +17,20 @@ class UserSeeder extends Seeder
     {
         User::create([
             'name' => 'City Mayor',
-            'username' => 'CityMayor',
             'email' => 'admin@pxshop.com',
             'password' => Hash::make('admin123'),
+            'google_id' => null,
             'role' => 'admin',
-            'balance' => 0,
-            'points' => 999999,
+            'points_balance' => 999999,
         ]);
 
         User::create([
             'name' => 'Pixel Walker',
-            'username' => 'PixelWalker',
             'email' => 'demo@pxshop.com',
             'password' => Hash::make('demo123'),
+            'google_id' => null,
             'role' => 'customer',
-            'balance' => 1000000,
-            'points' => 5000,
+            'points_balance' => 5000,
         ]);
     }
 }

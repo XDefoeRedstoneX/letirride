@@ -39,7 +39,7 @@ class AuthController extends Controller
 
     public function logAuth(Request $request){
         $creds = $request->validate([
-            'email' => 'required|email:dns',
+            'email' => 'required|email',
             'password' => 'required'
         ]);
 
@@ -64,8 +64,6 @@ class AuthController extends Controller
                 ],
             ], 422);
         }
-
-        return back()->withErrors(['email' => 'Those credentials do not match our records.'])->onlyInput('email');
     }
 
     public function logout(Request $request){
@@ -79,7 +77,7 @@ class AuthController extends Controller
         try {
             $creds = $request->validate([
                 'name' => 'required',
-                'email' => 'required|email:dns|unique:users',
+                'email' => 'required|email|unique:users',
                 'password' => 'required|min:6',
             ]);
 
