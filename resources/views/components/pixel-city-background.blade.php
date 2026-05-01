@@ -17,81 +17,93 @@
     
     <!-- Sky gradient -->
     <div
-        class="absolute inset-0 transition-colors duration-700"
+        class="absolute inset-0 transition-colors duration-1000"
         :style="{
             background: isDark
-                ? 'linear-gradient(180deg, #050a1a 0%, #0a0e27 30%, #0f1537 60%, #141a3d 100%)'
-                : 'linear-gradient(180deg, #87CEEB 0%, #00d4ff 30%, #87CEEB 60%, #b8e6ff 100%)'
+                ? 'linear-gradient(180deg, #020617 0%, #0f172a 100%)'
+                : 'linear-gradient(180deg, #f0f9ff 0%, #e0f2fe 100%)'
         }"
     ></div>
 
-    <!-- Stars (dark mode only) -->
-    <div x-show="isDark" class="absolute inset-0">
-        @for ($i = 0; $i < 50; $i++)
+    <!-- Stars & Moon (dark mode only) -->
+    <div x-show="isDark" x-transition:enter="transition opacity duration-1000" class="absolute inset-0">
+        <!-- Crescent Moon -->
+        <div class="absolute top-20 right-[15%] w-16 h-16 opacity-80"
+             :style="{ transform: 'translateY(' + (scrollY * -0.05) + 'px)' }">
+            <div class="w-16 h-16 bg-amber-100 rounded-full shadow-[0_0_20px_rgba(254,243,199,0.3)]"></div>
+            <div class="absolute -top-2 -right-4 w-16 h-16 rounded-full transition-colors duration-1000"
+                 :style="{ background: isDark ? '#020617' : '#f0f9ff' }"></div>
+        </div>
+
+        @for ($i = 0; $i < 40; $i++)
             <div
-                class="absolute rounded-full bg-white animate-twinkle"
-                style="width: {{ rand(1, 4) }}px; height: {{ rand(1, 4) }}px; left: {{ rand(0, 100) }}%; top: {{ rand(0, 40) }}%; animation-duration: {{ rand(2, 6) }}s; animation-delay: {{ rand(0, 3) }}s;"
+                class="absolute rounded-full bg-blue-100/40 animate-twinkle"
+                style="width: {{ rand(1, 3) }}px; height: {{ rand(1, 3) }}px; left: {{ rand(0, 100) }}%; top: {{ rand(0, 45) }}%; animation-duration: {{ rand(3, 8) }}s; animation-delay: {{ rand(0, 5) }}s;"
             ></div>
         @endfor
     </div>
 
     <!-- Clouds (light mode only) -->
-    <div x-show="!isDark" class="absolute inset-0 overflow-hidden pointer-events-none">
-        @for ($i = 0; $i < 6; $i++)
-            <div
-                class="absolute animate-drift-horizontal opacity-40"
-                style="top: {{ 10 + $i * 12 }}%; animation-duration: {{ rand(60, 100) }}s; animation-delay: -{{ rand(0, 60) }}s;"
-            >
-                <svg width="{{ 120 + $i * 20 }}" height="40" viewBox="0 0 120 40" class="pixel-render">
-                    <rect x="20" y="10" width="80" height="20" fill="white" />
-                    <rect x="30" y="5" width="60" height="10" fill="white" />
-                    <rect x="40" y="0" width="40" height="5" fill="white" />
-                    <rect x="10" y="15" width="100" height="15" fill="white" />
-                    <rect x="0" y="20" width="120" height="10" fill="white" />
-                </svg>
+    <div x-show="!isDark" x-transition:enter="transition opacity duration-1000" class="absolute inset-0">
+        @for ($k = 0; $k < 5; $k++)
+            <div class="absolute opacity-60 animate-drift"
+                 style="top: {{ rand(10, 40) }}%; left: -200px; animation-duration: {{ rand(60, 120) }}s; animation-delay: -{{ rand(0, 60) }}s;">
+                <div class="flex">
+                    <div class="w-16 h-16 bg-white rounded-full"></div>
+                    <div class="w-20 h-20 bg-white rounded-full -ml-8 -mt-4"></div>
+                    <div class="w-16 h-16 bg-white rounded-full -ml-8"></div>
+                </div>
             </div>
         @endfor
     </div>
 
-    <!-- Sun/Moon -->
-    <div class="absolute top-8 right-16 md:right-24">
-        <div x-show="!isDark" class="w-16 h-16 md:w-20 md:h-20 pixel-render" style="background: #FFD700; box-shadow: 0 0 40px #FFD700, 0 0 80px #FFD70060;">
-            <svg viewBox="0 0 80 80" class="w-full h-full animate-pulse">
-                <rect x="30" y="0" width="20" height="12" fill="#FFD700" />
-                <rect x="30" y="68" width="20" height="12" fill="#FFD700" />
-                <rect x="0" y="30" width="12" height="20" fill="#FFD700" />
-                <rect x="68" y="30" width="12" height="20" fill="#FFD700" />
-                <rect x="8" y="8" width="14" height="14" fill="#FFD700" />
-                <rect x="58" y="8" width="14" height="14" fill="#FFD700" />
-                <rect x="8" y="58" width="14" height="14" fill="#FFD700" />
-                <rect x="58" y="58" width="14" height="14" fill="#FFD700" />
-                <rect x="20" y="20" width="40" height="40" rx="4" fill="#FFA500" />
-                <rect x="24" y="24" width="32" height="32" rx="2" fill="#FFD700" />
-            </svg>
-        </div>
-        <svg x-show="isDark" viewBox="0 0 60 60" class="w-12 h-12 md:w-16 md:h-16 pixel-render">
-            <rect x="10" y="5" width="40" height="50" rx="8" fill="#e8e8d0" />
-            <rect x="8" y="8" width="44" height="44" rx="8" fill="#f0f0d8" />
-            <rect x="15" y="15" width="8" height="8" rx="2" fill="#d4d4b8" opacity="0.5" />
-            <rect x="32" y="22" width="6" height="6" rx="1" fill="#d4d4b8" opacity="0.4" />
-            <rect x="22" y="32" width="10" height="6" rx="2" fill="#d4d4b8" opacity="0.3" />
-        </svg>
-    </div>
-
-    <!-- Buildings -->
-    <div class="absolute bottom-0 left-0 right-0" :style="`transform: translateY(${scrollY * 0.05}px)`">
-        <svg viewBox="0 0 1440 320" class="w-full pixel-render" preserveAspectRatio="none">
-            <g x-show="isDark">
-                <rect x="0" y="160" width="60" height="160" fill="#0d1230" />
-                <rect x="70" y="120" width="50" height="200" fill="#0f1537" />
-                <rect x="130" y="140" width="70" height="180" fill="#0d1230" />
-                <rect x="210" y="100" width="40" height="220" fill="#101840" />
-                <!-- Windows would go here, but for brevity we'll keep it simple -->
+    <!-- Interactive Professional Cityscape -->
+    <div class="absolute bottom-[-100px] left-0 right-0 h-[70vh] transition-all duration-300 ease-out"
+         :style="{ transform: 'translateY(' + (scrollY * -0.15) + 'px)' }">
+        <svg viewBox="0 0 1440 400" class="w-full h-full pixel-render" preserveAspectRatio="none">
+            <defs>
+                <linearGradient id="buildingGradDark" x1="0%" y1="0%" x2="0%" y2="100%">
+                    <stop offset="0%" style="stop-color:#1e293b" />
+                    <stop offset="100%" style="stop-color:#0f172a" />
+                </linearGradient>
+                <linearGradient id="buildingGradLight" x1="0%" y1="0%" x2="0%" y2="100%">
+                    <stop offset="0%" style="stop-color:#94a3b8" />
+                    <stop offset="100%" style="stop-color:#64748b" />
+                </linearGradient>
+            </defs>
+            
+            <!-- City silhouette -->
+            <g :fill="isDark ? 'url(#buildingGradDark)' : 'url(#buildingGradLight)'">
+                <rect x="0" y="250" width="150" height="250" />
+                <rect x="120" y="150" width="100" height="350" />
+                <rect x="200" y="200" width="120" height="300" />
+                <rect x="300" y="80" width="80" height="420" />
+                <rect x="360" y="180" width="140" height="320" />
+                <rect x="480" y="120" width="110" height="380" />
+                <rect x="580" y="220" width="130" height="280" />
+                <rect x="680" y="50" width="70" height="450" />
+                <rect x="740" y="160" width="150" height="340" />
+                <rect x="880" y="100" width="110" height="400" />
+                <rect x="980" y="210" width="100" height="290" />
+                <rect x="1060" y="140" width="130" height="360" />
+                <rect x="1180" y="70" width="90" height="430" />
+                <rect x="1260" y="190" width="180" height="310" />
             </g>
-            <g x-show="!isDark">
-                <rect x="0" y="160" width="60" height="160" fill="#87CEEB" opacity="0.5" />
-                <rect x="70" y="120" width="50" height="200" fill="#87CEEB" opacity="0.7" />
-                <rect x="130" y="140" width="70" height="180" fill="#87CEEB" opacity="0.5" />
+
+            <!-- Large Twinkling Window Lights -->
+            <g fill="#fbbf24">
+                @for ($j = 0; $j < 25; $j++)
+                    @php 
+                        $wx = rand(20, 1400);
+                        $wy = rand(100, 380);
+                        $dur = rand(2, 5);
+                        $del = rand(0, 5);
+                        $isHigh = rand(0, 1) > 0.5;
+                    @endphp
+                    <!-- Window pair -->
+                    <rect x="{{ $wx }}" y="{{ $wy }}" width="8" height="12" class="animate-pulse" style="animation-duration: {{ $dur }}s; animation-delay: {{ $del }}s; opacity: {{ $isHigh ? 0.6 : 0.2 }};" />
+                    <rect x="{{ $wx + 12 }}" y="{{ $wy }}" width="8" height="12" class="animate-pulse" style="animation-duration: {{ $dur }}s; animation-delay: {{ $del + 0.5 }}s; opacity: {{ $isHigh ? 0.6 : 0.2 }};" />
+                @endfor
             </g>
         </svg>
     </div>
@@ -106,10 +118,10 @@
   animation: twinkle var(--twinkle-duration, 3s) infinite ease-in-out;
 }
 @keyframes drift {
-  from { transform: translateX(-100%); }
-  to { transform: translateX(100vw); }
+  from { transform: translateX(-200px); }
+  to { transform: translateX(calc(100vw + 200px)); }
 }
-.animate-drift-horizontal {
-  animation: drift var(--drift-duration, 60s) linear infinite;
+.animate-drift {
+  animation: drift linear infinite;
 }
 </style>

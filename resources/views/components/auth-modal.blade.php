@@ -47,7 +47,7 @@
                     <label for="login-tos" class="text-xs text-muted-foreground">I agree to the <a href="#" class="text-primary hover:underline">Terms of Service</a></label>
                 </div>
 
-                <button type="submit" class="w-full py-2 bg-primary text-primary-foreground font-bold rounded-md hover:opacity-90 transition-opacity">
+                <button type="submit" class="w-full py-2 bg-primary text-primary-foreground font-bold rounded-md hover:opacity-90 transition-opacity tracking-widest">
                     Login Now
                 </button>
             </form>
@@ -73,7 +73,7 @@
                     <label for="signup-tos" class="text-xs text-muted-foreground">I agree to the <a href="#" class="text-primary hover:underline">Terms of Service</a></label>
                 </div>
 
-                <button type="submit" class="w-full py-2 bg-primary text-primary-foreground font-bold rounded-md hover:opacity-90 transition-opacity">
+                <button type="submit" class="w-full py-2 bg-primary text-primary-foreground font-bold rounded-md hover:opacity-90 transition-opacity tracking-widest">
                     Create Account
                 </button>
             </form>

@@ -45,4 +45,29 @@ class PageController extends Controller
     {
         return view('pages.tickets');
     }
+
+    public function about()
+    {
+        return view('pages.about');
+    }
+
+    public function favorites()
+    {
+        return view('pages.favorites');
+    }
+
+    public function faq()
+    {
+        return view('pages.faq');
+    }
+
+    public function forgotPassword()
+    {
+        return view('pages.forgot-password');
+    }
+
+    public function cart()
+    {
+        return view('pages.cart');
+    }
 }
