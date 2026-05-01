@@ -19,9 +19,9 @@ return new class extends Migration
             $table->decimal('subtotal', 12, 2);
             $table->decimal('discount_amount', 12, 2)->default(0);
             $table->decimal('total_price', 12, 2);
-            $table->string('payment_gateway_ref');
-            $table->string('status');
-            $table->timestamp('created_at');
+            $table->string('payment_gateway_ref')->nullable();
+            $table->string('status')->default('pending');
+            $table->timestamp('created_at')->useCurrent();
         });
     }
 
