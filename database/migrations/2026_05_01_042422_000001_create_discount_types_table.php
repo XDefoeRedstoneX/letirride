@@ -11,15 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('products', function (Blueprint $table) {
+        Schema::create('discount_types', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('category_id')->constrained()->cascadeOnDelete();
             $table->string('name');
-            $table->text('description');
-            $table->decimal('price', 12, 2);
-            $table->integer('point_reward');
-            $table->boolean('is_active')->default(true);
-            $table->timestamps();
+            $table->string('type');
+            $table->decimal('value', 12, 2);
+            $table->foreignId('target_category_id')->nullable()->constrained('products')->nullOnDelete();
         });
     }
 
@@ -28,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('products');
+        Schema::dropIfExists('discount_types');
     }
 };

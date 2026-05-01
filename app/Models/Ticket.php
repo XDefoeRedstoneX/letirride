@@ -2,13 +2,31 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-#[Fillable(['user_id', 'type', 'message', 'status'])]
 class Ticket extends Model
 {
-    public function user()
+    public const UPDATED_AT = null;
+
+    /**
+     * @var array<int, string>
+     */
+    protected $fillable = [
+        'user_id',
+        'type',
+        'message',
+        'status',
+    ];
+
+    protected function casts(): array
+    {
+        return [
+            'created_at' => 'datetime',
+        ];
+    }
+
+    public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }

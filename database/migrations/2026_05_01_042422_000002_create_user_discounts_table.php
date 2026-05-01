@@ -11,13 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('tickets', function (Blueprint $table) {
+        Schema::create('user_discounts', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
-            $table->string('type');
-            $table->text('message');
-            $table->string('status');
-            $table->timestamp('created_at');
+            $table->foreignId('discount_type_id')->constrained()->cascadeOnDelete();
+            $table->boolean('is_used')->default(false);
+            $table->string('obtained_from');
+            $table->timestamp('expires_at')->nullable();
         });
     }
 
@@ -26,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('tickets');
+        Schema::dropIfExists('user_discounts');
     }
 };

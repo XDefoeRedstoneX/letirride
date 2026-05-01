@@ -13,11 +13,15 @@ return new class extends Migration
     {
         Schema::create('orders', function (Blueprint $table) {
             $table->id();
+            $table->string('noinv')->unique();
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('user_discount_id')->nullable()->constrained()->nullOnDelete();
+            $table->decimal('subtotal', 12, 2);
+            $table->decimal('discount_amount', 12, 2)->default(0);
             $table->decimal('total_price', 12, 2);
             $table->string('payment_gateway_ref');
-            $table->string('status')->default('pending');
-            $table->timestamps();
+            $table->string('status');
+            $table->timestamp('created_at');
         });
     }
 

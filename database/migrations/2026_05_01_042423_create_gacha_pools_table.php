@@ -14,9 +14,10 @@ return new class extends Migration
         Schema::create('gacha_pools', function (Blueprint $table) {
             $table->id();
             $table->string('prize_name');
+            $table->foreignId('discount_type_id')->nullable()->constrained()->nullOnDelete();
+            $table->integer('points_reward')->nullable();
             $table->decimal('base_win_chance', 5, 2);
-            $table->boolean('is_grand_prize')->default(false);
-            $table->timestamps();
+            $table->boolean('is_grand_prize');
         });
     }
 

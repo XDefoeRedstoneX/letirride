@@ -4,8 +4,9 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
-class GachaPool extends Model
+class UserDiscount extends Model
 {
     public $timestamps = false;
 
@@ -13,24 +14,33 @@ class GachaPool extends Model
      * @var array<int, string>
      */
     protected $fillable = [
-        'prize_name',
+        'user_id',
         'discount_type_id',
-        'points_reward',
-        'base_win_chance',
-        'is_grand_prize',
+        'is_used',
+        'obtained_from',
+        'expires_at',
     ];
 
     protected function casts(): array
     {
         return [
-            'base_win_chance' => 'decimal:2',
-            'is_grand_prize' => 'boolean',
-            'points_reward' => 'integer',
+            'is_used' => 'boolean',
+            'expires_at' => 'datetime',
         ];
+    }
+
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
     }
 
     public function discountType(): BelongsTo
     {
         return $this->belongsTo(DiscountType::class);
+    }
+
+    public function order(): HasOne
+    {
+        return $this->hasOne(Order::class);
     }
 }

@@ -2,28 +2,55 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
-#[Fillable(['user_id', 'total_price', 'payment_gateway_ref', 'status'])]
 class Order extends Model
 {
+    public const UPDATED_AT = null;
+
+    /**
+     * @var array<int, string>
+     */
+    protected $fillable = [
+        'noinv',
+        'user_id',
+        'user_discount_id',
+        'subtotal',
+        'discount_amount',
+        'total_price',
+        'payment_gateway_ref',
+        'status',
+    ];
+
     protected function casts(): array
     {
         return [
+            'subtotal' => 'decimal:2',
+            'discount_amount' => 'decimal:2',
             'total_price' => 'decimal:2',
             'created_at' => 'datetime',
-            'updated_at' => 'datetime',
         ];
     }
 
-    public function user()
+    public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
-    public function voucherCodes()
+    public function userDiscount(): BelongsTo
     {
-        return $this->hasMany(VoucherCode::class);
+        return $this->belongsTo(UserDiscount::class);
+    }
+
+    public function orderDetails(): HasMany
+    {
+        return $this->hasMany(OrderDetail::class);
+    }
+
+    public function productKeys(): HasMany
+    {
+        return $this->hasMany(ProductKey::class);
     }
 }
