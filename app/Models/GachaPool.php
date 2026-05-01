@@ -15,17 +15,14 @@ class GachaPool extends Model
     protected $fillable = [
         'prize_name',
         'discount_type_id',
-        'points_reward',
+        'rarity_item',
         'base_win_chance',
-        'is_grand_prize',
     ];
 
     protected function casts(): array
     {
         return [
             'base_win_chance' => 'decimal:2',
-            'is_grand_prize' => 'boolean',
-            'points_reward' => 'integer',
         ];
     }
 
