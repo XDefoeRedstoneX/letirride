@@ -21,7 +21,6 @@ class DatabaseSeeder extends Seeder
         $this->seedDiscountTypes();
         $this->seedPointShopItems();
         $this->seedPointShopPurchases($now);
-        
         $this->seedUserDiscounts();
         $this->seedGachaPools();
         $this->seedOrders($now);
@@ -29,6 +28,7 @@ class DatabaseSeeder extends Seeder
         $this->seedProductKeys();
         $this->seedTickets($now);
         $this->seedFaqs();
+        $this->seedFavorites($now)
     }
 
     private function seedUsers($now): void
