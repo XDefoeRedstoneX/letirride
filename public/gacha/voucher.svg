@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#051a0a"/>
+      <stop offset="100%" stop-color="#0a2b10"/>
+    </linearGradient>
+  </defs>
+  <rect width="200" height="200" rx="16" fill="url(#bg)"/>
+  <!-- Ticket icon - green geometric -->
+  <g fill="#2ecc71">
+    <!-- Main ticket body -->
+    <rect x="30" y="65" width="140" height="70" rx="4" fill="none" stroke="#2ecc71" stroke-width="4"/>
+    <rect x="30" y="65" width="140" height="70" rx="4" fill="#2ecc71" opacity="0.08"/>
+    <!-- Left notch -->
+    <rect x="26" y="85" width="12" height="18" rx="6" fill="#051a0a"/>
+    <!-- Right notch -->
+    <rect x="162" y="85" width="12" height="18" rx="6" fill="#051a0a"/>
+    <!-- Dashed perforation line -->
+    <rect x="72" y="68" width="4" height="8" rx="1" fill="#2ecc71" opacity="0.5"/>
+    <rect x="72" y="80" width="4" height="8" rx="1" fill="#2ecc71" opacity="0.5"/>
+    <rect x="72" y="92" width="4" height="8" rx="1" fill="#2ecc71" opacity="0.5"/>
+    <rect x="72" y="104" width="4" height="8" rx="1" fill="#2ecc71" opacity="0.5"/>
+    <rect x="72" y="116" width="4" height="8" rx="1" fill="#2ecc71" opacity="0.5"/>
+    <!-- Star decoration on ticket -->
+    <rect x="95" y="80" width="10" height="10" rx="1" fill="#2ecc71" opacity="0.6"/>
+    <rect x="89" y="90" width="10" height="10" rx="1" fill="#2ecc71" opacity="0.5"/>
+    <rect x="101" y="90" width="10" height="10" rx="1" fill="#2ecc71" opacity="0.5"/>
+    <rect x="95" y="100" width="10" height="10" rx="1" fill="#2ecc71" opacity="0.4"/>
+    <!-- Barcode on left section -->
+    <rect x="42" y="80" width="3" height="35" rx="1" fill="#2ecc71" opacity="0.4"/>
+    <rect x="49" y="80" width="2" height="35" rx="1" fill="#2ecc71" opacity="0.3"/>
+    <rect x="54" y="80" width="4" height="35" rx="1" fill="#2ecc71" opacity="0.4"/>
+    <rect x="61" y="80" width="2" height="35" rx="1" fill="#2ecc71" opacity="0.3"/>
+  </g>
+  <!-- Bottom accent -->
+  <rect x="50" y="155" width="100" height="2" rx="1" fill="#2ecc71" opacity="0.3"/>
+</svg>

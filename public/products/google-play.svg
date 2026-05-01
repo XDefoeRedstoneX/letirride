@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0f0f1a"/>
+      <stop offset="100%" stop-color="#1a1a2e"/>
+    </linearGradient>
+  </defs>
+  <rect width="200" height="200" rx="16" fill="url(#bg)"/>
+  <!-- Google Play style - multicolor triangle -->
+  <g>
+    <!-- Blue section -->
+    <polygon points="45,45 45,155 100,100" fill="#4285f4"/>
+    <!-- Red section -->
+    <polygon points="45,45 100,100 130,78 130,52" fill="#ea4335"/>
+    <!-- Green section -->
+    <polygon points="45,155 100,100 130,122 130,148" fill="#34a853"/>
+    <!-- Yellow section -->
+    <polygon points="100,100 130,78 130,122" fill="#fbbc05"/>
+    <!-- Pixel grid overlay for retro feel -->
+    <rect x="55" y="55" width="6" height="6" fill="white" opacity="0.1"/>
+    <rect x="67" y="67" width="6" height="6" fill="white" opacity="0.1"/>
+    <rect x="79" y="79" width="6" height="6" fill="white" opacity="0.1"/>
+    <rect x="55" y="139" width="6" height="6" fill="white" opacity="0.1"/>
+    <rect x="67" y="127" width="6" height="6" fill="white" opacity="0.1"/>
+    <rect x="79" y="115" width="6" height="6" fill="white" opacity="0.1"/>
+  </g>
+  <!-- Bottom accent dots -->
+  <circle cx="75" cy="170" r="3" fill="#4285f4" opacity="0.5"/>
+  <circle cx="90" cy="170" r="3" fill="#ea4335" opacity="0.5"/>
+  <circle cx="105" cy="170" r="3" fill="#fbbc05" opacity="0.5"/>
+  <circle cx="120" cy="170" r="3" fill="#34a853" opacity="0.5"/>
+</svg>

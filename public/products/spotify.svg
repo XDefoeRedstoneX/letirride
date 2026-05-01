@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0a1a0a"/>
+      <stop offset="100%" stop-color="#0d2818"/>
+    </linearGradient>
+  </defs>
+  <rect width="200" height="200" rx="16" fill="url(#bg)"/>
+  <!-- Music note - pixelated geometric -->
+  <g fill="#1db954">
+    <!-- Note stem -->
+    <rect x="108" y="45" width="6" height="70" rx="1"/>
+    <!-- Flag -->
+    <rect x="114" y="45" width="20" height="6" rx="1"/>
+    <rect x="128" y="51" width="6" height="12" rx="1"/>
+    <rect x="114" y="57" width="14" height="6" rx="1"/>
+    <!-- Note head -->
+    <rect x="82" y="105" width="30" height="20" rx="8" transform="rotate(-20, 97, 115)"/>
+    <!-- Sound waves -->
+    <rect x="50" y="75" width="4" height="25" rx="2" opacity="0.5"/>
+    <rect x="42" y="68" width="4" height="40" rx="2" opacity="0.3"/>
+    <rect x="34" y="62" width="4" height="52" rx="2" opacity="0.15"/>
+  </g>
+  <!-- Bottom accent -->
+  <rect x="50" y="155" width="100" height="2" rx="1" fill="#1db954" opacity="0.3"/>
+</svg>
