@@ -36,17 +36,10 @@
     <footer class="relative z-10 mt-auto border-t border-border/30 bg-background/50 backdrop-blur-sm">
         <div class="max-w-7xl mx-auto px-4 py-6">
             <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
-                <div class="flex items-center gap-2">
-                    <div class="w-6 h-6 bg-primary rounded flex items-center justify-center pixel-render">
-                        <span class="text-primary-foreground font-bold text-[10px]">RI</span>
-                    </div>
-                    <span class="text-sm font-medium">
-                        Ridly
-                    </span>
-                </div>
-                <p class="text-xs text-muted-foreground text-center">
-                    © 2025 Ridly. Digital Marketplace with Gacha Arcade.
+                <p class="text-xs text-muted-foreground">
+                    © 2026 Ridly.
                 </p>
+                <div></div>
                 <div class="flex items-center gap-4 text-xs text-muted-foreground">
                     <span class="hover:text-foreground transition-colors cursor-pointer">Terms & Conditions</span>
                     <span class="hover:text-foreground transition-colors cursor-pointer">Privacy Policy</span>

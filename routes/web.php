@@ -11,12 +11,13 @@ Route::get('/favorites', [PageController::class, 'favorites'])->name('favorites'
 Route::get('/about', [PageController::class, 'about'])->name('about');
 Route::get('/faq', [PageController::class, 'faq'])->name('faq');
 Route::get('/support', [PageController::class, 'tickets'])->name('tickets');
+Route::get('/terms-of-service', [PageController::class, 'termsOfService'])->name('terms-of-service');
+Route::get('/privacy-policy', [PageController::class, 'privacyPolicy'])->name('privacy-policy');
 
 Route::middleware('auth')->group(function () {
     Route::get('/inventory', [PageController::class, 'inventory'])->name('inventory');
     Route::get('/transactions', [PageController::class, 'transactions'])->name('transactions');
     Route::get('/profile', [PageController::class, 'profile'])->name('profile');
-    Route::get('/settings', [PageController::class, 'settings'])->name('settings');
     Route::get('/forgot-password', [PageController::class, 'forgotPassword'])->name('forgot-password');
     Route::get('/cart', [PageController::class, 'cart'])->name('cart');
     Route::get('/tickets', [PageController::class, 'tickets'])->name('tickets');
