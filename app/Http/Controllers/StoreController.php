@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Models\DiscountType;
 use App\Models\Product;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -10,6 +11,10 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use App\Models\Order;
 use App\Models\OrderDetail;
+use App\Models\UserDiscount;
+use App\Models\VoucherCode;
+use Midtrans\Snap;
+use Midtrans\Config;
 
 class StoreController extends Controller
 {
@@ -54,27 +59,42 @@ class StoreController extends Controller
     }
 
 
-    public function checkout(Request $request){
+    public function checkout(Request $request, $discountID){
         $cart = session('cart', []);
+        try {
+            $voucher = UserDiscount::findorFail($discountID);
+            $discount = DiscountType::findOrFail($voucher->discount_type_id);
+                if ($discount->type == 'percent') {
+                    $totalPrice = collect($cart)->sum(fn($item) => $item['price'] * $item['quantity']);
+                    $discountAmount = $totalPrice * ($discount->value / 100);
+                } else {
+                    $discountAmount = $discount->value;
+                }
+        }
+        catch (\Exception $e) {
+            $voucher = null;
+        }
+
 
         if (empty($cart)) {
             return redirect()->back()->with('error', 'Your cart is empty!');
         }
 
+
         DB::beginTransaction();
         try {
             $totalPrice = collect($cart)->sum(fn($item) => $item['price'] * $item['quantity']);
 
-            $invoiceNumber = 'INV-' . date('Ymd') . '-' . strtoupper(Str::random(6));
-
             $order = Order::create([
-                'noinv' => $invoiceNumber,
+                'invoice_   id' => 'INV-' . date('Ymd') . '-' . strtoupper(Str::random(6)),
                 'user_id' => Auth::id(),
+                'user_discount_id' => $voucher ? $voucher->id : null,
                 'subtotal' => $totalPrice,
-                'discount_amount' => 0,
-                'total_price_after_discount' => $totalPrice,
+                'discount_amount' => $voucher ? $discountAmount : 0,
+                'total_price_after_discount' => $totalPrice - ($voucher ? $discountAmount : 0),
                 'payment_gateway_ref' => null,
                 'status' => 'pending',
+                'paid_at' => null,
             ]);
 
             foreach ($cart as $product_id => $item) {
@@ -82,7 +102,8 @@ class StoreController extends Controller
                     'order_id' => $order->id,
                     'product_id' => $product_id,
                     'quantity' => $item['quantity'],
-                    'total_price_in_cart' => $item['price'] * $item['quantity'],
+                    'price' => $item['price'],
+                    'subtotal' => $item['price'] * $item['quantity'],
                 ]);
             }
 
@@ -106,7 +127,7 @@ class StoreController extends Controller
             // Create Midtrans Transaction
             $params = [
                 'transaction_details' => [
-                    'order_id' => $order->noinv,
+                    'order_id' => $order->invoice_number,
                     'gross_amount' => $totalPrice,
                 ],
                 'item_details' => $item_details,
@@ -120,7 +141,7 @@ class StoreController extends Controller
             ];
 
             $snapToken = \Midtrans\Snap::getSnapToken($params);
-            $order->payment_gateway_ref = $snapToken;
+            $order->payment_url = $snapToken; // Store token to use in the modal later
             $order->save();
 
             DB::commit();
@@ -128,7 +149,7 @@ class StoreController extends Controller
             session()->forget('cart'); // Clear cart
 
             // Return to a checkout payment view that triggers the Snap popup
-            return view('store.payment', compact('snapToken', 'order'));
+            return view('payment', compact('snapToken', 'order'));
 
             //return redirect()->route('store')->with('success', 'Checkout successful! Thank you for your purchase.');
 		} catch (\Exception $e) {
