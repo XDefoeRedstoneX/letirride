@@ -33,25 +33,11 @@
                         <span>{{ Auth::user()->email }}</span>
                     </div>
                 </div>
-
-                <!-- Actions -->
-                <div class="flex items-center gap-3 pt-6 md:pt-0">
-                    <a href="{{ route('settings') }}" class="px-8 py-3 glass-card font-black text-xs uppercase tracking-widest rounded-2xl hover:bg-white/10 transition-all">Settings</a>
-                </div>
             </div>
         </div>
 
         <!-- User Stats Grid -->
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-8" x-show="show" x-transition:enter="md:transition md:ease-out md:duration-1000 md:delay-200" x-transition:enter-start="md:opacity-0 md:translate-y-8" x-transition:enter-end="md:opacity-100 md:translate-y-0">
-            <div class="glass-card rounded-[2.5rem] p-8 space-y-3 group hover:border-primary/30 transition-all duration-500">
-                <div class="flex items-center justify-between">
-                    <p class="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Luck Rate</p>
-                    <div class="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="pixel-render"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg>
-                    </div>
-                </div>
-                <p class="text-3xl font-black text-foreground tracking-tighter">85.4<span class="text-xs text-muted-foreground ml-1">%</span></p>
-            </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-8" x-show="show" x-transition:enter="md:transition md:ease-out md:duration-1000 md:delay-200" x-transition:enter-start="md:opacity-0 md:translate-y-8" x-transition:enter-end="md:opacity-100 md:translate-y-0">
             <div class="glass-card rounded-[2.5rem] p-8 space-y-3 group hover:border-primary/30 transition-all duration-500">
                 <div class="flex items-center justify-between">
                     <p class="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Available Points</p>
@@ -72,35 +58,94 @@
             </div>
         </div>
 
-        <!-- Recent Activity with Professional List -->
-        <div class="glass-card rounded-[2.5rem] overflow-hidden" x-show="show" x-transition:enter="md:transition md:ease-out md:duration-1000 md:delay-400" x-transition:enter-start="md:opacity-0 md:translate-y-8" x-transition:enter-end="md:opacity-100 md:translate-y-0">
-            <div class="p-8 border-b border-white/5 flex items-center justify-between">
-                <h3 class="font-black uppercase tracking-widest text-sm">Recent Activity</h3>
-                <button class="text-[10px] font-black text-primary uppercase tracking-widest hover:underline">View All</button>
-            </div>
-            <div class="divide-y divide-white/5">
-                @php
-                    $activities = [
-                        ['title' => 'Security Update', 'desc' => 'Password successfully changed', 'time' => '2 hours ago', 'color' => 'green'],
-                        ['title' => 'Purchase Success', 'desc' => 'Steam Wallet Rp 100.000', 'time' => '1 day ago', 'color' => 'primary'],
-                        ['title' => 'Gacha Spin', 'desc' => 'Won 500 Points Reward', 'time' => '2 days ago', 'color' => 'yellow']
-                    ];
-                @endphp
-                @foreach($activities as $act)
-                <div class="p-6 flex items-center justify-between hover:bg-white/5 transition-all group">
-                    <div class="flex items-center gap-5">
-                        <div class="w-10 h-10 rounded-xl bg-{{ $act['color'] }}-500/10 flex items-center justify-center text-{{ $act['color'] }}-500 group-hover:scale-110 transition-transform">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="pixel-render"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"/></svg>
-                        </div>
-                        <div>
-                            <p class="text-sm font-black group-hover:text-primary transition-colors">{{ $act['title'] }}</p>
-                            <p class="text-xs text-muted-foreground font-medium">{{ $act['desc'] }}</p>
-                        </div>
+        <!-- Account Settings Sections -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8" x-show="show" x-transition:enter="md:transition md:ease-out md:duration-1000 md:delay-300" x-transition:enter-start="md:opacity-0 md:translate-y-8" x-transition:enter-end="md:opacity-100 md:translate-y-0">
+            <!-- Personal Information -->
+            <div class="glass-card rounded-[2.5rem] p-8 space-y-6 group hover:border-primary/30 transition-all duration-500">
+                <div class="flex items-center gap-4">
+                    <div class="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="pixel-render"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
                     </div>
-                    <span class="text-[10px] font-bold text-muted-foreground">{{ $act['time'] }}</span>
+                    <h3 class="text-lg font-black uppercase tracking-widest">Personal Info</h3>
                 </div>
-                @endforeach
+                
+                <form class="space-y-4">
+                    <div class="space-y-2">
+                        <label class="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Display Name</label>
+                        <input type="text" value="{{ Auth::user()->username }}" class="w-full px-6 py-3 glass-card rounded-2xl focus:ring-2 focus:ring-primary/50 outline-none transition-all font-bold text-sm">
+                    </div>
+                    
+                    <div class="space-y-2">
+                        <label class="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Email Address</label>
+                        <input type="email" value="{{ Auth::user()->email }}" disabled class="w-full px-6 py-3 glass-card rounded-2xl cursor-not-allowed opacity-50 font-bold text-sm">
+                    </div>
+
+                    <button type="submit" class="w-full px-8 py-4 bg-primary text-primary-foreground font-black text-[10px] uppercase tracking-widest rounded-2xl hover:scale-[1.02] transition-all shadow-xl shadow-primary/20">Save Changes</button>
+                </form>
             </div>
+
+            <!-- Security -->
+            <div class="glass-card rounded-[2.5rem] p-8 space-y-6 group hover:border-primary/30 transition-all duration-500">
+                <div class="flex items-center gap-4">
+                    <div class="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="pixel-render"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                    </div>
+                    <h3 class="text-lg font-black uppercase tracking-widest">Security</h3>
+                </div>
+                
+                <form class="space-y-4">
+                    <div class="space-y-2">
+                        <label class="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Current Password</label>
+                        <input type="password" placeholder="••••••••" class="w-full px-6 py-3 glass-card rounded-2xl focus:ring-2 focus:ring-primary/50 outline-none transition-all font-bold text-sm">
+                    </div>
+                    
+                    <div class="space-y-2">
+                        <label class="text-[10px] font-black text-muted-foreground uppercase tracking-widest">New Password</label>
+                        <input type="password" placeholder="Min. 8 characters" class="w-full px-6 py-3 glass-card rounded-2xl focus:ring-2 focus:ring-primary/50 outline-none transition-all font-bold text-sm">
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <button type="submit" class="px-4 py-4 bg-primary text-primary-foreground font-black text-[10px] uppercase tracking-widest rounded-2xl hover:scale-[1.02] transition-all shadow-xl shadow-primary/20">Update</button>
+                        <a href="{{ route('forgot-password') }}" class="px-4 py-4 glass-card text-center font-black text-[10px] uppercase tracking-widest rounded-2xl hover:bg-white/10 transition-all">Forgot?</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Account Management (Danger Zone) -->
+        <div class="glass-card rounded-[2.5rem] p-8 space-y-6" x-show="show" x-transition:enter="md:transition md:ease-out md:duration-1000 md:delay-400" x-transition:enter-start="md:opacity-0 md:translate-y-8" x-transition:enter-end="md:opacity-100 md:translate-y-0">
+            <div class="flex flex-col md:flex-row items-center justify-between gap-6">
+                <div class="space-y-2 text-center md:text-left">
+                    <h3 class="text-lg font-black uppercase tracking-widest text-destructive">Account Management</h3>
+                    <p class="text-xs font-bold text-muted-foreground uppercase tracking-widest leading-relaxed max-w-xl">To ensure security, account deletion must be processed by our support team. If you wish to permanently delete your account, please contact our Customer Services.</p>
+                </div>
+                <a href="{{ route('tickets') }}" class="whitespace-nowrap px-8 py-4 bg-destructive text-destructive-foreground font-black rounded-2xl hover:scale-105 transition-all shadow-xl shadow-destructive/20 uppercase tracking-widest text-[10px] flex items-center gap-2">
+                    Contact Support
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="pixel-render"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+                </a>
+            </div>
+        </div>
+
+        <!-- Legal Links -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-8 pb-12" x-show="show" x-transition:enter="md:transition md:ease-out md:duration-1000 md:delay-500" x-transition:enter-start="md:opacity-0 md:translate-y-8" x-transition:enter-end="md:opacity-100 md:translate-y-0">
+            <a href="{{ route('terms-of-service') }}" class="glass-card rounded-[2.5rem] p-8 flex items-center justify-between group hover:border-primary/30 transition-all duration-500">
+                <div class="space-y-1">
+                    <p class="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Legal</p>
+                    <h3 class="text-xl font-black uppercase tracking-tight group-hover:text-primary transition-colors">Terms Of Service</h3>
+                </div>
+                <div class="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="pixel-render"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                </div>
+            </a>
+            <a href="{{ route('privacy-policy') }}" class="glass-card rounded-[2.5rem] p-8 flex items-center justify-between group hover:border-primary/30 transition-all duration-500">
+                <div class="space-y-1">
+                    <p class="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Privacy</p>
+                    <h3 class="text-xl font-black uppercase tracking-tight group-hover:text-primary transition-colors">Privacy Policies</h3>
+                </div>
+                <div class="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="pixel-render"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                </div>
+            </a>
         </div>
     </div>
 </x-app-layout>

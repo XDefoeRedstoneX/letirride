@@ -36,11 +36,6 @@ class PageController extends Controller
         return view('pages.profile');
     }
 
-    public function settings()
-    {
-        return view('pages.settings');
-    }
-
     public function tickets()
     {
         return view('pages.tickets');
@@ -69,5 +64,15 @@ class PageController extends Controller
     public function cart()
     {
         return view('pages.cart');
+    }
+
+    public function termsOfService()
+    {
+        return view('pages.terms-of-service');
+    }
+
+    public function privacyPolicy()
+    {
+        return view('pages.privacy-policy');
     }
 }
