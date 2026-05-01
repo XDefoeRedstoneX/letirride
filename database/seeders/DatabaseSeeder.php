@@ -131,16 +131,16 @@ class DatabaseSeeder extends Seeder
         $productsHasImg = Schema::hasColumn('products', 'img');
 
         $rows = [
-            ['id' => 1, 'category_id' => 1, 'name' => 'Steam Wallet $10', 'description' => 'Adds $10 to Steam', 'price' => 10.00, 'point_reward' => 100, 'is_active' => true],
-            ['id' => 2, 'category_id' => 1, 'name' => 'Steam Wallet $50', 'description' => 'Adds $50 to Steam', 'price' => 50.00, 'point_reward' => 500, 'is_active' => true],
-            ['id' => 3, 'category_id' => 2, 'name' => 'Netflix 1 Month (HD)', 'description' => 'Standard 1 Month', 'price' => 15.49, 'point_reward' => 150, 'is_active' => true],
-            ['id' => 4, 'category_id' => 3, 'name' => 'Spotify 3 Months', 'description' => 'Premium Code', 'price' => 29.97, 'point_reward' => 300, 'is_active' => true],
-            ['id' => 5, 'category_id' => 4, 'name' => 'PSN $25', 'description' => 'PS Store Credit', 'price' => 25.00, 'point_reward' => 250, 'is_active' => true],
-            ['id' => 6, 'category_id' => 7, 'name' => '1000 Valorant Points', 'description' => 'Riot Games VP', 'price' => 9.99, 'point_reward' => 100, 'is_active' => true],
-            ['id' => 7, 'category_id' => 8, 'name' => '500 ML Diamonds', 'description' => 'Moonton Diamonds', 'price' => 10.00, 'point_reward' => 100, 'is_active' => true],
-            ['id' => 8, 'category_id' => 9, 'name' => 'Welkin Moon', 'description' => '30 Days Genshin', 'price' => 4.99, 'point_reward' => 50, 'is_active' => true],
-            ['id' => 9, 'category_id' => 10, 'name' => 'Discord Nitro 1 Year', 'description' => 'Full Nitro', 'price' => 99.99, 'point_reward' => 1000, 'is_active' => true],
-            ['id' => 10, 'category_id' => 5, 'name' => 'Xbox Game Pass 1 Month', 'description' => 'Ultimate Pass', 'price' => 16.99, 'point_reward' => 160, 'is_active' => true],
+            ['id' => 1, 'category_id' => 1, 'name' => 'Steam Wallet Rp 100.000', 'description' => 'Top up Steam wallet credit instantly.', 'price' => 110000.00, 'point_reward' => 1100, 'is_active' => true, 'img' => 'steam-wallet.svg'],
+            ['id' => 2, 'category_id' => 3, 'name' => 'Spotify Premium 1 Month', 'description' => 'One month Spotify Premium subscription.', 'price' => 54900.00, 'point_reward' => 549, 'is_active' => true, 'img' => 'spotify.svg'],
+            ['id' => 3, 'category_id' => 2, 'name' => 'Netflix Standard', 'description' => 'Netflix Standard plan for one month.', 'price' => 186000.00, 'point_reward' => 1860, 'is_active' => true, 'img' => 'netflix.svg'],
+            ['id' => 4, 'category_id' => 2, 'name' => 'YouTube Premium', 'description' => 'Ad-free YouTube Premium access.', 'price' => 59000.00, 'point_reward' => 590, 'is_active' => true, 'img' => 'youtube.svg'],
+            ['id' => 5, 'category_id' => 1, 'name' => 'Canva Pro 1 Year', 'description' => 'Full year access to Canva Pro.', 'price' => 120000.00, 'point_reward' => 1200, 'is_active' => true, 'img' => 'canva.svg'],
+            ['id' => 6, 'category_id' => 5, 'name' => 'Xbox Game Pass', 'description' => 'Game Pass subscription for Xbox players.', 'price' => 149000.00, 'point_reward' => 1490, 'is_active' => true, 'img' => 'xbox.svg'],
+            ['id' => 7, 'category_id' => 1, 'name' => 'Google Play Gift Card', 'description' => 'Google Play balance for apps and content.', 'price' => 50000.00, 'point_reward' => 500, 'is_active' => true, 'img' => 'google-play.svg'],
+            ['id' => 8, 'category_id' => 10, 'name' => 'Notion Personal Pro', 'description' => 'Upgrade your Notion workspace.', 'price' => 75000.00, 'point_reward' => 750, 'is_active' => true, 'img' => 'notion.svg'],
+            ['id' => 9, 'category_id' => 3, 'name' => 'SoundCloud Go+', 'description' => 'Premium SoundCloud listening experience.', 'price' => 69000.00, 'point_reward' => 690, 'is_active' => true, 'img' => 'soundcloud.svg'],
+            ['id' => 10, 'category_id' => 2, 'name' => 'Viu Premium', 'description' => 'Stream Viu without ads.', 'price' => 39000.00, 'point_reward' => 390, 'is_active' => true, 'img' => 'viu.svg'],
         ];
 
         if ($productsHasImg) {

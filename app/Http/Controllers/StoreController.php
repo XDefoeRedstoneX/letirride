@@ -30,12 +30,12 @@ class StoreController extends Controller
                     'name' => $product->name,
                     'price' => (float) $product->price,
                     'category' => $product->category?->name ?? 'Other',
-                    'image' => $product->image ? asset('products/' . ltrim($product->image, '/')) : asset('products/soundcloud.svg'),
+                    'image' => '/products/' . ltrim($product->img ?: 'soundcloud.svg', '/'),
                 ];
             })
             ->values();
 
-        return view('pages.products', compact('products'));
+        return view('pages.products', ['products' => $products]);
     }
 
     public function addCart(Request $request, $productId){

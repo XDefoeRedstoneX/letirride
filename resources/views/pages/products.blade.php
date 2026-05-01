@@ -1,42 +1,5 @@
 <x-app-layout>
-    <div class="space-y-8" x-data="{
-        search: '',
-        category: 'All Items',
-        favorites: [],
-        cart: [],
-        showCartModal: false,
-        selectedProduct: null,
-        products: @js($products),
-        get categories() {
-            return ['All Items', ...new Set(this.products.map(product => product.category))];
-        },
-        get filteredProducts() {
-            return this.products.filter(p => {
-                const matchesSearch = p.name.toLowerCase().includes(this.search.toLowerCase());
-                const matchesCategory = this.category === 'All Items' || p.category === this.category;
-                return matchesSearch && matchesCategory;
-            });
-        },
-        toggleFavorite(id) {
-            if (this.favorites.includes(id)) {
-                this.favorites = this.favorites.filter(favId => favId !== id);
-            } else {
-                this.favorites.push(id);
-            }
-        },
-        openBuyModal(product) {
-            this.selectedProduct = product;
-            this.showCartModal = true;
-        },
-        addToCart() {
-            if (this.selectedProduct) {
-                this.cart.push(this.selectedProduct);
-                this.showCartModal = false;
-                // Dispatch event to update navbar cart count if needed
-                window.dispatchEvent(new CustomEvent('cart-updated', { detail: { count: this.cart.length } }));
-            }
-        }
-    }">
+    <div class="space-y-8" x-data="{ products: {{ \Illuminate\Support\Js::from($products) }} }">
         <!-- Header -->
         <div class="flex flex-col space-y-4">
             @auth
@@ -69,12 +32,12 @@
             </template>
         </div>
 
-        <!-- Products Grid -->
+        <!-- thingy -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            <template x-for="product in filteredProducts" :key="product.id">
+            <template x-for="product in products" :key="product.id">
                 <div class="group glass-card rounded-[2.5rem] overflow-hidden hover:shadow-2xl hover:shadow-primary/10 transition-all duration-500 hover:-translate-y-2 animate-in fade-in zoom-in border-border/50">
                     <div class="aspect-square relative overflow-hidden bg-white/5">
-                        <img :src="product.image" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" :alt="product.name">
+                        <img :src="product.image" class="w-full h-full object-contain group-hover:scale-110 transition-transform duration-700" :alt="product.name">
                         <div class="absolute top-5 left-5 px-3 py-1 rounded-full bg-black/40 backdrop-blur-md text-[8px] font-black border border-white/10 uppercase tracking-widest text-white" x-text="product.category">
                         </div>
                     </div>
@@ -116,7 +79,7 @@
                 </div>
 
                 <div class="aspect-video relative rounded-3xl overflow-hidden bg-foreground/5">
-                    <img :src="selectedProduct?.image" class="w-full h-full object-cover" />
+                    <img :src="selectedProduct?.image" class="w-full h-full object-contain" />
                 </div>
 
                 <div class="flex items-center justify-between p-4 bg-foreground/5 rounded-2xl border border-border">
