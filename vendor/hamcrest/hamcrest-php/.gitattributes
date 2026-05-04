@@ -1,6 +1,15 @@
+<<<<<<< HEAD
 /.coveralls.yml export-ignore
 /.gush.yml export-ignore
 /.travis.yml export-ignore
 /.github export-ignore
 /tests export-ignore
 
+=======
+/.coveralls.yml export-ignore
+/.gush.yml export-ignore
+/.travis.yml export-ignore
+/.github export-ignore
+/tests export-ignore
+
+>>>>>>> 14635c43370b4e5b390427d678f1334bd5bb9d40
