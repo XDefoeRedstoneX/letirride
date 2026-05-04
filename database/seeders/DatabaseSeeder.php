@@ -28,7 +28,7 @@ class DatabaseSeeder extends Seeder
         $this->seedProductKeys();
         $this->seedTickets($now);
         $this->seedFaqs();
-        $this->seedFavorites($now)
+        $this->seedFavorites($now);
     }
 
     private function seedUsers($now): void
