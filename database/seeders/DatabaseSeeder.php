@@ -395,33 +395,33 @@ class DatabaseSeeder extends Seeder
 
         DB::table('point_shop_items')->upsert([
             [
-                'id' => 1, 
-                'name' => 'Buy $5 Welcome Bonus', 
-                'description' => 'Instantly get a $5 discount code!', 
-                'point_cost' => 500, 
-                'reward_type' => 'discount_code', 
+                'id' => 1,
+                'name' => 'Buy $5 Welcome Bonus',
+                'description' => 'Instantly get a $5 discount code!',
+                'point_cost' => 500,
+                'reward_type' => 'discount_code',
                 'discount_type_id' => 5, // Links to your $5 Welcome Bonus
-                'img' => null, 
+                'img' => null,
                 'is_active' => true
             ],
             [
-                'id' => 2, 
-                'name' => 'Whale Status Ticket', 
-                'description' => 'Unlock the massive 25% Whale Discount.', 
-                'point_cost' => 5000, 
-                'reward_type' => 'discount_code', 
+                'id' => 2,
+                'name' => 'Whale Status Ticket',
+                'description' => 'Unlock the massive 25% Whale Discount.',
+                'point_cost' => 5000,
+                'reward_type' => 'discount_code',
                 'discount_type_id' => 9, // Links to your Whale Discount
-                'img' => null, 
+                'img' => null,
                 'is_active' => true
             ],
             [
-                'id' => 3, 
-                'name' => 'Free Welkin Pass', 
-                'description' => 'Redeem your points for a free Welkin Moon code!', 
-                'point_cost' => 1000, 
-                'reward_type' => 'discount_code', 
+                'id' => 3,
+                'name' => 'Free Welkin Pass',
+                'description' => 'Redeem your points for a free Welkin Moon code!',
+                'point_cost' => 1000,
+                'reward_type' => 'discount_code',
                 'discount_type_id' => 10, // Links to your Free Welkin discount
-                'img' => null, 
+                'img' => null,
                 'is_active' => true
             ],
         ], ['id'], ['name', 'description', 'point_cost', 'reward_type', 'discount_type_id', 'img', 'is_active']);
@@ -435,24 +435,24 @@ class DatabaseSeeder extends Seeder
 
         DB::table('point_shop_purchases')->upsert([
             [
-                'id' => 1, 
+                'id' => 1,
                 'user_id' => 2, // Bob Jones
                 'point_shop_item_id' => 1, // Bought the $5 Welcome Bonus
-                'points_spent' => 500, 
+                'points_spent' => 500,
                 'created_at' => clone $now->subDays(1)
             ],
             [
-                'id' => 2, 
+                'id' => 2,
                 'user_id' => 4, // Diana Prince
                 'point_shop_item_id' => 2, // Bought the Whale Status Ticket
-                'points_spent' => 5000, 
+                'points_spent' => 5000,
                 'created_at' => clone $now->subHours(5)
             ],
             [
-                'id' => 3, 
+                'id' => 3,
                 'user_id' => 8, // Hannah Abbott
                 'point_shop_item_id' => 3, // Bought the Free Welkin Pass
-                'points_spent' => 1000, 
+                'points_spent' => 1000,
                 'created_at' => clone $now->subMinutes(30)
             ],
         ], ['id'], ['user_id', 'point_shop_item_id', 'points_spent', 'created_at']);
@@ -466,25 +466,25 @@ class DatabaseSeeder extends Seeder
 
         DB::table('favorites')->upsert([
             [
-                'id' => 1, 
+                'id' => 1,
                 'user_id' => 1, // Alice
                 'product_id' => 3, // Netflix 1 Month
                 'created_at' => clone $now->subDays(5)
             ],
             [
-                'id' => 2, 
+                'id' => 2,
                 'user_id' => 1, // Alice
                 'product_id' => 9, // Discord Nitro
                 'created_at' => clone $now->subDays(2)
             ],
             [
-                'id' => 3, 
+                'id' => 3,
                 'user_id' => 2, // Bob
                 'product_id' => 1, // Steam Wallet $10
                 'created_at' => clone $now->subHours(12)
             ],
             [
-                'id' => 4, 
+                'id' => 4,
                 'user_id' => 8, // Hannah
                 'product_id' => 8, // Welkin Moon
                 'created_at' => clone $now

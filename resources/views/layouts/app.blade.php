@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Ridly - Digital Marketplace & Gacha Arcade</title>
-    
+
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=geist-sans:400,500,600|geist-mono:400,500" rel="stylesheet" />
@@ -41,8 +41,8 @@
                 </p>
                 <div></div>
                 <div class="flex items-center gap-4 text-xs text-muted-foreground">
-                    <span class="hover:text-foreground transition-colors cursor-pointer">Terms & Conditions</span>
-                    <span class="hover:text-foreground transition-colors cursor-pointer">Privacy Policy</span>
+                    <a href='{{route('terms-of-service')}}' class="hover:text-foreground transition-colors cursor-pointer">Terms & Conditions</a>
+                    <a href='{{route('privacy-policy')}}' class="hover:text-foreground transition-colors cursor-pointer">Privacy Policy</a>
                 </div>
             </div>
         </div>
