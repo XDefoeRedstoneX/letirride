@@ -1,5 +1,5 @@
 <x-app-layout>
-    <div class="space-y-8" x-data="{ products: {{ \Illuminate\Support\Js::from($products) }} }">
+    <div class="space-y-8" x-data="productsPage({{ \Illuminate\Support\Js::from($products) }}, {{ \Illuminate\Support\Js::from($favoriteIds ?? []) }}, {{ Auth::check() ? 'true' : 'false' }}, '{{ csrf_token() }}')">
         <!-- Header -->
         <div class="flex flex-col space-y-4">
             @auth
@@ -34,7 +34,7 @@
 
         <!-- thingy -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            <template x-for="product in products" :key="product.id">
+            <template x-for="product in filteredProducts" :key="product.id">
                 <div class="group glass-card rounded-[2.5rem] overflow-hidden hover:shadow-2xl hover:shadow-primary/10 transition-all duration-500 hover:-translate-y-2 animate-in fade-in zoom-in border-border/50">
                     <div class="aspect-square relative overflow-hidden bg-white/5">
                         <img :src="product.image" class="w-full h-full object-contain group-hover:scale-110 transition-transform duration-700" :alt="product.name">
@@ -107,4 +107,76 @@
             <p class="text-muted-foreground font-black uppercase tracking-widest text-xs">No products found matching your search or category.</p>
         </div>
     </div>
+
+    <script>
+        function productsPage(initialProducts, initialFavorites, isAuthenticated, csrfToken) {
+            return {
+                products: initialProducts,
+                search: '',
+                category: 'All',
+            favorites: initialFavorites,
+            isAuthenticated,
+            csrfToken,
+                showCartModal: false,
+                selectedProduct: null,
+
+                get categories() {
+                    const uniqueCategories = [...new Set(this.products.map((product) => product.category || 'Other'))];
+                    return ['All', ...uniqueCategories];
+                },
+
+                get filteredProducts() {
+                    const keyword = this.search.trim().toLowerCase();
+
+                    return this.products.filter((product) => {
+                        const inCategory = this.category === 'All' || product.category === this.category;
+                        const inSearch = keyword === ''
+                            || product.name.toLowerCase().includes(keyword)
+                            || (product.category || '').toLowerCase().includes(keyword);
+
+                        return inCategory && inSearch;
+                    });
+                },
+
+                openBuyModal(product) {
+                    this.selectedProduct = product;
+                    this.showCartModal = true;
+                },
+
+                async toggleFavorite(productId) {
+                    if (!this.isAuthenticated) {
+                        window.dispatchEvent(new CustomEvent('open-auth-modal', {
+                            detail: { tab: 'login' },
+                        }));
+                        return;
+                    }
+
+                    const isFavorited = this.favorites.includes(productId);
+                    const response = await fetch(`/favorites/${productId}`, {
+                        method: isFavorited ? 'DELETE' : 'POST',
+                        headers: {
+                            'Accept': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'X-CSRF-TOKEN': this.csrfToken,
+                        },
+                    });
+
+                    if (!response.ok) {
+                        return;
+                    }
+
+                    if (isFavorited) {
+                        this.favorites = this.favorites.filter((id) => id !== productId);
+                        return;
+                    }
+
+                    this.favorites.push(productId);
+                },
+
+                addToCart() {
+                    this.showCartModal = false;
+                },
+            };
+        }
+    </script>
 </x-app-layout>

@@ -45,7 +45,18 @@ class StoreController extends Controller
             })
             ->values();
 
-        return view('pages.products', ['products' => $products]);
+        $favoriteIds = Auth::check()
+            ? DB::table('favorites')
+                ->where('user_id', Auth::id())
+                ->pluck('product_id')
+                ->map(fn ($id) => (int) $id)
+                ->values()
+            : collect();
+
+        return view('pages.products', [
+            'products' => $products,
+            'favoriteIds' => $favoriteIds,
+        ]);
     }
 
     public function addCart(Request $request, $productId){

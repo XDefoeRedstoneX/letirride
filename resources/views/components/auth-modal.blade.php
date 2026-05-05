@@ -72,6 +72,12 @@
         }
     },
     init() {
+        const queryTab = '{{ request()->query('auth', '') }}';
+        if (queryTab === 'login' || queryTab === 'signup') {
+            this.tab = queryTab;
+            this.open = true;
+        }
+
         window.addEventListener('open-auth-modal', (e) => {
             this.tab = e.detail.tab || 'login';
             this.open = true;

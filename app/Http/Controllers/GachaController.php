@@ -11,7 +11,7 @@ class GachaController extends Controller
 {
     public function showGacha()
     {
-        return view('gacha');
+        return view('pages.gacha');
     }
 
     public function roll(Request $request) {

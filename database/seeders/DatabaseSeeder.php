@@ -453,25 +453,25 @@ class DatabaseSeeder extends Seeder
         DB::table('favorites')->upsert([
             [
                 'id' => 1,
-                'user_id' => 1, // Alice
+                'user_id' => 11, // Alice
                 'product_id' => 3, // Netflix 1 Month
                 'created_at' => clone $now->subDays(5)
             ],
             [
                 'id' => 2,
-                'user_id' => 1, // Alice
+                'user_id' => 12, // Alice
                 'product_id' => 9, // Discord Nitro
                 'created_at' => clone $now->subDays(2)
             ],
             [
                 'id' => 3,
-                'user_id' => 2, // Bob
+                'user_id' => 12, // Bob
                 'product_id' => 1, // Steam Wallet $10
                 'created_at' => clone $now->subHours(12)
             ],
             [
                 'id' => 4,
-                'user_id' => 8, // Hannah
+                'user_id' => 13, // Hannah
                 'product_id' => 8, // Welkin Moon
                 'created_at' => clone $now
             ],

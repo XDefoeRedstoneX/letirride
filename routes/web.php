@@ -13,6 +13,8 @@ Route::post('/register', [App\Http\Controllers\AuthController::class, 'regAuth']
 
 Route::middleware('auth')->group(function () {
     Route::get('/favorites', [App\Http\Controllers\FavoriteController::class, 'showFavorites'])->name('favorites');
+    Route::post('/favorites/{productId}', [App\Http\Controllers\FavoriteController::class, 'store'])->name('favorites.store');
+    Route::delete('/favorites/{productId}', [App\Http\Controllers\FavoriteController::class, 'destroy'])->name('favorites.destroy');
     Route::post('addcart/{productId}', [App\Http\Controllers\StoreController::class, 'addCart'])->name('addCart');
     Route::get('/cart', [App\Http\Controllers\StoreController::class, 'viewCart'])->name('viewCart');
     Route::post('/updatecart/{productId}', [App\Http\Controllers\StoreController::class, 'updateCart'])->name('updateCart');

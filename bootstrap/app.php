@@ -12,7 +12,12 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        $middleware->redirectGuestsTo(fn (Request $request) => route('login'));
+        $middleware->redirectGuestsTo(function (Request $request): string {
+            return route('home', [
+                'auth' => 'login',
+                'intended' => $request->fullUrl(),
+            ]);
+        });
         $middleware->redirectUsersTo(fn (Request $request) => route('home'));
 
     })
