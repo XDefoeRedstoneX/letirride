@@ -28,7 +28,7 @@ class DatabaseSeeder extends Seeder
         $this->seedProductKeys();
         $this->seedTickets($now);
         $this->seedFaqs();
-        $this->seedFavorites($now)
+        $this->seedFavorites($now);
     }
 
     private function seedUsers($now): void
@@ -127,35 +127,21 @@ class DatabaseSeeder extends Seeder
             return;
         }
 
-        $productsHasImg = Schema::hasColumn('products', 'img');
 
-        // UPDATED: category_id values now map only to 1 through 6
         $rows = [
-            ['id' => 1, 'category_id' => 1, 'name' => 'Steam Wallet $10', 'description' => 'Adds $10 to Steam', 'price' => 10.00, 'point_reward' => 100, 'is_active' => true],
-            ['id' => 2, 'category_id' => 1, 'name' => 'Steam Wallet $50', 'description' => 'Adds $50 to Steam', 'price' => 50.00, 'point_reward' => 500, 'is_active' => true],
-            ['id' => 3, 'category_id' => 2, 'name' => 'Netflix 1 Month (HD)', 'description' => 'Standard 1 Month', 'price' => 15.49, 'point_reward' => 150, 'is_active' => true],
-            ['id' => 4, 'category_id' => 2, 'name' => 'Spotify 3 Months', 'description' => 'Premium Code', 'price' => 29.97, 'point_reward' => 300, 'is_active' => true],
-            ['id' => 5, 'category_id' => 1, 'name' => 'PSN $25', 'description' => 'PS Store Credit', 'price' => 25.00, 'point_reward' => 250, 'is_active' => true],
-            ['id' => 6, 'category_id' => 1, 'name' => '1000 Valorant Points', 'description' => 'Riot Games VP', 'price' => 9.99, 'point_reward' => 100, 'is_active' => true],
-            ['id' => 7, 'category_id' => 5, 'name' => '500 ML Diamonds', 'description' => 'Moonton Diamonds', 'price' => 10.00, 'point_reward' => 100, 'is_active' => true],
-            ['id' => 8, 'category_id' => 1, 'name' => 'Welkin Moon', 'description' => '30 Days Genshin', 'price' => 4.99, 'point_reward' => 50, 'is_active' => true],
-            ['id' => 9, 'category_id' => 2, 'name' => 'Discord Nitro 1 Year', 'description' => 'Full Nitro', 'price' => 99.99, 'point_reward' => 1000, 'is_active' => true],
-            ['id' => 10, 'category_id' => 1, 'name' => 'Xbox Game Pass 1 Month', 'description' => 'Ultimate Pass', 'price' => 16.99, 'point_reward' => 160, 'is_active' => true],
+            ['id' => 1, 'category_id' => 1, 'name' => 'Steam Wallet $10', 'description' => 'Adds $10 to Steam', 'price' => 10.00, 'point_reward' => 100, 'is_active' => true, 'image' => 'steam-wallet.svg'],
+            ['id' => 2, 'category_id' => 1, 'name' => 'Steam Wallet $50', 'description' => 'Adds $50 to Steam', 'price' => 50.00, 'point_reward' => 500, 'is_active' => true, 'image' => 'steam-wallet.svg'],
+            ['id' => 3, 'category_id' => 2, 'name' => 'Netflix 1 Month (HD)', 'description' => 'Standard 1 Month', 'price' => 15.49, 'point_reward' => 150, 'is_active' => true, 'image' => 'netflix.svg'],
+            ['id' => 4, 'category_id' => 2, 'name' => 'Spotify 3 Months', 'description' => 'Premium Code', 'price' => 29.97, 'point_reward' => 300, 'is_active' => true, 'image' => 'spotify.svg'],
+            ['id' => 5, 'category_id' => 1, 'name' => 'PSN $25', 'description' => 'PS Store Credit', 'price' => 25.00, 'point_reward' => 250, 'is_active' => true, 'image' => 'google-play.svg'],
+            ['id' => 6, 'category_id' => 1, 'name' => '1000 Valorant Points', 'description' => 'Riot Games VP', 'price' => 9.99, 'point_reward' => 100, 'is_active' => true, 'image' => 'xbox.svg'],
+            ['id' => 7, 'category_id' => 5, 'name' => '500 ML Diamonds', 'description' => 'Moonton Diamonds', 'price' => 10.00, 'point_reward' => 100, 'is_active' => true, 'image' => 'google-play.svg'],
+            ['id' => 8, 'category_id' => 1, 'name' => 'Welkin Moon', 'description' => '30 Days Genshin', 'price' => 4.99, 'point_reward' => 50, 'is_active' => true, 'image' => 'youtube.svg'],
+            ['id' => 9, 'category_id' => 2, 'name' => 'Discord Nitro 1 Year', 'description' => 'Full Nitro', 'price' => 99.99, 'point_reward' => 1000, 'is_active' => true, 'image' => 'soundcloud.svg'],
+            ['id' => 10, 'category_id' => 1, 'name' => 'Xbox Game Pass 1 Month', 'description' => 'Ultimate Pass', 'price' => 16.99, 'point_reward' => 160, 'is_active' => true, 'image' => 'xbox.svg'],
         ];
 
-        if ($productsHasImg) {
-            $rows = array_map(function (array $row) {
-                $row['img'] = null;
-                return $row;
-            }, $rows);
-        }
-
-        $updateColumns = ['category_id', 'name', 'description', 'price', 'point_reward', 'is_active'];
-        if ($productsHasImg) {
-            $updateColumns[] = 'img';
-        }
-
-        DB::table('products')->upsert($rows, ['id'], $updateColumns);
+        DB::table('products')->upsert($rows, ['id']);
     }
 
     private function seedProductKeys(): void

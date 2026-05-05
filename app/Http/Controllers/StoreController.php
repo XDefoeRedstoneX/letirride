@@ -20,17 +20,27 @@ class StoreController extends Controller
 {
     public function showStore()
     {
+        $availableProductImages = collect(glob(public_path('products/*.svg')))
+            ->map(fn (string $path) => basename($path))
+            ->all();
+
         $products = Product::query()
             ->with('category')
             ->where('is_active', true)
             ->get()
-            ->map(function (Product $product) {
+            ->map(function (Product $product) use ($availableProductImages) {
+                $fileName = $product->image ?: 'soundcloud.svg';
+
+                if (! in_array($fileName, $availableProductImages, true)) {
+                    $fileName = 'soundcloud.svg';
+                }
+
                 return [
                     'id' => $product->id,
                     'name' => $product->name,
                     'price' => (float) $product->price,
                     'category' => $product->category?->name ?? 'Other',
-                    'image' => '/products/' . ltrim($product->img ?: 'soundcloud.svg', '/'),
+                    'image' => '/products/' . ltrim($fileName, '/'),
                 ];
             })
             ->values();
@@ -48,7 +58,7 @@ class StoreController extends Controller
                 "name" => $product->name,
                 "quantity" => 1,
                 "price" => $product->price,
-                "img" => $product->img
+                "img" => $product->image
             ];
         }
         session()->put('cart', $cart);
