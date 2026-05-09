@@ -42,35 +42,15 @@ The following tables/changes **already exist** — no need to create new migrati
 
 ## Remaining Bugs (updated from audit)
 
-| # | Bug | Location | Phase |
-|---|---|---|---|
-| ~~1~~ | ~~`invoice_   id` typo~~ | ~~StoreController:125~~ | ~~Fixed by you~~ |
-| 2 | `checkout()` references `$order->invoice_number` (column is `noinv`) | [StoreController.php:166](file:///home/shika/KULIAH/letitride/letirride/app/Http/Controllers/StoreController.php#L166) | P2 |
-| 3 | `checkout()` references `$order->payment_url` (not a column) | [StoreController.php:180](file:///home/shika/KULIAH/letitride/letirride/app/Http/Controllers/StoreController.php#L180) | P2 |
-| 4 | `checkout()` references route `payment_return` (doesn't exist) | [StoreController.php:175](file:///home/shika/KULIAH/letitride/letirride/app/Http/Controllers/StoreController.php#L175) | P2 |
-| 5 | `checkout()` route never registered in `web.php` | [web.php](file:///home/shika/KULIAH/letitride/letirride/routes/web.php) | P2 |
-| 6 | Cart view path is `'cart'` instead of `'pages.cart'` | [StoreController.php:81](file:///home/shika/KULIAH/letitride/letirride/app/Http/Controllers/StoreController.php#L81) | P1 |
-| 7 | Cart page uses **hardcoded dummy items** instead of DB data | [cart.blade.php:4-5](file:///home/shika/KULIAH/letitride/letirride/resources/views/pages/cart.blade.php#L4-L5) | P2 |
-| 8 | `addToCart()` JS function is **empty** — doesn't call backend | [products.blade.php:176-178](file:///home/shika/KULIAH/letitride/letirride/resources/views/pages/products.blade.php#L176-L178) | P2 |
-| 9 | Gacha uses **client-side RNG** — exploitable | [gacha.blade.php:37-47](file:///home/shika/KULIAH/letitride/letirride/resources/views/pages/gacha.blade.php#L37-L47) | P3 |
-| 10 | Gacha references `Auth::user()->balance` — doesn't exist | [gacha.blade.php:22-26](file:///home/shika/KULIAH/letitride/letirride/resources/views/pages/gacha.blade.php#L22-L26) | P3 |
-| 11 | `GachaController::roll()` references dropped columns `is_grand_prize`, `points_reward` | [GachaController.php:35-40](file:///home/shika/KULIAH/letitride/letirride/app/Http/Controllers/GachaController.php#L35-L40) | P3 |
-| 12 | Navbar references `Auth::user()->username` (should be `name`) | [navbar.blade.php:88-90](file:///home/shika/KULIAH/letitride/letirride/resources/views/components/navbar.blade.php#L88-L90) | P1 |
-| 13 | `OrderDetail` fillable `total_price_in_cart` mismatches `checkout()` keys | [OrderDetail.php:19](file:///home/shika/KULIAH/letitride/letirride/app/Models/OrderDetail.php#L19) | P2 |
-| 14 | `DiscountType::targetCategory()` points to `Product` instead of `Category` | [DiscountType.php:32](file:///home/shika/KULIAH/letitride/letirride/app/Models/DiscountType.php#L32) | P1 |
-| 15 | Login form has "Agree to Terms" checkbox (should be removed per your request) | [auth-modal.blade.php:118-121](file:///home/shika/KULIAH/letitride/letirride/resources/views/components/auth-modal.blade.php#L118-L121) | P1 |
-| 16 | `point-shop` and `gacha` routes outside `auth` middleware | [web.php:11-12](file:///home/shika/KULIAH/letitride/letirride/routes/web.php#L11-L12) | P1 |
-| 17 | Profile shows `Auth::user()->points` (column is `points_balance`) | [profile.blade.php:114](file:///home/shika/KULIAH/letitride/letirride/resources/views/pages/profile.blade.php#L114) | P1 |
-| 18 | Inventory shows hardcoded "12 Items" count | [profile.blade.php:123](file:///home/shika/KULIAH/letitride/letirride/resources/views/pages/profile.blade.php#L123) | P2 |
-| 19 | No `Favorite` model — favorites use raw `DB::table()` queries | Multiple files | P1 |
-| 20 | `regAuth` redirects to route `login` (doesn't exist) | [AuthController.php:93](file:///home/shika/KULIAH/letitride/letirride/app/Http/Controllers/AuthController.php#L93) | P1 |
-| 21 | Seeder `$now->subDays()` mutates Carbon in-place | [DatabaseSeeder.php:428](file:///home/shika/KULIAH/letitride/letirride/database/seeders/DatabaseSeeder.php#L428) | P1 |
-| 22 | Missing Midtrans env vars in `.env.example` | [.env.example](file:///home/shika/KULIAH/letitride/letirride/.env.example) | P2 |
-| 23 | `Order` fillable has `noinv` but `checkout()` uses `invoice_id` key | [Order.php](file:///home/shika/KULIAH/letitride/letirride/app/Models/Order.php) vs [StoreController.php:125](file:///home/shika/KULIAH/letitride/letirride/app/Http/Controllers/StoreController.php#L125) | P2 |
-| 24 | `StoreController` still uses **session** cart — needs to switch to `cart_items` DB table | [StoreController.php:62-95](file:///home/shika/KULIAH/letitride/letirride/app/Http/Controllers/StoreController.php#L62-L95) | P2 |
-| 25 | Point shop shows hardcoded `$rewards` array, "Redeem" does nothing | [point-shop.blade.php:27-36](file:///home/shika/KULIAH/letitride/letirride/resources/views/pages/point-shop.blade.php#L27-L36) | P3 |
-| 26 | Transactions page shows hardcoded dummy rows | [transactions.blade.php:27-31](file:///home/shika/KULIAH/letitride/letirride/resources/views/pages/transactions.blade.php#L27-L31) | P2 |
-| 27 | Inventory page shows hardcoded dummy items | [inventory.blade.php:6-10](file:///home/shika/KULIAH/letitride/letirride/resources/views/pages/inventory.blade.php#L6-L10) | P2 |
+| # | Bug | Location | Phase | Status |
+|---|---|---|---|---|
+| 9 | Gacha uses **client-side RNG** — exploitable | gacha.blade.php | P3 | ✅ Fixed |
+| 10 | Gacha references `Auth::user()->balance` — doesn't exist | gacha.blade.php | P3 | ✅ Fixed |
+| 11 | `GachaController::roll()` references dropped columns | GachaController.php | P3 | ✅ Fixed |
+| 25 | Point shop shows hardcoded `$rewards` array, "Redeem" does nothing | point-shop.blade.php | P3 | ✅ Fixed |
+| 28 | Can't buy from favorites — Buy button was a no-op | favorites.blade.php | P4 | ✅ Fixed |
+| 29 | No confirmation when buying from point shop | point-shop.blade.php | P4 | ✅ Fixed |
+| 30 | Voucher not showing applied name, category-specific vouchers work on all products | cart.blade.php + CheckoutController | P4 | ✅ Fixed |
 
 ---
 
@@ -399,6 +379,9 @@ two_factor_confirmed_at: timestamp, nullable
 ---
 
 ### Final Polish
+- Fix bug where you cant buy from favorites
+- Add feature for confirmation where you buy to point shop
+- Apply voucher is not working as intended (Apply voucher not showing the voucher used, voucher for spesific product can be used on all the product )
 - Full responsive testing
 - Loading states for all AJAX actions
 - SEO meta tags on all pages
@@ -431,6 +414,6 @@ php artisan test --compact
 | **Phase 1** | UI/UX + Auth (auto-login, remove login ToS) + bug fixes | #6, #12, #14, #15, #16, #17, #19, #20, #21 |
 | **Phase 2** | DB Cart + Checkout + Midtrans + real Inventory & Transactions | #2, #3, #4, #5, #7, #8, #13, #18, #22, #23, #24, #26, #27 |
 | **Phase 3** | Point Shop + Server-side Gacha + Admin Panel | #9, #10, #11, #25 |
-| **Phase 4** | Referral wiring + Google OAuth + 2FA + Final QA | — |
+| **Phase 4** | Referral wiring + Google OAuth + 2FA + Final QA | #28, #29, #30 |
 
 > **Awaiting your green light to begin Phase 1.**

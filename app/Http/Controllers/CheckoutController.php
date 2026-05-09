@@ -68,10 +68,30 @@ class CheckoutController extends Controller
             if ($voucher) {
                 $discount = $voucher->discountType;
 
-                if ($discount->type === 'percent') {
-                    $discountAmount = $subtotal * ($discount->value / 100);
+                // If the voucher targets a specific category, validate that the cart
+                // contains at least one item from that category and only apply to those items.
+                if ($discount->target_category_id) {
+                    $eligibleSubtotal = $cartItems
+                        ->filter(fn (CartItem $item) => $item->product->category_id === $discount->target_category_id)
+                        ->sum(fn (CartItem $item) => $item->product->price * $item->quantity);
+
+                    if ($eligibleSubtotal <= 0) {
+                        // No eligible items — ignore the voucher silently
+                        $voucher = null;
+                    } else {
+                        if ($discount->type === 'percent') {
+                            $discountAmount = $eligibleSubtotal * ($discount->value / 100);
+                        } else {
+                            $discountAmount = min($discount->value, $eligibleSubtotal);
+                        }
+                    }
                 } else {
-                    $discountAmount = min($discount->value, $subtotal);
+                    // Universal voucher — apply to full subtotal
+                    if ($discount->type === 'percent') {
+                        $discountAmount = $subtotal * ($discount->value / 100);
+                    } else {
+                        $discountAmount = min($discount->value, $subtotal);
+                    }
                 }
             }
         }

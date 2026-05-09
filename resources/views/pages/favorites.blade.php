@@ -2,6 +2,8 @@
     <div class="space-y-8" x-data="{
         favoriteProducts: {{ \Illuminate\Support\Js::from($favorites) }},
         csrfToken: '{{ csrf_token() }}',
+        addingToCart: null,
+
         async toggleFavorite(id) {
             const response = await fetch(`/favorites/${id}`, {
                 method: 'DELETE',
@@ -17,6 +19,36 @@
             }
 
             this.favoriteProducts = this.favoriteProducts.filter(product => product.id !== id);
+            window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: 'Removed from favorites.', type: 'success' } }));
+        },
+
+        async addToCart(productId) {
+            if (this.addingToCart) return;
+            this.addingToCart = productId;
+
+            try {
+                const response = await fetch(`/cart/${productId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRF-TOKEN': this.csrfToken,
+                    },
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    window.dispatchEvent(new CustomEvent('cart-updated', { detail: { count: data.cart_count } }));
+                    window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: data.message, type: 'success' } }));
+                } else {
+                    window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: data.message || 'Failed to add to cart.', type: 'error' } }));
+                }
+            } catch (e) {
+                window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: 'Network error. Please try again.', type: 'error' } }));
+            }
+
+            this.addingToCart = null;
         }
     }">
         <!-- Header -->
@@ -43,11 +75,13 @@
                             </div>
                             <div class="flex items-center gap-2">
                                 <button @click="toggleFavorite(product.id)"
-                                        class="w-10 h-10 flex items-center justify-center rounded-xl bg-red-500/10 text-red-500 transition-all">
+                                        class="w-10 h-10 flex items-center justify-center rounded-xl bg-red-500/10 text-red-500 transition-all hover:bg-red-500/20">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="pixel-render"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
                                 </button>
-                                <button class="px-6 py-2.5 bg-primary text-primary-foreground rounded-xl font-black text-[10px] hover:scale-105 active:scale-95 transition-all shadow-lg shadow-primary/20 tracking-widest uppercase">
-                                    Buy
+                                <button @click="addToCart(product.id)"
+                                        :disabled="addingToCart === product.id"
+                                        class="px-6 py-2.5 bg-primary text-primary-foreground rounded-xl font-black text-[10px] hover:scale-105 active:scale-95 transition-all shadow-lg shadow-primary/20 tracking-widest uppercase disabled:opacity-50">
+                                    <span x-text="addingToCart === product.id ? 'Adding...' : 'Buy'"></span>
                                 </button>
                             </div>
                         </div>

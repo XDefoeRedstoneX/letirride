@@ -1,5 +1,11 @@
 <?php
 
+use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
+use App\Http\Controllers\Admin\GachaController as AdminGachaController;
+use App\Http\Controllers\Admin\OrderController as AdminOrderController;
+use App\Http\Controllers\Admin\ProductController as AdminProductController;
+use App\Http\Controllers\Admin\TicketController as AdminTicketController;
+use App\Http\Controllers\Admin\UserController as AdminUserController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\CheckoutController;
@@ -9,6 +15,7 @@ use App\Http\Controllers\InventoryController;
 use App\Http\Controllers\PointController;
 use App\Http\Controllers\StoreController;
 use App\Http\Controllers\TransactionController;
+use App\Http\Middleware\EnsureUserIsAdmin;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [StoreController::class, 'showStore'])->name('home');
@@ -22,8 +29,10 @@ Route::middleware('auth')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
     // Point Shop & Gacha (require auth)
-    Route::get('/point-shop', [PointController::class, 'showPointshop'])->name('point-shop');
+    Route::get('/point-shop', [PointController::class, 'index'])->name('point-shop');
+    Route::post('/point-shop/redeem/{item}', [PointController::class, 'redeem'])->name('point-shop.redeem');
     Route::get('/gacha', [GachaController::class, 'showGacha'])->name('gacha');
+    Route::post('/gacha/roll', [GachaController::class, 'roll'])->name('gacha.roll');
 
     // Favorites
     Route::get('/favorites', [FavoriteController::class, 'showFavorites'])->name('favorites');
@@ -54,6 +63,32 @@ Route::middleware('auth')->group(function () {
     // Forgot Password
     Route::get('/forgot-password', [AuthController::class, 'showForgot'])->name('forgot-password');
 });
+
+// Admin Panel
+Route::prefix('admin')
+    ->middleware(['auth', EnsureUserIsAdmin::class])
+    ->group(function () {
+        Route::get('/', [AdminDashboardController::class, 'index'])->name('admin.dashboard');
+        Route::get('/products', [AdminProductController::class, 'index'])->name('admin.products');
+        Route::post('/products', [AdminProductController::class, 'store'])->name('admin.products.store');
+        Route::patch('/products/{product}', [AdminProductController::class, 'update'])->name('admin.products.update');
+        Route::delete('/products/{product}', [AdminProductController::class, 'destroy'])->name('admin.products.destroy');
+        Route::post('/products/{product}/keys', [AdminProductController::class, 'addKeys'])->name('admin.products.keys');
+
+        Route::get('/orders', [AdminOrderController::class, 'index'])->name('admin.orders');
+        Route::patch('/orders/{order}/status', [AdminOrderController::class, 'updateStatus'])->name('admin.orders.status');
+
+        Route::get('/users', [AdminUserController::class, 'index'])->name('admin.users');
+        Route::patch('/users/{user}', [AdminUserController::class, 'update'])->name('admin.users.update');
+
+        Route::get('/gacha', [AdminGachaController::class, 'index'])->name('admin.gacha');
+        Route::post('/gacha', [AdminGachaController::class, 'store'])->name('admin.gacha.store');
+        Route::patch('/gacha/{pool}', [AdminGachaController::class, 'update'])->name('admin.gacha.update');
+        Route::delete('/gacha/{pool}', [AdminGachaController::class, 'destroy'])->name('admin.gacha.destroy');
+
+        Route::get('/tickets', [AdminTicketController::class, 'index'])->name('admin.tickets');
+        Route::patch('/tickets/{ticket}/status', [AdminTicketController::class, 'updateStatus'])->name('admin.tickets.status');
+    });
 
 // Static pages (no auth required)
 Route::get('/terms', fn () => view('pages.terms-of-service'))->name('terms-of-service');

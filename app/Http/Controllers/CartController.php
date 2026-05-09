@@ -25,6 +25,7 @@ class CartController extends Controller
                     'name' => $item->product->name,
                     'price' => (float) $item->product->price,
                     'category' => $item->product->category?->name ?? 'Other',
+                    'category_id' => $item->product->category_id,
                     'image' => '/products/'.ltrim($item->product->image ?: 'soundcloud.svg', '/'),
                     'quantity' => $item->quantity,
                 ];
@@ -45,6 +46,7 @@ class CartController extends Controller
                 'type' => $ud->discountType->type,
                 'value' => (float) $ud->discountType->value,
                 'target_category_id' => $ud->discountType->target_category_id,
+                'target_category_name' => $ud->discountType->targetCategory?->name,
             ]);
 
         return view('pages.cart', [

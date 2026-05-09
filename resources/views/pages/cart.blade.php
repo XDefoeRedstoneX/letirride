@@ -9,17 +9,38 @@
         csrfToken: '{{ csrf_token() }}',
         midtransClientKey: '{{ $midtransClientKey ?? '' }}',
 
+        get cartCategoryIds() {
+            return [...new Set(this.items.map(i => i.category_id))];
+        },
+        get eligibleDiscounts() {
+            return this.discounts.filter(d => {
+                if (!d.target_category_id) return true;
+                return this.cartCategoryIds.includes(d.target_category_id);
+            });
+        },
         get subtotal() {
             return this.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
         },
         get discountAmount() {
             if (!this.selectedDiscount) return 0;
             const d = this.selectedDiscount;
+            if (d.target_category_id) {
+                const eligibleTotal = this.items
+                    .filter(i => i.category_id === d.target_category_id)
+                    .reduce((sum, i) => sum + (i.price * i.quantity), 0);
+                if (d.type === 'percent') return eligibleTotal * (d.value / 100);
+                return Math.min(d.value, eligibleTotal);
+            }
             if (d.type === 'percent') return this.subtotal * (d.value / 100);
             return Math.min(d.value, this.subtotal);
         },
         get total() {
             return Math.max(0, this.subtotal - this.discountAmount);
+        },
+
+        selectVoucher(event) {
+            const id = event.target.value;
+            this.selectedDiscount = this.eligibleDiscounts.find(d => d.id == id) || null;
         },
 
         async updateQty(item, delta) {
@@ -58,6 +79,12 @@
                 this.items = this.items.filter(i => i.id !== item.id);
                 const data = await response.json();
                 window.dispatchEvent(new CustomEvent('cart-updated', { detail: { count: data.cart_count } }));
+
+                // If selected voucher is no longer eligible, reset it
+                if (this.selectedDiscount && this.selectedDiscount.target_category_id) {
+                    const stillHas = this.items.some(i => i.category_id === this.selectedDiscount.target_category_id);
+                    if (!stillHas) this.selectedDiscount = null;
+                }
             }
         },
 
@@ -177,17 +204,33 @@
                         </div>
 
                         <!-- Discount Voucher Selector -->
-                        <template x-if="discounts.length > 0">
-                            <div class="space-y-2">
+                        <template x-if="eligibleDiscounts.length > 0">
+                            <div class="space-y-3">
                                 <label class="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Apply Voucher</label>
-                                <select x-model="selectedDiscount"
-                                        @change="selectedDiscount = discounts.find(d => d.id == $event.target.value) || null"
+                                <select @change="selectVoucher($event)"
                                         class="w-full px-4 py-3 bg-foreground/5 border border-border rounded-xl text-xs font-bold outline-none focus:ring-2 focus:ring-primary/50">
                                     <option value="">None</option>
-                                    <template x-for="d in discounts" :key="d.id">
-                                        <option :value="d.id" x-text="d.name + (d.type === 'percent' ? ' (' + d.value + '%)' : ' (Rp ' + new Intl.NumberFormat('id-ID').format(d.value) + ')')"></option>
+                                    <template x-for="d in eligibleDiscounts" :key="d.id">
+                                        <option :value="d.id" x-text="d.name + (d.type === 'percent' ? ' (' + d.value + '%)' : ' (Rp ' + new Intl.NumberFormat('id-ID').format(d.value) + ')') + (d.target_category_name ? ' — ' + d.target_category_name + ' only' : ' — All products')"></option>
                                     </template>
                                 </select>
+                            </div>
+                        </template>
+
+                        <!-- Applied Voucher Badge -->
+                        <template x-if="selectedDiscount">
+                            <div class="bg-green-500/10 border border-green-500/20 rounded-xl p-3 space-y-1">
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center gap-2">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="text-green-500"><polyline points="20 6 9 17 4 12"/></svg>
+                                        <span class="text-[10px] font-black uppercase tracking-widest text-green-500">Voucher Applied</span>
+                                    </div>
+                                    <button @click="selectedDiscount = null" class="text-muted-foreground hover:text-red-500 transition-colors">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+                                    </button>
+                                </div>
+                                <p class="text-xs font-black text-green-400" x-text="selectedDiscount.name"></p>
+                                <p class="text-[9px] font-bold text-green-500/70" x-text="selectedDiscount.target_category_name ? 'Applies to: ' + selectedDiscount.target_category_name + ' items only' : 'Applies to all items'"></p>
                             </div>
                         </template>
 
