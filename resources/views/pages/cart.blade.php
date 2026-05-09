@@ -142,29 +142,27 @@
                 window.snap.pay(data.snap_token, {
                     onSuccess: (result) => {
                         this.paying = false;
-                        this.paid = true;
-                        this.paidOrderId = data.order_id;
-                        this.items = [];
-                        window.dispatchEvent(new CustomEvent('cart-updated', { detail: { count: 0 } }));
+                        // Redirect to order result page — cart is cleared server-side by webhook
+                        window.location.href = `/checkout/finish/${data.order_id}`;
                     },
                     onPending: (result) => {
                         this.paying = false;
-                        window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: 'Payment pending. Complete your payment to receive your items.', type: 'info' } }));
-                        this.items = [];
-                        this.paidOrderId = data.order_id;
-                        window.dispatchEvent(new CustomEvent('cart-updated', { detail: { count: 0 } }));
+                        // Redirect to order result page where user can see pending status & resume
+                        window.location.href = `/checkout/finish/${data.order_id}`;
                     },
                     onError: (result) => {
                         this.paying = false;
-                        window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: 'Payment failed. Please try again.', type: 'error' } }));
+                        window.dispatchEvent(new CustomEvent('toast', { detail: { message: 'Payment failed. Please try again.', type: 'error' } }));
                     },
                     onClose: () => {
                         this.paying = false;
+                        // User closed the popup — cart stays intact, order is still pending
+                        window.dispatchEvent(new CustomEvent('toast', { detail: { message: 'Payment cancelled. Your order is still pending — you can resume it from Transactions.', type: 'warning' } }));
                     },
                 });
             } catch (e) {
                 this.paying = false;
-                window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: 'Network error. Please try again.', type: 'error' } }));
+                window.dispatchEvent(new CustomEvent('toast', { detail: { message: 'Network error. Please try again.', type: 'error' } }));
             }
         },
 

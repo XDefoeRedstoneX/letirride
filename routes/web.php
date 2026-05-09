@@ -49,6 +49,7 @@ Route::middleware('auth')->group(function () {
 
     // Checkout
     Route::post('/checkout', [CheckoutController::class, 'process'])->name('checkout.process');
+    Route::post('/checkout/pay/{order}', [CheckoutController::class, 'pay'])->name('checkout.pay');
     Route::get('/checkout/finish/{order}', [CheckoutController::class, 'finish'])->name('checkout.finish');
 
     // Profile & Settings

@@ -52,16 +52,19 @@ class CheckoutController extends Controller
             return response()->json(['message' => 'Your cart is empty.'], 422);
         }
 
-        // Validate that all direct_topup products have credentials
-        $topupCredentials = collect($request->topup_credentials ?? [])->keyBy('product_id');
-        foreach ($cartItems as $cartItem) {
-            if (($cartItem->product->type ?? 'voucher') === 'direct_topup') {
-                if (! $topupCredentials->has($cartItem->product_id)) {
-                    return response()->json([
-                        'message' => 'Please provide your Player ID for '.$cartItem->product->name.'.',
-                    ], 422);
-                }
-            }
+        // If user already has a pending order, return its snap token to resume
+        $existingPending = Order::where('user_id', $user->id)
+            ->where('status', 'pending')
+            ->whereNotNull('payment_gateway_ref')
+            ->latest()
+            ->first();
+
+        if ($existingPending) {
+            return response()->json([
+                'snap_token' => $existingPending->payment_gateway_ref,
+                'order_id' => $existingPending->id,
+                'invoice' => $existingPending->noinv,
+            ]);
         }
 
         // Calculate subtotal
@@ -196,9 +199,6 @@ class CheckoutController extends Controller
             // Store the snap token reference
             $order->update(['payment_gateway_ref' => $snapToken]);
 
-            // Clear the cart
-            CartItem::where('user_id', $user->id)->delete();
-
             DB::commit();
 
             return response()->json([
@@ -280,11 +280,17 @@ class CheckoutController extends Controller
     }
 
     /**
-     * Fulfill a paid order: mark paid, assign product keys, award points.
+     * Fulfill a paid order: mark paid, assign product keys, award points, clear cart.
      */
     private function fulfillOrder(Order $order): void
     {
         $order->update(['status' => 'paid']);
+
+        // Clear only cart items that belong to this order's products
+        $orderedProductIds = $order->orderDetails->pluck('product_id')->toArray();
+        CartItem::where('user_id', $order->user_id)
+            ->whereIn('product_id', $orderedProductIds)
+            ->delete();
 
         $totalPointsAwarded = 0;
 
@@ -317,5 +323,31 @@ class CheckoutController extends Controller
         if ($totalPointsAwarded > 0) {
             $order->user()->increment('points_balance', $totalPointsAwarded);
         }
+    }
+
+    /**
+     * Resume payment for a pending order — returns the stored snap token.
+     */
+    public function pay(Order $order): JsonResponse
+    {
+        if ($order->user_id !== Auth::id()) {
+            return response()->json(['message' => 'Unauthorized.'], 403);
+        }
+
+        if ($order->status !== 'pending') {
+            return response()->json(['message' => 'This order is no longer pending.'], 422);
+        }
+
+        $snapToken = $order->payment_gateway_ref;
+
+        if (! $snapToken) {
+            return response()->json(['message' => 'Payment token not found. Please contact support.'], 422);
+        }
+
+        return response()->json([
+            'snap_token' => $snapToken,
+            'order_id' => $order->id,
+            'invoice' => $order->noinv,
+        ]);
     }
 }
