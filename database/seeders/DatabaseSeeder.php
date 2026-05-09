@@ -29,6 +29,8 @@ class DatabaseSeeder extends Seeder
         $this->seedTickets($now);
         $this->seedFaqs();
         $this->seedFavorites($now);
+        $this->seedCartItems($now);
+        $this->seedReferrals($now);
     }
 
     private function seedUsers($now): void
@@ -106,27 +108,26 @@ class DatabaseSeeder extends Seeder
     }
 
     private function seedCategories(): void
-        {
-            if (! Schema::hasTable('categories')) {
-                return;
-            }
-
-            DB::table('categories')->upsert([
-                ['id' => 1, 'name' => 'Gaming', 'slug' => 'gaming'],
-                ['id' => 2, 'name' => 'Entertainment', 'slug' => 'entertainment'],
-                ['id' => 3, 'name' => 'Software & Utilities', 'slug' => 'software-utilities'],
-                ['id' => 4, 'name' => 'Gift Cards', 'slug' => 'gift-cards'],
-                ['id' => 5, 'name' => 'Mobile Top-Up', 'slug' => 'mobile-top-up'],
-                ['id' => 6, 'name' => 'Other', 'slug' => 'other'],
-            ], ['id'], ['name', 'slug']);
+    {
+        if (! Schema::hasTable('categories')) {
+            return;
         }
+
+        DB::table('categories')->upsert([
+            ['id' => 1, 'name' => 'Gaming', 'slug' => 'gaming'],
+            ['id' => 2, 'name' => 'Entertainment', 'slug' => 'entertainment'],
+            ['id' => 3, 'name' => 'Software & Utilities', 'slug' => 'software-utilities'],
+            ['id' => 4, 'name' => 'Gift Cards', 'slug' => 'gift-cards'],
+            ['id' => 5, 'name' => 'Mobile Top-Up', 'slug' => 'mobile-top-up'],
+            ['id' => 6, 'name' => 'Other', 'slug' => 'other'],
+        ], ['id'], ['name', 'slug']);
+    }
 
     private function seedProducts(): void
     {
         if (! Schema::hasTable('products')) {
             return;
         }
-
 
         $rows = [
             ['id' => 1, 'category_id' => 1, 'name' => 'Steam Wallet $10', 'description' => 'Adds $10 to Steam', 'price' => 10.00, 'point_reward' => 100, 'is_active' => true, 'image' => 'steam-wallet.svg'],
@@ -168,6 +169,7 @@ class DatabaseSeeder extends Seeder
         if ($hasOrderId) {
             $rows = array_map(function (array $row) {
                 $row['order_id'] = null;
+
                 return $row;
             }, $rows);
         }
@@ -230,6 +232,7 @@ class DatabaseSeeder extends Seeder
         if ($hasExpiresAt) {
             $rows = array_map(function (array $row) {
                 $row['expires_at'] = null;
+
                 return $row;
             }, $rows);
         }
@@ -283,6 +286,7 @@ class DatabaseSeeder extends Seeder
         if ($ordersHasCreatedAt) {
             $rows = array_map(function (array $row) use ($now) {
                 $row['created_at'] = $now;
+
                 return $row;
             }, $rows);
         }
@@ -345,6 +349,7 @@ class DatabaseSeeder extends Seeder
         if ($hasCreatedAt) {
             $rows = array_map(function (array $row) use ($now) {
                 $row['created_at'] = $now;
+
                 return $row;
             }, $rows);
         }
@@ -388,7 +393,7 @@ class DatabaseSeeder extends Seeder
                 'reward_type' => 'discount_code',
                 'discount_type_id' => 5, // Links to your $5 Welcome Bonus
                 'img' => null,
-                'is_active' => true
+                'is_active' => true,
             ],
             [
                 'id' => 2,
@@ -398,7 +403,7 @@ class DatabaseSeeder extends Seeder
                 'reward_type' => 'discount_code',
                 'discount_type_id' => 9, // Links to your Whale Discount
                 'img' => null,
-                'is_active' => true
+                'is_active' => true,
             ],
             [
                 'id' => 3,
@@ -408,7 +413,7 @@ class DatabaseSeeder extends Seeder
                 'reward_type' => 'discount_code',
                 'discount_type_id' => 10, // Links to your Free Welkin discount
                 'img' => null,
-                'is_active' => true
+                'is_active' => true,
             ],
         ], ['id'], ['name', 'description', 'point_cost', 'reward_type', 'discount_type_id', 'img', 'is_active']);
     }
@@ -425,21 +430,21 @@ class DatabaseSeeder extends Seeder
                 'user_id' => 2, // Bob Jones
                 'point_shop_item_id' => 1, // Bought the $5 Welcome Bonus
                 'points_spent' => 500,
-                'created_at' => clone $now->subDays(1)
+                'created_at' => clone $now->subDays(1),
             ],
             [
                 'id' => 2,
                 'user_id' => 4, // Diana Prince
                 'point_shop_item_id' => 2, // Bought the Whale Status Ticket
                 'points_spent' => 5000,
-                'created_at' => clone $now->subHours(5)
+                'created_at' => clone $now->subHours(5),
             ],
             [
                 'id' => 3,
                 'user_id' => 8, // Hannah Abbott
                 'point_shop_item_id' => 3, // Bought the Free Welkin Pass
                 'points_spent' => 1000,
-                'created_at' => clone $now->subMinutes(30)
+                'created_at' => clone $now->subMinutes(30),
             ],
         ], ['id'], ['user_id', 'point_shop_item_id', 'points_spent', 'created_at']);
     }
@@ -453,28 +458,98 @@ class DatabaseSeeder extends Seeder
         DB::table('favorites')->upsert([
             [
                 'id' => 1,
-                'user_id' => 11, // Alice
+                'user_id' => 1, // Alice
                 'product_id' => 3, // Netflix 1 Month
-                'created_at' => clone $now->subDays(5)
+                'created_at' => clone $now->subDays(5),
             ],
             [
                 'id' => 2,
-                'user_id' => 12, // Alice
+                'user_id' => 1, // Alice
                 'product_id' => 9, // Discord Nitro
-                'created_at' => clone $now->subDays(2)
+                'created_at' => clone $now->subDays(2),
             ],
             [
                 'id' => 3,
-                'user_id' => 12, // Bob
+                'user_id' => 2, // Bob
                 'product_id' => 1, // Steam Wallet $10
-                'created_at' => clone $now->subHours(12)
+                'created_at' => clone $now->subHours(12),
             ],
             [
                 'id' => 4,
-                'user_id' => 13, // Hannah
+                'user_id' => 8, // Hannah
                 'product_id' => 8, // Welkin Moon
-                'created_at' => clone $now
+                'created_at' => clone $now,
             ],
         ], ['id'], ['user_id', 'product_id', 'created_at']);
+    }
+
+    private function seedCartItems($now): void
+    {
+        if (! Schema::hasTable('cart_items')) {
+            return;
+        }
+
+        // Get some existing users and products to test with
+        $userIds = DB::table('users')->pluck('id');
+        $productIds = DB::table('products')->pluck('id');
+
+        if ($userIds->isEmpty() || $productIds->isEmpty()) {
+            return;
+        }
+
+        // Give the very first user two random items in their cart
+        DB::table('cart_items')->insert([
+            [
+                'user_id' => $userIds->first(),
+                'product_id' => $productIds->random(),
+                'quantity' => 1,
+                'created_at' => $now,
+                'updated_at' => $now,
+            ],
+            [
+                'user_id' => $userIds->first(),
+                'product_id' => $productIds->random(),
+                'quantity' => 2,
+                'created_at' => $now,
+                'updated_at' => $now,
+            ],
+        ]);
+    }
+
+    private function seedReferrals($now): void
+    {
+        if (! Schema::hasTable('referrals')) {
+            return;
+        }
+
+        $userIds = DB::table('users')->pluck('id');
+        $discountIds = DB::table('user_discounts')->pluck('id');
+
+        // We need at least 2 users to test a referral
+        if ($userIds->count() < 2) {
+            return;
+        }
+
+        $alice = $userIds[0];
+        $bob = $userIds[1];
+
+        // 1. Give Alice and Bob their own referral codes, and say Bob used Alice's code
+        DB::table('users')->where('id', $alice)->update([
+            'referral_code' => 'ALICE-2026',
+        ]);
+
+        DB::table('users')->where('id', $bob)->update([
+            'referral_code' => 'BOB-2026',
+            'referred_by' => $alice,
+        ]);
+
+        // 2. Create the referral record (Bob bought something, so Alice is rewarded)
+        DB::table('referrals')->insert([
+            'referrer_id' => $alice,
+            'referred_user_id' => $bob,
+            'reward_discount_id' => $discountIds->first(), // Give Alice the first discount in the DB
+            'status' => 'rewarded',
+            'created_at' => $now,
+        ]);
     }
 }
