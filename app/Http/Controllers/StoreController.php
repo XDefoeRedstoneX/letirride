@@ -122,7 +122,7 @@ class StoreController extends Controller
             $totalPrice = collect($cart)->sum(fn($item) => $item['price'] * $item['quantity']);
 
             $order = Order::create([
-                'invoice_   id' => 'INV-' . date('Ymd') . '-' . strtoupper(Str::random(6)),
+                'invoice_id' => 'INV-' . date('Ymd') . '-' . strtoupper(Str::random(6)),
                 'user_id' => Auth::id(),
                 'user_discount_id' => $voucher ? $voucher->id : null,
                 'subtotal' => $totalPrice,
