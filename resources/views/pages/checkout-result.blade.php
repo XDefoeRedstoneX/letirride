@@ -7,9 +7,8 @@
         pollInterval: null,
 
         init() {
-            // Bug 3: Poll for status updates on pending orders (webhook race condition)
             if (this.orderStatus === 'pending') {
-                this.pollInterval = setInterval(() => this.checkStatus(), 3000);
+                this.pollInterval = setInterval(() => this.checkStatus(), 10000);
             }
         },
 
@@ -26,12 +25,11 @@
                     const data = await response.json();
                     if (data.status !== 'pending') {
                         clearInterval(this.pollInterval);
-                        // Reload to show updated state (product keys, etc.)
                         window.location.reload();
                     }
                 }
             } catch (e) {
-                // Silent fail — will retry on next interval
+                
             }
         },
 
@@ -58,16 +56,21 @@
                     return;
                 }
 
-                window.snap.pay(data.snap_token, {
-                    onSuccess: () => { window.location.reload(); },
-                    onPending: () => { this.resuming = false; window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: 'Payment still pending.', type: 'info' } })); },
-                    onError: () => { this.resuming = false; window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: 'Payment failed.', type: 'error' } })); },
-                    onClose: () => { this.resuming = false; },
-                });
+                // Dispatch event to vanilla JS to avoid Midtrans CSP blocking Alpine's eval
+                window.dispatchEvent(new CustomEvent('snap-pay', {
+                    detail: {
+                        snapToken: data.snap_token,
+                        orderId: '{{ $order->id }}'
+                    }
+                }));
             } catch (e) {
                 this.resuming = false;
                 window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: 'Network error.', type: 'error' } }));
             }
+        },
+
+        onSnapFinish() {
+            this.resuming = false;
         },
 
         async cancelOrder() {
@@ -126,7 +129,8 @@
             <!-- Resume Payment Button -->
             <div class="flex items-center justify-center gap-4">
                 <button @click="resumePayment()" :disabled="resuming"
-                        class="inline-flex items-center gap-3 px-10 py-4 bg-amber-500 text-white font-black rounded-2xl hover:scale-105 active:scale-95 transition-all shadow-xl shadow-amber-500/20 uppercase tracking-widest text-[10px] disabled:opacity-50 disabled:hover:scale-100">
+                        class="inline-flex items-center gap-3 px-10 py-4 font-black rounded-2xl hover:scale-105 active:scale-95 transition-all shadow-xl uppercase tracking-widest text-[10px] disabled:opacity-50 disabled:hover:scale-100"
+                        style="background-color: #f59e0b; color: #ffffff; box-shadow: 0 20px 25px -5px rgb(245 158 11 / 0.2);">
                     <template x-if="resuming">
                         <svg class="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -241,5 +245,44 @@
         @else
             <script src="https://app.sandbox.midtrans.com/snap/snap.js" data-client-key="{{ config('midtrans.client_key') }}"></script>
         @endif
+
+        <script>
+            document.addEventListener('snap-pay', function(e) {
+                var snapToken = e.detail.snapToken;
+                var orderId = e.detail.orderId;
+                var csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+                window.snap.pay(snapToken, {
+                    onSuccess: async function() {
+                        try {
+                            await fetch('/checkout/verify/' + orderId, {
+                                method: 'POST',
+                                headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': csrfToken }
+                            });
+                        } catch(err) {}
+                        window.location.reload();
+                    },
+                    onPending: function() {
+                        // We need to reach into Alpine's scope or just dispatch an event
+                        window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: 'Payment still pending.', type: 'info' } }));
+                        document.querySelector('[x-data]').__x.$data.onSnapFinish();
+                    },
+                    onError: function() {
+                        window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: 'Payment failed.', type: 'error' } }));
+                        document.querySelector('[x-data]').__x.$data.onSnapFinish();
+                    },
+                    onClose: async function() {
+                        try {
+                            await fetch('/checkout/verify/' + orderId, {
+                                method: 'POST',
+                                headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': csrfToken }
+                            });
+                        } catch(err) {}
+                        document.querySelector('[x-data]').__x.$data.onSnapFinish();
+                        window.location.reload();
+                    }
+                });
+            });
+        </script>
     @endif
 </x-app-layout>

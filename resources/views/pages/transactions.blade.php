@@ -1,5 +1,45 @@
+@php
+    use Illuminate\Support\Js;
+@endphp
 <x-app-layout>
-    <div class="max-w-6xl mx-auto space-y-12" x-data="{ show: false }" x-init="setTimeout(() => show = true, 50)">
+    <div class="max-w-6xl mx-auto space-y-12" x-data="{ 
+        show: false,
+        pendingOrders: {{ Js::from($orders->where('status', 'PENDING')->pluck('order_id')->values()) }},
+        pollInterval: null,
+        csrfToken: '{{ csrf_token() }}',
+
+        init() {
+            setTimeout(() => this.show = true, 50);
+            if (this.pendingOrders.length > 0) {
+                this.pollInterval = setInterval(() => this.checkPendingStatuses(), 15);
+            }
+        },
+
+        async checkPendingStatuses() {
+            for (const orderId of this.pendingOrders) {
+                try {
+                    const response = await fetch('/checkout/verify/' + orderId, {
+                        method: 'POST',
+                        headers: {
+                            'Accept': 'application/json',
+                            'X-CSRF-TOKEN': this.csrfToken,
+                        },
+                    });
+
+                    if (response.ok) {
+                        const data = await response.json();
+                        if (data.status !== 'pending') {
+                            clearInterval(this.pollInterval);
+                            window.location.reload();
+                            return;
+                        }
+                    }
+                } catch (e) {
+                    // Silent fail, will try again next interval
+                }
+            }
+        }
+    }">
         <div class="flex items-center justify-between" x-show="show" x-transition:enter="md:transition md:ease-out md:duration-700" x-transition:enter-start="md:opacity-0 md:translate-y-4" x-transition:enter-end="md:opacity-100 md:translate-y-0">
             <div>
                 <h1 class="text-4xl font-black tracking-tighter uppercase">Transaction <span class="text-primary">History</span></h1>

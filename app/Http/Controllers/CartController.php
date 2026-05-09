@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\CartItem;
+use App\Models\Order;
 use App\Models\Product;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -29,7 +30,7 @@ class CartController extends Controller
                     'product_type' => $item->product->type ?? 'voucher',
                     'image' => '/products/'.ltrim($item->product->image ?: 'soundcloud.svg', '/'),
                     'quantity' => $item->quantity,
-                    'topup_meta' => $item->topup_meta, // Bug 5: include stored UID data
+                    'topup_meta' => $item->topup_meta,
                 ];
             });
 
@@ -51,18 +52,20 @@ class CartController extends Controller
                 'target_category_name' => $ud->discountType->targetCategory?->name,
             ]);
 
+        $pendingOrder = Order::where('user_id', Auth::id())
+            ->where('status', 'pending')
+            ->latest()
+            ->first(['id', 'noinv']);
+
         return view('pages.cart', [
             'cartItems' => $cartItems,
             'userDiscounts' => $userDiscounts,
             'midtransClientKey' => config('midtrans.client_key'),
+            'pendingOrder' => $pendingOrder,
         ]);
     }
 
-    /**
-     * Add a product to the cart (or increment quantity if it already exists).
-     *
-     * Bug 5: Accept optional topup_meta for direct_topup products.
-     */
+
     public function store(Request $request, Product $product): JsonResponse
     {
         if (! $product->is_active) {

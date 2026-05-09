@@ -23,7 +23,7 @@ Route::get('/', [StoreController::class, 'showStore'])->name('home');
 Route::post('/login', [AuthController::class, 'logAuth'])->name('logAuth');
 Route::post('/register', [AuthController::class, 'regAuth'])->name('regAuth');
 
-// Midtrans webhook — no auth (server-to-server)
+// Midtrans webhook
 Route::post('/midtrans/callback', [CheckoutController::class, 'callback'])->name('midtrans.callback');
 
 Route::middleware('auth')->group(function () {
@@ -40,7 +40,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/favorites/{productId}', [FavoriteController::class, 'store'])->name('favorites.store');
     Route::delete('/favorites/{productId}', [FavoriteController::class, 'destroy'])->name('favorites.destroy');
 
-    // Cart (DB-based)
+    // Cart
     Route::get('/cart/count', [CartController::class, 'count'])->name('cart.count');
     Route::get('/cart', [CartController::class, 'index'])->name('cart');
     Route::post('/cart/{product}', [CartController::class, 'store'])->name('cart.store');
@@ -52,6 +52,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/checkout/pay/{order}', [CheckoutController::class, 'pay'])->name('checkout.pay');
     Route::get('/checkout/finish/{order}', [CheckoutController::class, 'finish'])->name('checkout.finish');
     Route::get('/checkout/status/{order}', [CheckoutController::class, 'status'])->name('checkout.status');
+    Route::post('/checkout/verify/{order}', [CheckoutController::class, 'verify'])->name('checkout.verify');
 
     // Profile & Settings
     Route::get('/settings', [AuthController::class, 'showSettings'])->name('settings');

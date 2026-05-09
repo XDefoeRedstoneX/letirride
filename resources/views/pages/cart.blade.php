@@ -1,10 +1,14 @@
+@php
+    use \Illuminate\Support\Js;
+@endphp
 <x-app-layout>
     <div class="max-w-5xl mx-auto space-y-8" x-data="{
-        items: {{ \Illuminate\Support\Js::from($cartItems ?? []) }},
-        discounts: {{ \Illuminate\Support\Js::from($userDiscounts ?? []) }},
+        items: {{ Js::from($cartItems ?? []) }},
+        discounts: {{ Js::from($userDiscounts ?? []) }},
         selectedDiscount: null,
         topupCredentials: {},
         paying: false,
+        pendingOrder: {{Js::from($pendingOrder ?? null) }},
         csrfToken: '{{ csrf_token() }}',
         midtransClientKey: '{{ $midtransClientKey ?? '' }}',
 
@@ -147,29 +151,22 @@
                     return;
                 }
 
-                // Open Midtrans Snap popup
-                window.snap.pay(data.snap_token, {
-                    onSuccess: (result) => {
-                        this.paying = false;
-                        window.location.href = `/checkout/finish/${data.order_id}`;
-                    },
-                    onPending: (result) => {
-                        this.paying = false;
-                        window.location.href = `/checkout/finish/${data.order_id}`;
-                    },
-                    onError: (result) => {
-                        this.paying = false;
-                        window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: 'Payment failed. Please try again.', type: 'error' } }));
-                    },
-                    onClose: () => {
-                        this.paying = false;
-                        window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: 'Payment cancelled. Your order is still pending — you can resume it from Transactions.', type: 'warning' } }));
-                    },
-                });
+                const orderId = data.order_id;
+                window.dispatchEvent(new CustomEvent('snap-pay-cart', {
+                    detail: {
+                        snapToken: data.snap_token,
+                        orderId: orderId
+                    }
+                }));
             } catch (e) {
                 this.paying = false;
                 window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: 'Network error. Please try again.', type: 'error' } }));
             }
+        },
+
+    
+        onSnapFinish() {
+            this.paying = false;
         },
 
         formatRp(amount) {
@@ -211,7 +208,7 @@
                                 <p class="font-black text-primary" x-text="formatRp(item.price * item.quantity)"></p>
                             </div>
 
-                            <!-- Direct Top-Up Credential Fields (Bug 5: pre-populated from topup_meta) -->
+                            <!-- Direct Top-Up Credential Fields  -->
                             <template x-if="item.product_type === 'direct_topup'">
                                 <div class="mt-3 p-4 bg-amber-500/10 border border-amber-500/20 rounded-xl space-y-3">
                                     <div class="flex items-center gap-2 text-amber-500">
@@ -300,7 +297,19 @@
                         </div>
                     </div>
 
-                    <button @click="pay()" :disabled="items.length === 0 || paying"
+                    <!-- Pending order warning -->
+                    <template x-if="pendingOrder">
+                        <div class="bg-amber-500/10 border border-amber-500/20 rounded-xl p-4 space-y-2">
+                            <div class="flex items-center gap-2 text-amber-500">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                                <span class="text-[9px] font-black uppercase tracking-widest">Pending Order</span>
+                            </div>
+                            <p class="text-[10px] font-bold text-amber-400">Complete or cancel your pending order before placing a new one.</p>
+                            <a :href="'/checkout/finish/' + pendingOrder.id" class="inline-block mt-1 px-4 py-2 bg-amber-500 text-white rounded-lg text-[9px] font-black uppercase tracking-widest hover:bg-amber-600 transition-colors">View Pending Order</a>
+                        </div>
+                    </template>
+
+                    <button @click="pay()" :disabled="items.length === 0 || paying || pendingOrder"
                             class="w-full py-5 bg-primary text-primary-foreground font-black rounded-2xl hover:scale-105 active:scale-95 transition-all shadow-xl shadow-primary/20 uppercase tracking-widest text-xs flex items-center justify-center gap-3 disabled:opacity-50 disabled:hover:scale-100">
                         <template x-if="paying">
                             <svg class="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -308,7 +317,7 @@
                                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                             </svg>
                         </template>
-                        <span x-text="paying ? 'Processing...' : 'Pay Now'"></span>
+                        <span x-text="paying ? 'Processing...' : (pendingOrder ? 'Complete Pending Order' : 'Pay Now')"></span>
                     </button>
 
                     <p class="text-[8px] font-black text-center text-muted-foreground uppercase tracking-widest">Secure encrypted checkout via Midtrans</p>
@@ -323,4 +332,38 @@
     @else
         <script src="https://app.sandbox.midtrans.com/snap/snap.js" data-client-key="{{ $midtransClientKey ?? '' }}"></script>
     @endif
+
+    <script>
+        document.addEventListener('snap-pay-cart', function(e) {
+            var snapToken = e.detail.snapToken;
+            var orderId = e.detail.orderId;
+            var csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+            window.snap.pay(snapToken, {
+                onSuccess: async function() {
+                    try {
+                        await fetch('/checkout/verify/' + orderId, {
+                            method: 'POST',
+                            headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': csrfToken }
+                        });
+                    } catch(err) {}
+                    document.querySelector('[x-data]').__x.$data.onSnapFinish();
+                    window.location.href = '/transactions';
+                },
+                onPending: function() {
+                    document.querySelector('[x-data]').__x.$data.onSnapFinish();
+                    window.location.href = '/transactions';
+                },
+                onError: function() {
+                    window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: 'Payment failed. Please try again.', type: 'error' } }));
+                    document.querySelector('[x-data]').__x.$data.onSnapFinish();
+                },
+                onClose: function() {
+                    window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: 'Payment cancelled. Your order is still pending — you can resume it from Transactions.', type: 'warning' } }));
+                    document.querySelector('[x-data]').__x.$data.onSnapFinish();
+                    window.location.href = '/transactions';
+                }
+            });
+        });
+    </script>
 </x-app-layout>

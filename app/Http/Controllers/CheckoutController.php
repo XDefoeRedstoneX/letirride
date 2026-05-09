@@ -18,6 +18,7 @@ use Illuminate\Support\Str;
 use Midtrans\Config;
 use Midtrans\Notification;
 use Midtrans\Snap;
+use Midtrans\Transaction;
 
 class CheckoutController extends Controller
 {
@@ -191,9 +192,6 @@ class CheckoutController extends Controller
                 ];
             }
 
-            // Generate a unique Midtrans order_id per attempt.
-            // Format: INV-YYYYMMDD-XXXXXX::1715249272
-            // The '::' delimiter lets the webhook strip the suffix to find our DB order.
             $midtransOrderId = $invoiceId.'::'.time();
 
             // Generate Midtrans Snap token with discounted total
@@ -234,10 +232,7 @@ class CheckoutController extends Controller
         }
     }
 
-    /**
-     * Midtrans server-to-server notification webhook.
-     * No auth middleware — Midtrans calls this directly.
-     */
+
     public function callback(Request $request): JsonResponse
     {
         try {
@@ -248,8 +243,7 @@ class CheckoutController extends Controller
             return response()->json(['message' => 'Invalid notification.'], 400);
         }
 
-        // Midtrans sends back our suffixed order_id (e.g. INV-20260509-ABC123::1715249272).
-        // Strip the '::timestamp' suffix to get the original DB invoice number.
+
         $midtransOrderId = $notification->order_id;
         $transactionStatus = $notification->transaction_status;
         $fraudStatus = $notification->fraud_status ?? 'accept';
@@ -312,12 +306,7 @@ class CheckoutController extends Controller
         ]);
     }
 
-    /**
-     * Fulfill a paid order: mark paid, mark voucher used, assign product keys, award points.
-     *
-     * Bug 1: Cart already cleared in process(), not here.
-     * Bug 4: Mark voucher as used HERE (on confirmed payment), not in process().
-     */
+
     private function fulfillOrder(Order $order): void
     {
         $order->update(['status' => 'paid']);
@@ -329,15 +318,13 @@ class CheckoutController extends Controller
 
         $totalPointsAwarded = 0;
 
-        // Assign available product keys to each order detail
+
         foreach ($order->orderDetails as $detail) {
             $product = Product::find($detail->product_id);
 
             if (! $product) {
                 continue;
             }
-
-            // Grab available keys for this product
             $keys = ProductKey::where('product_id', $detail->product_id)
                 ->where('status', 'available')
                 ->limit($detail->quantity)
@@ -358,6 +345,37 @@ class CheckoutController extends Controller
         if ($totalPointsAwarded > 0) {
             $order->user()->increment('points_balance', $totalPointsAwarded);
         }
+    }
+
+    public function verify(Order $order): JsonResponse
+    {
+        if ($order->user_id !== Auth::id()) {
+            return response()->json(['message' => 'Unauthorized.'], 403);
+        }
+
+        if (in_array($order->status, ['paid', 'failed', 'cancelled'])) {
+            return response()->json(['status' => $order->status]);
+        }
+
+        try {
+            $midtransStatus = Transaction::status($order->noinv);
+
+            $txStatus = $midtransStatus->transaction_status ?? null;
+            $fraudStatus = $midtransStatus->fraud_status ?? 'accept';
+
+            if (in_array($txStatus, ['capture', 'settlement']) && $fraudStatus === 'accept') {
+                $this->fulfillOrder($order);
+            } elseif (in_array($txStatus, ['cancel', 'deny', 'expire'])) {
+                $order->update(['status' => 'failed']);
+            }
+            $order->save(); 
+        } catch (\Exception $e) {
+            Log::warning('Midtrans verify failed: '.$e->getMessage(), ['order' => $order->noinv]);
+        }
+
+        $order->refresh();
+
+        return response()->json(['status' => $order->status]);
     }
 
 
@@ -390,6 +408,7 @@ class CheckoutController extends Controller
             
             // Update stored token
             $order->update(['payment_gateway_ref' => $snapToken]);
+            $order->update(['noinv' => $midtransOrderId]);
 
             return response()->json([
                 'snap_token' => $snapToken,

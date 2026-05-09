@@ -9,9 +9,7 @@ use Illuminate\Support\Facades\Auth;
 
 class TransactionController extends Controller
 {
-    /**
-     * Show the user's order/transaction history.
-     */
+
     public function index()
     {
         $orders = Order::with(['orderDetails.product'])
