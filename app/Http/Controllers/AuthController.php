@@ -32,16 +32,6 @@ class AuthController extends Controller
         return view('pages.profile');
     }
 
-    public function showInv()
-    {
-        return view('pages.inventory');
-    }
-
-    public function showTrans()
-    {
-        return view('pages.transactions');
-    }
-
     public function showForgot()
     {
         return view('pages.forgot-password');

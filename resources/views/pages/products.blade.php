@@ -92,7 +92,7 @@
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="pixel-render"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.56-7.43H5.94"/></svg>
                         Add to Cart
                     </button>
-                    <button class="py-4 bg-primary text-primary-foreground font-black rounded-2xl hover:scale-105 transition-all shadow-lg shadow-primary/20 uppercase tracking-widest text-[10px]">
+                    <button @click="buyNow()" class="py-4 bg-primary text-primary-foreground font-black rounded-2xl hover:scale-105 transition-all shadow-lg shadow-primary/20 uppercase tracking-widest text-[10px]">
                         Buy Now
                     </button>
                 </div>
@@ -173,8 +173,71 @@
                     this.favorites.push(productId);
                 },
 
-                addToCart() {
+                async addToCart() {
+                    if (!this.isAuthenticated) {
+                        window.dispatchEvent(new CustomEvent('open-auth-modal', {
+                            detail: { tab: 'login' },
+                        }));
+                        return;
+                    }
+
+                    if (!this.selectedProduct) return;
+
+                    try {
+                        const response = await fetch(`/cart/${this.selectedProduct.id}`, {
+                            method: 'POST',
+                            headers: {
+                                'Accept': 'application/json',
+                                'X-Requested-With': 'XMLHttpRequest',
+                                'X-CSRF-TOKEN': this.csrfToken,
+                            },
+                        });
+
+                        const data = await response.json();
+
+                        if (response.ok) {
+                            window.dispatchEvent(new CustomEvent('cart-updated', { detail: { count: data.cart_count } }));
+                            window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: data.message, type: 'success' } }));
+                        } else {
+                            window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: data.message || 'Failed to add to cart.', type: 'error' } }));
+                        }
+                    } catch (e) {
+                        window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: 'Network error. Please try again.', type: 'error' } }));
+                    }
+
                     this.showCartModal = false;
+                },
+
+                async buyNow() {
+                    if (!this.isAuthenticated) {
+                        window.dispatchEvent(new CustomEvent('open-auth-modal', {
+                            detail: { tab: 'login' },
+                        }));
+                        return;
+                    }
+
+                    if (!this.selectedProduct) return;
+
+                    try {
+                        const response = await fetch(`/cart/${this.selectedProduct.id}`, {
+                            method: 'POST',
+                            headers: {
+                                'Accept': 'application/json',
+                                'X-Requested-With': 'XMLHttpRequest',
+                                'X-CSRF-TOKEN': this.csrfToken,
+                            },
+                        });
+
+                        if (response.ok) {
+                            window.location.href = '/cart';
+                            return;
+                        }
+
+                        const data = await response.json();
+                        window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: data.message || 'Failed.', type: 'error' } }));
+                    } catch (e) {
+                        window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: 'Network error.', type: 'error' } }));
+                    }
                 },
             };
         }

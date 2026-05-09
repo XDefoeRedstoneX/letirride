@@ -1,25 +1,124 @@
 <x-app-layout>
-    <div class="max-w-5xl mx-auto space-y-8" x-data="{ 
-        items: [
-            { id: 1, name: 'Steam Wallet Rp 100.000', price: 110000, category: 'Games', image: '/products/steam-wallet.svg', qty: 1 },
-            { id: 2, name: 'Spotify Premium 1 Month', price: 54900, category: 'Music', image: '/products/spotify.svg', qty: 2 }
-        ],
+    <div class="max-w-5xl mx-auto space-y-8" x-data="{
+        items: {{ \Illuminate\Support\Js::from($cartItems ?? []) }},
+        discounts: {{ \Illuminate\Support\Js::from($userDiscounts ?? []) }},
+        selectedDiscount: null,
         paying: false,
         paid: false,
+        paidOrderId: null,
+        csrfToken: '{{ csrf_token() }}',
+        midtransClientKey: '{{ $midtransClientKey ?? '' }}',
+
+        get subtotal() {
+            return this.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+        },
+        get discountAmount() {
+            if (!this.selectedDiscount) return 0;
+            const d = this.selectedDiscount;
+            if (d.type === 'percent') return this.subtotal * (d.value / 100);
+            return Math.min(d.value, this.subtotal);
+        },
         get total() {
-            return this.items.reduce((sum, item) => sum + (item.price * item.qty), 0);
+            return Math.max(0, this.subtotal - this.discountAmount);
         },
-        removeItem(id) {
-            this.items = this.items.filter(i => i.id !== id);
+
+        async updateQty(item, delta) {
+            const newQty = item.quantity + delta;
+            if (newQty < 1) { this.removeItem(item); return; }
+
+            const response = await fetch(`/cart/${item.id}`, {
+                method: 'PATCH',
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRF-TOKEN': this.csrfToken,
+                },
+                body: JSON.stringify({ quantity: newQty }),
+            });
+
+            if (response.ok) {
+                item.quantity = newQty;
+                const data = await response.json();
+                window.dispatchEvent(new CustomEvent('cart-updated', { detail: { count: data.cart_count } }));
+            }
         },
-        pay() {
+
+        async removeItem(item) {
+            const response = await fetch(`/cart/${item.id}`, {
+                method: 'DELETE',
+                headers: {
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRF-TOKEN': this.csrfToken,
+                },
+            });
+
+            if (response.ok) {
+                this.items = this.items.filter(i => i.id !== item.id);
+                const data = await response.json();
+                window.dispatchEvent(new CustomEvent('cart-updated', { detail: { count: data.cart_count } }));
+            }
+        },
+
+        async pay() {
+            if (this.items.length === 0 || this.paying) return;
             this.paying = true;
-            setTimeout(() => {
+
+            try {
+                const response = await fetch('/checkout', {
+                    method: 'POST',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRF-TOKEN': this.csrfToken,
+                    },
+                    body: JSON.stringify({
+                        user_discount_id: this.selectedDiscount?.id || null,
+                    }),
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: data.message || 'Checkout failed.', type: 'error' } }));
+                    this.paying = false;
+                    return;
+                }
+
+                // Open Midtrans Snap popup
+                window.snap.pay(data.snap_token, {
+                    onSuccess: (result) => {
+                        this.paying = false;
+                        this.paid = true;
+                        this.paidOrderId = data.order_id;
+                        this.items = [];
+                        window.dispatchEvent(new CustomEvent('cart-updated', { detail: { count: 0 } }));
+                    },
+                    onPending: (result) => {
+                        this.paying = false;
+                        window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: 'Payment pending. Complete your payment to receive your items.', type: 'info' } }));
+                        this.items = [];
+                        this.paidOrderId = data.order_id;
+                        window.dispatchEvent(new CustomEvent('cart-updated', { detail: { count: 0 } }));
+                    },
+                    onError: (result) => {
+                        this.paying = false;
+                        window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: 'Payment failed. Please try again.', type: 'error' } }));
+                    },
+                    onClose: () => {
+                        this.paying = false;
+                    },
+                });
+            } catch (e) {
                 this.paying = false;
-                this.paid = true;
-                // Update navbar cart count
-                window.dispatchEvent(new CustomEvent('cart-updated', { detail: { count: 0 } }));
-            }, 2500);
+                window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: 'Network error. Please try again.', type: 'error' } }));
+            }
+        },
+
+        formatRp(amount) {
+            return 'Rp ' + new Intl.NumberFormat('id-ID').format(amount);
         }
     }">
         <div class="flex items-center justify-between">
@@ -43,14 +142,18 @@
                         <div class="flex-1 space-y-2">
                             <div class="flex items-center justify-between">
                                 <span class="text-[9px] font-black uppercase tracking-widest text-primary" x-text="item.category"></span>
-                                <button @click="removeItem(item.id)" class="text-muted-foreground hover:text-destructive transition-colors">
+                                <button @click="removeItem(item)" class="text-muted-foreground hover:text-destructive transition-colors">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="pixel-render"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>
                                 </button>
                             </div>
                             <h3 class="font-black text-sm uppercase tracking-tight" x-text="item.name"></h3>
                             <div class="flex items-center justify-between">
-                                <p class="text-[10px] font-black text-muted-foreground uppercase tracking-widest" x-text="item.qty + ' x Rp ' + new Intl.NumberFormat('id-ID').format(item.price)"></p>
-                                <p class="font-black text-primary" x-text="'Rp ' + new Intl.NumberFormat('id-ID').format(item.price * item.qty)"></p>
+                                <div class="flex items-center gap-3">
+                                    <button @click="updateQty(item, -1)" class="w-8 h-8 rounded-xl bg-foreground/5 hover:bg-foreground/10 flex items-center justify-center text-foreground transition-colors font-black text-sm">−</button>
+                                    <span class="text-sm font-black w-6 text-center" x-text="item.quantity"></span>
+                                    <button @click="updateQty(item, 1)" class="w-8 h-8 rounded-xl bg-foreground/5 hover:bg-foreground/10 flex items-center justify-center text-foreground transition-colors font-black text-sm">+</button>
+                                </div>
+                                <p class="font-black text-primary" x-text="formatRp(item.price * item.quantity)"></p>
                             </div>
                         </div>
                     </div>
@@ -66,24 +169,43 @@
             <div class="space-y-6" x-show="!paid" x-transition>
                 <div class="glass-card rounded-[2.5rem] p-8 space-y-6 border-border/50 sticky top-24">
                     <h3 class="text-lg font-black uppercase tracking-tighter">Summary</h3>
-                    
+
                     <div class="space-y-4">
                         <div class="flex items-center justify-between text-[10px] font-black uppercase tracking-widest text-muted-foreground">
                             <span>Subtotal</span>
-                            <span x-text="'Rp ' + new Intl.NumberFormat('id-ID').format(total)"></span>
+                            <span x-text="formatRp(subtotal)"></span>
                         </div>
-                        <div class="flex items-center justify-between text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-                            <span>Tax (0%)</span>
-                            <span>Rp 0</span>
-                        </div>
+
+                        <!-- Discount Voucher Selector -->
+                        <template x-if="discounts.length > 0">
+                            <div class="space-y-2">
+                                <label class="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Apply Voucher</label>
+                                <select x-model="selectedDiscount"
+                                        @change="selectedDiscount = discounts.find(d => d.id == $event.target.value) || null"
+                                        class="w-full px-4 py-3 bg-foreground/5 border border-border rounded-xl text-xs font-bold outline-none focus:ring-2 focus:ring-primary/50">
+                                    <option value="">None</option>
+                                    <template x-for="d in discounts" :key="d.id">
+                                        <option :value="d.id" x-text="d.name + (d.type === 'percent' ? ' (' + d.value + '%)' : ' (Rp ' + new Intl.NumberFormat('id-ID').format(d.value) + ')')"></option>
+                                    </template>
+                                </select>
+                            </div>
+                        </template>
+
+                        <template x-if="discountAmount > 0">
+                            <div class="flex items-center justify-between text-[10px] font-black uppercase tracking-widest text-green-500">
+                                <span>Discount</span>
+                                <span x-text="'- ' + formatRp(discountAmount)"></span>
+                            </div>
+                        </template>
+
                         <div class="h-px bg-border"></div>
                         <div class="flex items-center justify-between">
                             <span class="text-xs font-black uppercase tracking-widest">Grand Total</span>
-                            <span class="text-xl font-black text-primary" x-text="'Rp ' + new Intl.NumberFormat('id-ID').format(total)"></span>
+                            <span class="text-xl font-black text-primary" x-text="formatRp(total)"></span>
                         </div>
                     </div>
 
-                    <button @click="pay()" :disabled="items.length === 0 || paying" 
+                    <button @click="pay()" :disabled="items.length === 0 || paying"
                             class="w-full py-5 bg-primary text-primary-foreground font-black rounded-2xl hover:scale-105 active:scale-95 transition-all shadow-xl shadow-primary/20 uppercase tracking-widest text-xs flex items-center justify-center gap-3 disabled:opacity-50 disabled:hover:scale-100">
                         <template x-if="paying">
                             <svg class="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -93,8 +215,8 @@
                         </template>
                         <span x-text="paying ? 'Processing...' : 'Pay Now'"></span>
                     </button>
-                    
-                    <p class="text-[8px] font-black text-center text-muted-foreground uppercase tracking-widest">Secure encrypted checkout</p>
+
+                    <p class="text-[8px] font-black text-center text-muted-foreground uppercase tracking-widest">Secure encrypted checkout via Midtrans</p>
                 </div>
             </div>
 
@@ -106,7 +228,7 @@
                         <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" class="pixel-render"><polyline points="20 6 9 17 4 12"/></svg>
                     </div>
                 </div>
-                
+
                 <div class="space-y-3">
                     <h2 class="text-4xl font-black tracking-tighter uppercase">Payment <span class="text-primary">Successful!</span></h2>
                     <p class="text-muted-foreground text-xs font-bold uppercase tracking-widest leading-relaxed max-w-md mx-auto">Your order has been processed. The digital codes will be available in your <a href="{{ route('inventory') }}" class="text-foreground underline">Inventory</a> shortly.</p>
@@ -119,4 +241,11 @@
             </div>
         </div>
     </div>
+
+    <!-- Midtrans Snap.js -->
+    @if(config('midtrans.is_production'))
+        <script src="https://app.midtrans.com/snap/snap.js" data-client-key="{{ $midtransClientKey ?? '' }}"></script>
+    @else
+        <script src="https://app.sandbox.midtrans.com/snap/snap.js" data-client-key="{{ $midtransClientKey ?? '' }}"></script>
+    @endif
 </x-app-layout>

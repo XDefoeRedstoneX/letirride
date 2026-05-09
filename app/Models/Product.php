@@ -28,4 +28,9 @@ class Product extends Model
     {
         return $this->hasMany(CartItem::class);
     }
+
+    public function productKeys(): HasMany
+    {
+        return $this->hasMany(ProductKey::class);
+    }
 }

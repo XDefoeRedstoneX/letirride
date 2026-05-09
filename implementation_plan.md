@@ -1,417 +1,392 @@
-# Ridly — Digital Voucher E-Commerce: Implementation Plan
+# Ridly — Digital Voucher E-Commerce: Implementation Plan (v2)
 
-> **Project**: Ridly (Laravel 13, Tailwind v4, Alpine.js 3, MySQL, Midtrans)  
-> **Approach**: 4 Phases, sequential, each requiring your green light before starting.
+> **Project**: Ridly (Laravel 13, Tailwind v4, Alpine.js 3, SQLite local / MySQL production, Midtrans)  
+> **Approach**: 4 Phases, sequential — wait for green light before each phase.
 
 ---
 
-## Current Codebase Audit
+## Decisions Locked In (from your feedback)
 
-After reviewing every file in the project, here is a summary of what exists and what needs fixing.
+| Question | Decision |
+|---|---|
+| Database | SQLite for local dev. MySQL `.env` with `root` / `1234` for testing. Production already configured. |
+| Admin Panel | Deferred to Phase 3 — customer side first. |
+| Midtrans | Sandbox mode, credentials already set. |
+| Currency | **Indonesian Rupiah (Rp)** — update all seeder prices to Rupiah values. |
+| Gacha cost | **Points only** — remove Rupiah spin option from UI. |
+| Registration | **Auto-login** after successful signup. |
+| Product images | Use **placeholders** for now. |
+| Referral reward | **Points for each purchase** for both referrer and referee. |
+| Phone column | Not adding — not required by Midtrans for digital goods. |
+| Login ToS checkbox | **Remove** "Agree to Terms" from login form. Keep on signup only. |
 
-### What Already Exists
-| Feature | Status | Notes |
+---
+
+## Updated Database State (already migrated)
+
+The following tables/changes **already exist** — no need to create new migrations for these:
+
+| Item | Status | Notes |
 |---|---|---|
-| Laravel 13 skeleton | ✅ Working | PHP 8.4, Vite 8, TW v4 |
-| User model + auth | ⚠️ Partial | Login/register work via AJAX modal, but has bugs |
-| Product catalog | ✅ Working | 10 seeded products, category filtering, search |
-| Favorites | ✅ Working | Toggle via AJAX, persisted in DB |
-| Shopping cart | ❌ Session-only | Not persisted to DB; cart view uses **hardcoded dummy data** |
-| Checkout / Orders | ❌ Broken | `checkout()` references `invoice_   id` (typo with space), `invoice_number`, `payment_url`, `payment_return` route — all undefined |
-| Midtrans integration | ⚠️ Scaffolded | Config exists, `midtrans/midtrans-php` installed, but checkout is broken |
-| Point Shop | ⚠️ UI-only | Page renders hardcoded `$rewards` array, "Redeem" button does nothing |
-| Gacha | ⚠️ UI-only | Frontend spin animation works, but uses **client-side RNG** — no server validation, no point deduction, no prize persistence |
-| Inventory | ❌ Hardcoded | Shows 3 dummy items in Alpine.js, not from DB |
-| Transactions | ❌ Hardcoded | Shows 3 dummy rows from `@php` block, not from DB |
-| Profile | ✅ Working | Name edit + password change via AJAX |
-| Admin panel | ❌ None | No admin routes, controllers, or views |
-| Dark/Light theme | ✅ Working | Toggle + localStorage persistence |
-| Pixel city background | ✅ Working | Parallax SVG cityscape |
-
-### Critical Bugs Found
-
-| # | Bug | Location |
-|---|---|---|
-| 1 | `checkout()` has `'invoice_   id'` (space in key) | [StoreController.php:125](file:///home/shika/KULIAH/letitride/letirride/app/Http/Controllers/StoreController.php#L125) |
-| 2 | `checkout()` references `$order->invoice_number` (doesn't exist, column is `noinv`) | [StoreController.php:166](file:///home/shika/KULIAH/letitride/letirride/app/Http/Controllers/StoreController.php#L166) |
-| 3 | `checkout()` references `$order->payment_url` (not a column) | [StoreController.php:180](file:///home/shika/KULIAH/letitride/letirride/app/Http/Controllers/StoreController.php#L180) |
-| 4 | `checkout()` references route `payment_return` (doesn't exist) | [StoreController.php:175](file:///home/shika/KULIAH/letitride/letirride/app/Http/Controllers/StoreController.php#L175) |
-| 5 | `checkout()` route is never registered in `web.php` | [web.php](file:///home/shika/KULIAH/letitride/letirride/routes/web.php) |
-| 6 | Cart view path is `'cart'` instead of `'pages.cart'` | [StoreController.php:81](file:///home/shika/KULIAH/letitride/letirride/app/Http/Controllers/StoreController.php#L81) |
-| 7 | Cart page uses **hardcoded dummy items** instead of session/DB data | [cart.blade.php:4-5](file:///home/shika/KULIAH/letitride/letirride/resources/views/pages/cart.blade.php#L4-L5) |
-| 8 | `addToCart()` JS function in products page is **empty** (closes modal, doesn't call backend) | [products.blade.php:176-178](file:///home/shika/KULIAH/letitride/letirride/resources/views/pages/products.blade.php#L176-L178) |
-| 9 | Gacha uses **client-side RNG** — exploitable, no server validation | [gacha.blade.php:37-47](file:///home/shika/KULIAH/letitride/letirride/resources/views/pages/gacha.blade.php#L37-L47) |
-| 10 | Gacha references `Auth::user()->points` and `Auth::user()->balance` — `balance` doesn't exist | [gacha.blade.php:22-26](file:///home/shika/KULIAH/letitride/letirride/resources/views/pages/gacha.blade.php#L22-L26) |
-| 11 | `GachaController::roll()` references `$wonPrize->is_grand_prize` and `$wonPrize->points_reward` — both columns were **dropped** by migration | [GachaController.php:35-40](file:///home/shika/KULIAH/letitride/letirride/app/Http/Controllers/GachaController.php#L35-L40) |
-| 12 | Navbar references `Auth::user()->username` — column is `name`, not `username` | [navbar.blade.php:88-90](file:///home/shika/KULIAH/letitride/letirride/resources/views/components/navbar.blade.php#L88-L90) |
-| 13 | `OrderDetail` fillable has `total_price_in_cart` but `checkout()` creates with `price` + `subtotal` keys | [OrderDetail.php:19](file:///home/shika/KULIAH/letitride/letirride/app/Models/OrderDetail.php#L19) vs [StoreController.php:137-143](file:///home/shika/KULIAH/letitride/letirride/app/Http/Controllers/StoreController.php#L137-L143) |
-| 14 | `DiscountType::targetCategory()` points to `Product` instead of `Category` | [DiscountType.php:32](file:///home/shika/KULIAH/letitride/letirride/app/Models/DiscountType.php#L32) |
-| 15 | `AuthCert` middleware exists but is a no-op (pass-through) | [AuthCert.php](file:///home/shika/KULIAH/letitride/letirride/app/Http/Middleware/AuthCert.php) |
-| 16 | `point-shop` and `gacha` routes are **outside** the `auth` middleware group | [web.php:11-12](file:///home/shika/KULIAH/letitride/letirride/routes/web.php#L11-L12) |
-| 17 | Profile shows `Auth::user()->points` but model column is `points_balance` | [profile.blade.php:114](file:///home/shika/KULIAH/letitride/letirride/resources/views/pages/profile.blade.php#L114) |
-| 18 | Inventory shows hardcoded 12 Items count | [profile.blade.php:123](file:///home/shika/KULIAH/letitride/letirride/resources/views/pages/profile.blade.php#L123) |
-| 19 | `.env.example` defaults to SQLite but project says MySQL | [.env.example:23](file:///home/shika/KULIAH/letitride/letirride/.env.example#L23) |
-| 20 | No `Favorite` model — favorites use raw `DB::table()` queries everywhere | Multiple files |
-| 21 | No admin routes or role-based middleware | Entire project |
-| 22 | `regAuth` redirects to route `login` on non-JSON (doesn't exist) | [AuthController.php:93](file:///home/shika/KULIAH/letitride/letirride/app/Http/Controllers/AuthController.php#L93) |
-| 23 | Seeder uses `$now->subDays()` which mutates the Carbon instance in-place | [DatabaseSeeder.php:428](file:///home/shika/KULIAH/letitride/letirride/database/seeders/DatabaseSeeder.php#L428) |
-| 24 | Missing `Midtrans` env vars in `.env.example` | [.env.example](file:///home/shika/KULIAH/letitride/letirride/.env.example) |
+| `cart_items` table | ✅ Migrated | `id, user_id, product_id, quantity, unique(user_id, product_id), timestamps` |
+| `CartItem` model | ✅ Created | With `user()` and `product()` relationships |
+| `favorites` table | ✅ Migrated | `id, user_id, product_id, unique(user_id, product_id), created_at` |
+| `referral_code` + `referred_by` on `users` | ✅ Migrated | `referral_code` nullable unique, `referred_by` FK to users |
+| `referrals` table | ✅ Migrated | `id, referrer_id, referred_user_id, reward_discount_id, status, created_at` |
+| `Referral` model | ✅ Created | With `referrer()`, `referredUser()`, `rewardDiscount()` relationships |
+| `User` model | ✅ Updated | `cartItems()`, `referrals()`, `referredBy()`, `referral()` relationships, fillable includes `referral_code`, `referred_by` |
+| `Product` model | ✅ Updated | `cartItems()` relationship added |
+| `invoice_id` typo | ✅ Fixed | You already fixed the space in `invoice_   id` → `invoice_id` |
 
 ---
 
-## User Review Required
+## Remaining Bugs (updated from audit)
 
-> [!IMPORTANT]
-> **Database Choice**: The `.env.example` currently defaults to **SQLite**. Your requirements mention **MySQL**. Should we migrate to MySQL now in Phase 1, or keep SQLite for local dev and switch to MySQL later?
-
-> [!IMPORTANT]
-> **Admin Panel Scope**: The admin side is not yet built at all. What features do you need the admin to manage? My assumption is:
-> - Product CRUD (add/edit/delete vouchers, manage product keys)
-> - Order management (view all orders, mark as paid/delivered/failed)
-> - User management (view users, ban, adjust points)
-> - Gacha pool management (edit prizes, drop rates)
-> - View support tickets
-> - Dashboard with stats (revenue, orders, users)
-> 
-> Please confirm or adjust.
-
-> [!IMPORTANT]
-> **Midtrans Mode**: Should we use **Sandbox** mode for development? Do you already have Midtrans sandbox credentials, or do you need to create them?
-
-> [!WARNING]
-> **Currency**: Seeder products use USD prices (e.g., $10.00) but the UI formats as Indonesian Rupiah (`Rp`). Which currency should Ridly actually use? This affects Midtrans configuration too.
-
----
-
-## Open Questions
-
-1. **Do you want a dedicated `/admin` panel (separate layout + sidebar) or integrate admin functions into the existing design?**
-2. **For the Gacha mechanic — should the cost be only in points, or also allow Rupiah purchases (like the current UI suggests)?**
-3. **Should registration auto-login the user, or require them to login separately after signing up?**
-4. **Do you have product images/SVGs for all voucher types, or should we generate placeholder assets?**
-5. **For the referral system (Phase 4) — what reward should referrer and referee receive? (e.g., 100 points each? A discount voucher?)**
-
----
-
-## Proposed Changes — 4 Phases
+| # | Bug | Location | Phase |
+|---|---|---|---|
+| ~~1~~ | ~~`invoice_   id` typo~~ | ~~StoreController:125~~ | ~~Fixed by you~~ |
+| 2 | `checkout()` references `$order->invoice_number` (column is `noinv`) | [StoreController.php:166](file:///home/shika/KULIAH/letitride/letirride/app/Http/Controllers/StoreController.php#L166) | P2 |
+| 3 | `checkout()` references `$order->payment_url` (not a column) | [StoreController.php:180](file:///home/shika/KULIAH/letitride/letirride/app/Http/Controllers/StoreController.php#L180) | P2 |
+| 4 | `checkout()` references route `payment_return` (doesn't exist) | [StoreController.php:175](file:///home/shika/KULIAH/letitride/letirride/app/Http/Controllers/StoreController.php#L175) | P2 |
+| 5 | `checkout()` route never registered in `web.php` | [web.php](file:///home/shika/KULIAH/letitride/letirride/routes/web.php) | P2 |
+| 6 | Cart view path is `'cart'` instead of `'pages.cart'` | [StoreController.php:81](file:///home/shika/KULIAH/letitride/letirride/app/Http/Controllers/StoreController.php#L81) | P1 |
+| 7 | Cart page uses **hardcoded dummy items** instead of DB data | [cart.blade.php:4-5](file:///home/shika/KULIAH/letitride/letirride/resources/views/pages/cart.blade.php#L4-L5) | P2 |
+| 8 | `addToCart()` JS function is **empty** — doesn't call backend | [products.blade.php:176-178](file:///home/shika/KULIAH/letitride/letirride/resources/views/pages/products.blade.php#L176-L178) | P2 |
+| 9 | Gacha uses **client-side RNG** — exploitable | [gacha.blade.php:37-47](file:///home/shika/KULIAH/letitride/letirride/resources/views/pages/gacha.blade.php#L37-L47) | P3 |
+| 10 | Gacha references `Auth::user()->balance` — doesn't exist | [gacha.blade.php:22-26](file:///home/shika/KULIAH/letitride/letirride/resources/views/pages/gacha.blade.php#L22-L26) | P3 |
+| 11 | `GachaController::roll()` references dropped columns `is_grand_prize`, `points_reward` | [GachaController.php:35-40](file:///home/shika/KULIAH/letitride/letirride/app/Http/Controllers/GachaController.php#L35-L40) | P3 |
+| 12 | Navbar references `Auth::user()->username` (should be `name`) | [navbar.blade.php:88-90](file:///home/shika/KULIAH/letitride/letirride/resources/views/components/navbar.blade.php#L88-L90) | P1 |
+| 13 | `OrderDetail` fillable `total_price_in_cart` mismatches `checkout()` keys | [OrderDetail.php:19](file:///home/shika/KULIAH/letitride/letirride/app/Models/OrderDetail.php#L19) | P2 |
+| 14 | `DiscountType::targetCategory()` points to `Product` instead of `Category` | [DiscountType.php:32](file:///home/shika/KULIAH/letitride/letirride/app/Models/DiscountType.php#L32) | P1 |
+| 15 | Login form has "Agree to Terms" checkbox (should be removed per your request) | [auth-modal.blade.php:118-121](file:///home/shika/KULIAH/letitride/letirride/resources/views/components/auth-modal.blade.php#L118-L121) | P1 |
+| 16 | `point-shop` and `gacha` routes outside `auth` middleware | [web.php:11-12](file:///home/shika/KULIAH/letitride/letirride/routes/web.php#L11-L12) | P1 |
+| 17 | Profile shows `Auth::user()->points` (column is `points_balance`) | [profile.blade.php:114](file:///home/shika/KULIAH/letitride/letirride/resources/views/pages/profile.blade.php#L114) | P1 |
+| 18 | Inventory shows hardcoded "12 Items" count | [profile.blade.php:123](file:///home/shika/KULIAH/letitride/letirride/resources/views/pages/profile.blade.php#L123) | P2 |
+| 19 | No `Favorite` model — favorites use raw `DB::table()` queries | Multiple files | P1 |
+| 20 | `regAuth` redirects to route `login` (doesn't exist) | [AuthController.php:93](file:///home/shika/KULIAH/letitride/letirride/app/Http/Controllers/AuthController.php#L93) | P1 |
+| 21 | Seeder `$now->subDays()` mutates Carbon in-place | [DatabaseSeeder.php:428](file:///home/shika/KULIAH/letitride/letirride/database/seeders/DatabaseSeeder.php#L428) | P1 |
+| 22 | Missing Midtrans env vars in `.env.example` | [.env.example](file:///home/shika/KULIAH/letitride/letirride/.env.example) | P2 |
+| 23 | `Order` fillable has `noinv` but `checkout()` uses `invoice_id` key | [Order.php](file:///home/shika/KULIAH/letitride/letirride/app/Models/Order.php) vs [StoreController.php:125](file:///home/shika/KULIAH/letitride/letirride/app/Http/Controllers/StoreController.php#L125) | P2 |
+| 24 | `StoreController` still uses **session** cart — needs to switch to `cart_items` DB table | [StoreController.php:62-95](file:///home/shika/KULIAH/letitride/letirride/app/Http/Controllers/StoreController.php#L62-L95) | P2 |
+| 25 | Point shop shows hardcoded `$rewards` array, "Redeem" does nothing | [point-shop.blade.php:27-36](file:///home/shika/KULIAH/letitride/letirride/resources/views/pages/point-shop.blade.php#L27-L36) | P3 |
+| 26 | Transactions page shows hardcoded dummy rows | [transactions.blade.php:27-31](file:///home/shika/KULIAH/letitride/letirride/resources/views/pages/transactions.blade.php#L27-L31) | P2 |
+| 27 | Inventory page shows hardcoded dummy items | [inventory.blade.php:6-10](file:///home/shika/KULIAH/letitride/letirride/resources/views/pages/inventory.blade.php#L6-L10) | P2 |
 
 ---
 
-## Phase 1 — Foundation: UI/UX Overhaul + Auth Hardening
+## Phase 1 — Foundation: UI/UX + Auth + Bug Fixes
 
-*Goal*: Fix all critical bugs, harden authentication, upgrade the UI to a premium state, and establish the architectural patterns for all subsequent phases.
+*Goal*: Fix critical bugs, harden auth (with auto-login), upgrade UI, add toast system.
 
 ---
 
-### Backend — Bug Fixes & Auth
+### Backend Fixes
 
 #### [MODIFY] [AuthController.php](file:///home/shika/KULIAH/letitride/letirride/app/Http/Controllers/AuthController.php)
-- Fix `regAuth`: remove redirect to non-existent `login` route
-- Add proper validation rules (password confirmation, username uniqueness, length limits)
-- Add `FormRequest` classes: `LoginRequest`, `RegisterRequest`
-- Add email verification support (optional, flagged for Phase 4 2FA)
-
-#### [NEW] `app/Http/Requests/LoginRequest.php`
-- Proper validation with rate limiting
-
-#### [NEW] `app/Http/Requests/RegisterRequest.php`
-- Name, email (unique, dns), password (min:8, confirmed)
+- Fix `regAuth()`: auto-login user after registration (remove redirect to non-existent `login` route)
+- Add proper validation rules (password min:8, email unique + dns, name min:2)
+- Generate unique `referral_code` on registration (needed later in Phase 4, but the DB column is already there)
 
 #### [MODIFY] [web.php](file:///home/shika/KULIAH/letitride/letirride/routes/web.php)
-- Move `point-shop` and `gacha` routes inside `auth` middleware group (they already have `@auth` guards in views, but routes are unprotected)
-- Add proper route organization with `prefix` and `name` groups
-- Fix inconsistent route naming
+- Move `point-shop` and `gacha` routes inside `auth` middleware group (Bug #16)
+- Fix cart view path `'cart'` → `'pages.cart'` (Bug #6)
+- Organize routes with proper prefix/name groups
 
 #### [MODIFY] [navbar.blade.php](file:///home/shika/KULIAH/letitride/letirride/resources/views/components/navbar.blade.php)
-- Fix `Auth::user()->username` → `Auth::user()->name`
-- Add mobile menu items for all nav links (currently missing favorites, about, faq, support in mobile)
+- Fix `Auth::user()->username` → `Auth::user()->name` (Bug #12)
 - Add points balance display in navbar for logged-in users
+- Add all nav items to mobile menu (currently missing)
 
-#### [MODIFY] [User.php](file:///home/shika/KULIAH/letitride/letirride/app/Models/User.php)
-- Add `username` accessor if needed, or standardize on `name`
-- Add `isAdmin()` helper method
+#### [MODIFY] [auth-modal.blade.php](file:///home/shika/KULIAH/letitride/letirride/resources/views/components/auth-modal.blade.php)
+- **Remove** "Agree to Terms" checkbox from **login** form (Bug #15)
+- Keep Terms checkbox on signup form but link it to actual Terms page
+- Add "Show password" toggle
+- Add password strength indicator for signup
+- Change signup success flow: auto-login → redirect to home (no more `alert()`)
 
 #### [MODIFY] [DiscountType.php](file:///home/shika/KULIAH/letitride/letirride/app/Models/DiscountType.php)
-- Fix `targetCategory()` relationship: change `Product::class` → `Category::class`
+- Fix `targetCategory()`: change `Product::class` → `Category::class` (Bug #14)
 
-#### [NEW] `app/Http/Middleware/EnsureUserIsAdmin.php`
-- Role-based middleware for admin routes
+#### [MODIFY] [profile.blade.php](file:///home/shika/KULIAH/letitride/letirride/resources/views/pages/profile.blade.php)
+- Fix `Auth::user()->points` → `Auth::user()->points_balance` (Bug #17)
+
+#### [NEW] `app/Models/Favorite.php`
+- Create proper Eloquent model for favorites (Bug #19)
+- Relationships: `belongsTo(User)`, `belongsTo(Product)`
+
+#### [MODIFY] [FavoriteController.php](file:///home/shika/KULIAH/letitride/letirride/app/Http/Controllers/FavoriteController.php)
+- Refactor to use `Favorite` model instead of raw `DB::table()` queries
+
+#### [MODIFY] [User.php](file:///home/shika/KULIAH/letitride/letirride/app/Models/User.php)
+- Add `favorites()` relationship
+- Add `isAdmin(): bool` helper method
+
+#### [MODIFY] [DatabaseSeeder.php](file:///home/shika/KULIAH/letitride/letirride/database/seeders/DatabaseSeeder.php)
+- Fix Carbon mutation bug — use `clone $now` consistently (Bug #21 — already partially done, verify all occurrences)
+- Update product prices to Rupiah values (e.g., `10.00` → `160000.00`)
 
 ---
 
-### Frontend — UI/UX Upgrades
+### Frontend — UI Upgrades
 
 #### [MODIFY] [app.blade.php](file:///home/shika/KULIAH/letitride/letirride/resources/views/layouts/app.blade.php)
-- Add meta description, favicon, and Open Graph tags
-- Add CSRF meta tag for AJAX requests
-- Add toast notification system (Alpine.js component)
-- Improve footer with more links (About, FAQ, Contact, Support)
-
-#### [MODIFY] [auth-modal.blade.php](file:///home/shika/KULIAH/letitride/letirride/resources/views/components/auth-modal.blade.php)
-- Add password confirmation field to signup
-- Add "Show password" toggle
-- Improve error display (field-level errors, not just a single message)
-- Add password strength indicator
-- Link Terms of Service properly (currently `href="#"`)
-
-#### [MODIFY] [app.css](file:///home/shika/KULIAH/letitride/letirride/resources/css/app.css)
-- Add toast notification styles
-- Add form input focus styles
-- Add loading skeleton animations
-- Add smooth page transition classes
+- Add meta description and Open Graph tags
+- Add CSRF meta tag for AJAX
+- Add toast notification component
+- Improve footer (About, FAQ, Contact, Support links)
 
 #### [NEW] `resources/views/components/toast-notification.blade.php`
 - Alpine.js-powered toast system for success/error/info messages
+- Replaces all `alert()` calls
 
-#### [MODIFY] [products.blade.php](file:///home/shika/KULIAH/letitride/letirride/resources/views/pages/products.blade.php)
-- Wire up `addToCart()` to actually call the backend
-- Show cart count update in navbar after adding
-- Add quantity selector in buy modal
-- Add product description display
+#### [MODIFY] [app.css](file:///home/shika/KULIAH/letitride/letirride/resources/css/app.css)
+- Add toast notification styles
+- Add loading skeleton animations
+- Add password strength indicator styles
 
-#### [MODIFY] All remaining page views
-- Replace all hardcoded data with proper Blade `@props` / controller data
-- Ensure consistent design language across all pages
-
----
-
-## Phase 2 — Core Commerce: DB Cart + Checkout + Midtrans
-
-*Goal*: Build the complete purchase flow — from browsing → cart → checkout → payment → receipt → inventory.
+#### [MODIFY] All page views — consistency pass
+- Ensure all pages use the same design language
+- Ensure responsive behavior is consistent
 
 ---
 
-### Database Changes
+### Deliverables for Phase 1
+- [ ] All Bug #6, #12, #14, #15, #16, #17, #19, #20, #21 fixed
+- [ ] Login modal: no Terms checkbox, show password toggle
+- [ ] Signup: auto-login on success, password strength, Terms linked properly
+- [ ] Toast notification system replaces all `alert()` calls
+- [ ] Proper `Favorite` model
+- [ ] `isAdmin()` helper on User
+- [ ] Seeder prices updated to Rupiah
+- [ ] Points balance visible in navbar
 
-#### [NEW] `database/migrations/xxxx_create_carts_table.php`
-```
-carts: id, user_id (FK), product_id (FK), quantity, created_at, updated_at
-UNIQUE(user_id, product_id)
-```
+---
 
-#### [NEW] `app/Models/Cart.php`
-- Relationships: `belongsTo(User)`, `belongsTo(Product)`
+## Phase 2 — Core Commerce: DB Cart + Checkout + Midtrans + Inventory
 
-#### [MODIFY] Users table migration
-- Add `phone` column (for Midtrans customer details)
+*Goal*: Wire up the complete purchase flow using the existing `cart_items` DB table.
 
 ---
 
 ### Backend
 
 #### [NEW] `app/Http/Controllers/CartController.php`
-- `index()` — fetch user's cart items from DB with product eager-loading
-- `store($productId)` — add to cart (increment if exists)
-- `update($cartId, Request)` — update quantity
-- `destroy($cartId)` — remove item
-- All return JSON for Alpine.js AJAX
+- `index()` — fetch user's `CartItem`s from DB with `product` eager-loading → pass to `pages.cart` view
+- `store($productId)` — add to cart (increment quantity if exists via `updateOrCreate`)
+- `update($cartItemId, Request)` — update quantity (AJAX)
+- `destroy($cartItemId)` — remove item (AJAX)
+- `count()` — return cart item count for navbar badge (AJAX)
 
 #### [NEW] `app/Http/Controllers/CheckoutController.php`
-- `show()` — display checkout page with cart summary + available user discounts
-- `process(Request)` — validate cart, apply discount, create Order + OrderDetails, generate Midtrans Snap token, return payment page
-- `callback(Request)` — Midtrans webhook handler (server-to-server notification)
-- `finish(Request)` — Midtrans finish redirect (user returns from payment)
-- After successful payment: assign `ProductKey` to order, award points to user
+- `show()` — display checkout page: cart summary + user's available (unused, unexpired) discount vouchers
+- `process(Request)` — validate cart not empty, apply discount voucher, create `Order` + `OrderDetail`s, generate Midtrans Snap token, return snap token to frontend
+- `callback(Request)` — Midtrans server-to-server notification webhook: verify signature hash, update order status, assign `ProductKey`s, award `points_balance` to user
+- `finish($orderId)` — user returns from Midtrans: show receipt/result page
 
 #### [MODIFY] [StoreController.php](file:///home/shika/KULIAH/letitride/letirride/app/Http/Controllers/StoreController.php)
-- Remove all session cart logic
-- Remove broken `checkout()` method (moved to `CheckoutController`)
-- Keep `showStore()` as-is (it works)
+- Remove all session cart methods (`addCart`, `viewCart`, `updateCart`)
+- Remove broken `checkout()` method (replaced by `CheckoutController`)
+- Remove unused `VoucherCode` import
+- Keep `showStore()` as-is
 
 #### [MODIFY] [Order.php](file:///home/shika/KULIAH/letitride/letirride/app/Models/Order.php)
-- Fix `fillable` to match actual DB columns
-- Add `paid_at` timestamp column
+- Align `fillable` with actual columns: fix `noinv` → ensure it matches what `checkout()` uses (either rename column via migration or update code to use `noinv`)
+- Add `paid_at` column via new migration if needed
+
+#### [MODIFY] [OrderDetail.php](file:///home/shika/KULIAH/letitride/letirride/app/Models/OrderDetail.php)
+- Fix `fillable` to match actual checkout data (Bug #13)
 
 #### [NEW] `app/Http/Controllers/InventoryController.php`
-- Fetch user's purchased product keys + active discount vouchers from DB
+- Fetch user's purchased `ProductKey`s (from paid orders) + active `UserDiscount`s from DB
 
 #### [NEW] `app/Http/Controllers/TransactionController.php`
-- Fetch user's order history from DB with order details
+- Fetch user's `Order`s with `orderDetails.product` eager-loading
+
+#### [MODIFY] [web.php](file:///home/shika/KULIAH/letitride/letirride/routes/web.php)
+- Add cart routes: `GET /cart`, `POST /cart/{product}`, `PATCH /cart/{cartItem}`, `DELETE /cart/{cartItem}`, `GET /cart/count`
+- Add checkout routes: `GET /checkout`, `POST /checkout`, `POST /midtrans/callback` (no auth), `GET /checkout/finish/{order}`
+- Update inventory + transactions routes to use new controllers
+
+#### [MODIFY] [.env.example](file:///home/shika/KULIAH/letitride/letirride/.env.example)
+- Add `MIDTRANS_SERVER_KEY`, `MIDTRANS_CLIENT_KEY`, `MIDTRANS_IS_PRODUCTION=false`
 
 ---
 
 ### Frontend
 
+#### [MODIFY] [products.blade.php](file:///home/shika/KULIAH/letitride/letirride/resources/views/pages/products.blade.php)
+- Wire `addToCart()` to call `POST /cart/{product}` via AJAX
+- Show toast on success
+- Update navbar cart badge count
+
 #### [MODIFY] [cart.blade.php](file:///home/shika/KULIAH/letitride/letirride/resources/views/pages/cart.blade.php)
-- Complete rewrite: fetch real cart data from DB
-- Quantity +/- controls with AJAX updates
+- **Complete rewrite**: fetch real cart data from `CartController@index`
+- Quantity +/- controls with AJAX
 - Remove item with AJAX
-- Show discount code input field
+- Show discount voucher selector dropdown (user's available vouchers)
 - Real-time total calculation
-- "Proceed to Checkout" button
+- "Proceed to Checkout" → triggers Midtrans Snap.js popup
 
-#### [NEW] `resources/views/pages/checkout.blade.php`
-- Order summary (items, quantities, prices)
-- Discount voucher selector (from user's available vouchers)
-- Address/phone fields (for Midtrans)
-- Midtrans Snap.js payment popup integration
-
-#### [NEW] `resources/views/pages/receipt.blade.php`
-- Post-payment receipt with order details, product keys, and download/copy buttons
+#### [NEW] `resources/views/pages/checkout-result.blade.php`
+- Post-payment result: order summary, product keys (if paid), status
 
 #### [MODIFY] [inventory.blade.php](file:///home/shika/KULIAH/letitride/letirride/resources/views/pages/inventory.blade.php)
-- Pull real data: purchased product keys + discount vouchers
-- Copy-to-clipboard for product keys
-- Filter by type (Products, Vouchers)
+- Pull real data from `InventoryController`
+- Show purchased product keys with copy-to-clipboard
+- Show active discount vouchers
+- Filter tabs (Products / Vouchers)
 
 #### [MODIFY] [transactions.blade.php](file:///home/shika/KULIAH/letitride/letirride/resources/views/pages/transactions.blade.php)
-- Pull real order history from DB
-- Show order status (pending, paid, failed)
-- Expand row to show order details / product keys
+- Pull real order history from `TransactionController`
+- Show order status badges (pending/paid/failed)
+- Expandable rows to show order details
 
 #### [MODIFY] [profile.blade.php](file:///home/shika/KULIAH/letitride/letirride/resources/views/pages/profile.blade.php)
-- Fix `Auth::user()->points` → `Auth::user()->points_balance`
-- Show real inventory count from DB
-- Add phone number field
+- Show real inventory count from DB (Bug #18)
 
 ---
 
-### Midtrans Integration
-
-#### [MODIFY] [midtrans.php](file:///home/shika/KULIAH/letitride/letirride/config/midtrans.php)
-- Already correct, just needs env vars
-
-#### [MODIFY] [.env.example](file:///home/shika/KULIAH/letitride/letirride/.env.example)
-- Add `MIDTRANS_SERVER_KEY`, `MIDTRANS_CLIENT_KEY`, `MIDTRANS_IS_PRODUCTION`
-
-#### [NEW] Route: `POST /midtrans/callback` (webhook, no auth)
-- Verify signature, update order status, assign product keys
+### Deliverables for Phase 2
+- [ ] All Bug #2, #3, #4, #5, #7, #8, #13, #18, #22, #23, #24, #26, #27 fixed
+- [ ] Full DB cart (add, update quantity, remove, persist across sessions)
+- [ ] Checkout with Midtrans Snap.js popup
+- [ ] Midtrans webhook handler (server notification)
+- [ ] Post-payment: assign ProductKeys, award points
+- [ ] Real inventory page (purchased keys + vouchers)
+- [ ] Real transaction history page
 
 ---
 
-## Phase 3 — Engagement: Point Rewards + Gacha + Admin Panel
+## Phase 3 — Engagement: Points + Gacha + Admin Panel
 
-*Goal*: Build the gamification layer and the admin management panel.
+*Goal*: Build server-side gacha, point shop redemption, and the admin dashboard.
 
 ---
 
-### Point Rewards System
-
-#### [MODIFY] `CheckoutController` (from Phase 2)
-- After successful payment, award `point_reward` from each purchased product to user's `points_balance`
-
-#### [NEW] `app/Http/Controllers/PointShopController.php`
-- `index()` — fetch point shop items from DB
-- `redeem($itemId)` — validate points, deduct, create `UserDiscount`, record `PointShopPurchase`
-
-#### [MODIFY] [point-shop.blade.php](file:///home/shika/KULIAH/letitride/letirride/resources/views/pages/point-shop.blade.php)
-- Replace hardcoded `$rewards` array with DB data
-- Wire "Redeem" button to AJAX endpoint
-- Show success/error toast
-- Disable button if insufficient points
+### Point Shop
 
 #### [NEW] `app/Models/PointShopItem.php`
-- Already has a table from migration, just needs the model
+- Model for existing `point_shop_items` table
+
+#### [NEW] `app/Http/Controllers/PointShopController.php`
+- `index()` — fetch active point shop items from DB
+- `redeem($itemId)` — validate sufficient points → deduct → create `UserDiscount` → record `PointShopPurchase` → return JSON
+
+#### [MODIFY] [point-shop.blade.php](file:///home/shika/KULIAH/letitride/letirride/resources/views/pages/point-shop.blade.php)
+- Replace hardcoded `$rewards` with DB data (Bug #25)
+- Wire "Redeem" buttons to AJAX
+- Disable if insufficient points
+- Toast feedback
 
 ---
 
-### Gacha Mechanic (Server-Side)
+### Gacha (Server-Side)
 
 #### [MODIFY] [GachaController.php](file:///home/shika/KULIAH/letitride/letirride/app/Http/Controllers/GachaController.php)
-- Complete rewrite of `roll()`:
-  - Accept cost type (points only — based on your requirements)
+- **Complete rewrite** of `roll()` (Bugs #9, #10, #11):
+  - Points-only cost (remove Rupiah option)
   - Server-side weighted RNG using `gacha_pools` table
-  - Deduct points from user
-  - Create `UserDiscount` for won discount voucher
+  - Deduct `points_balance` from user
+  - Create `UserDiscount` for won prize
   - Return JSON with prize data for frontend animation
-  - Pity system consideration (track consecutive rolls without rare+)
 
 #### [NEW] `app/Models/GachaHistory.php` + migration
 ```
-gacha_histories: id, user_id (FK), gacha_pool_id (FK), cost_type, cost_amount, created_at
+gacha_histories: id, user_id (FK), gacha_pool_id (FK), points_spent, created_at
 ```
 
 #### [MODIFY] [gacha.blade.php](file:///home/shika/KULIAH/letitride/letirride/resources/views/pages/gacha.blade.php)
-- Load prize pool from server data (not hardcoded JS)
-- Spin animation triggers AJAX call → server decides winner → frontend animates to result
-- Update points balance in navbar after spin
-- Show gacha history
+- Load prize pool from server (not hardcoded JS)
+- Remove Rupiah spin button — points only
+- Spin animation calls AJAX → server decides winner → frontend animates
+- Update points in navbar after spin
+- "Claim Reward" button confirms prize
 
 ---
 
 ### Admin Dashboard
 
+#### [NEW] `app/Http/Middleware/EnsureUserIsAdmin.php`
+- Check `$user->role === 'admin'`
+
 #### [NEW] `app/Http/Controllers/Admin/DashboardController.php`
-- Stats overview: total revenue, total orders, total users, active products
+- Stats: revenue, orders, users, active products
 
 #### [NEW] `app/Http/Controllers/Admin/ProductController.php`
-- Full CRUD: list, create, edit, delete products
-- Manage product keys (bulk add, view status)
-- Upload product images
+- CRUD products + manage product keys
 
 #### [NEW] `app/Http/Controllers/Admin/OrderController.php`
-- View all orders with filters (status, date range, user)
-- Update order status manually
+- View/filter all orders, update status
 
 #### [NEW] `app/Http/Controllers/Admin/UserController.php`
-- View all users, search, filter
-- Adjust points balance
-- Ban/unban users
+- View users, adjust points, manage roles
 
 #### [NEW] `app/Http/Controllers/Admin/GachaController.php`
-- Manage gacha pool entries (CRUD)
-- View gacha history/analytics
+- Manage gacha pool entries
 
 #### [NEW] `app/Http/Controllers/Admin/TicketController.php`
 - View/respond to support tickets
-- Update ticket status
 
 #### [NEW] `resources/views/admin/` directory
-- `layouts/admin.blade.php` — admin layout with sidebar navigation
-- `dashboard.blade.php` — stats cards + recent orders
-- `products/index.blade.php`, `products/create.blade.php`, `products/edit.blade.php`
-- `orders/index.blade.php`, `orders/show.blade.php`
-- `users/index.blade.php`
-- `gacha/index.blade.php`
-- `tickets/index.blade.php`, `tickets/show.blade.php`
+- `layouts/admin.blade.php` — dedicated admin layout with sidebar
+- Pages: dashboard, products CRUD, orders, users, gacha, tickets
 
 #### [MODIFY] [web.php](file:///home/shika/KULIAH/letitride/letirride/routes/web.php)
-- Add `Route::prefix('admin')->middleware(['auth', 'admin'])->group(...)` with all admin routes
+- Add `Route::prefix('admin')->middleware(['auth', 'admin'])->group(...)` with all admin resource routes
 
 ---
 
-## Phase 4 — Polish: Referral Codes + 2FA/OAuth + Final QA
-
-*Goal*: Add engagement features and security hardening. These are "idea phase" features.
+### Deliverables for Phase 3
+- [ ] All Bug #9, #10, #11, #25 fixed
+- [ ] Server-side gacha with weighted RNG + gacha history
+- [ ] Point shop redemption (deduct points, create voucher)
+- [ ] Full admin panel with product CRUD, order management, user management, gacha management, ticket management
 
 ---
 
-### Referral System
+## Phase 4 — Polish: Referral System + 2FA/OAuth + QA
 
-#### [NEW] Migration: `add_referral_columns_to_users_table`
-```
-referral_code: string, unique, auto-generated on registration
-referred_by: FK to users, nullable
-```
+*Goal*: Wire up the already-migrated referral system, add Google OAuth, optional 2FA.
 
-#### [NEW] `database/migrations/xxxx_create_referral_rewards_table.php`
-```
-referral_rewards: id, referrer_id (FK), referee_id (FK), reward_type, reward_value, created_at
-```
+---
+
+### Referral System (DB already exists)
 
 #### [NEW] `app/Http/Controllers/ReferralController.php`
-- Show referral code + share link on profile page
-- Apply referral code during registration
-- Award points/discount to both referrer and referee after referee's first purchase
+- Show referral code + shareable link on profile
+- Apply referral code during registration (optional field)
+- On each purchase by referee: award points to both referrer and referee
 
-#### [MODIFY] Registration flow
-- Add optional referral code field
+#### [MODIFY] [AuthController.php](file:///home/shika/KULIAH/letitride/letirride/app/Http/Controllers/AuthController.php)
+- Accept optional `referral_code` field during registration
+- Look up referrer, set `referred_by`, create `Referral` record
+
+#### [MODIFY] `CheckoutController` (from Phase 2)
+- After successful payment: check if user was referred → award referral points to both
+
+#### [MODIFY] [profile.blade.php](file:///home/shika/KULIAH/letitride/letirride/resources/views/pages/profile.blade.php)
+- Add referral code display with copy + share buttons
+- Show referral stats (count, points earned)
 
 ---
 
-### 2FA + Google OAuth
+### Google OAuth
 
-#### Google OAuth
 - Install `laravel/socialite`
-- Add Google login button to auth modal
-- Create/link accounts on Google OAuth callback
-- Use existing `google_id` column on users table
+- Add Google login/signup button to auth modal
+- Handle OAuth callback: create account or link to existing via `google_id`
 
-#### Two-Factor Authentication
+#### [NEW] `app/Http/Controllers/GoogleAuthController.php`
+- `redirect()` → redirect to Google OAuth
+- `callback()` → handle response, create/find user, auto-login
+
+---
+
+### Two-Factor Authentication (Optional)
+
 - Install `pragmarx/google2fa-laravel` + `bacon/bacon-qr-code`
-- Add 2FA setup page in user settings
-- QR code generation for authenticator app
-- Require 2FA code on login when enabled
+- Add 2FA setup in user profile/settings
+- QR code generation for authenticator apps
 - Recovery codes
 
 #### [NEW] Migration: `add_2fa_columns_to_users_table`
@@ -424,38 +399,38 @@ two_factor_confirmed_at: timestamp, nullable
 ---
 
 ### Final Polish
-- Full responsive testing (mobile, tablet, desktop)
+- Full responsive testing
 - Loading states for all AJAX actions
-- Error boundaries and fallback UI
 - SEO meta tags on all pages
-- Performance: eager loading, query optimization, caching
-- Security audit: CSRF, XSS, SQL injection, rate limiting
-- Write Pest tests for critical flows (auth, checkout, gacha)
+- Performance: eager loading, query optimization
+- Security: CSRF, XSS, rate limiting audit
+- Pest tests for critical flows
 
 ---
 
 ## Verification Plan
 
 ### Automated Tests
-- `php artisan test --compact` after each phase
-- Write Pest feature tests for: registration, login, add-to-cart, checkout, gacha roll, point redemption
-- Browser smoke tests via browser subagent
+```bash
+php artisan test --compact
+```
+- Pest feature tests for: registration (with auto-login), login, add-to-cart, checkout flow, gacha roll, point redemption, referral
 
 ### Manual Verification
-- Run `composer run dev` and visually verify each page
-- Test complete purchase flow: browse → cart → checkout → Midtrans sandbox → receipt → inventory
-- Test gacha: spin → verify points deducted → verify prize in inventory
-- Test admin: CRUD products, view orders, manage users
+- `composer run dev` → visually verify all pages
+- Complete purchase flow: browse → cart → checkout → Midtrans sandbox → receipt → inventory
+- Gacha: spin → points deducted → prize in inventory
+- Admin: CRUD products, view orders, manage users
 
 ---
 
-## Phase Execution Summary
+## Phase Summary
 
-| Phase | Scope | Key Deliverables |
+| Phase | Scope | Bugs Fixed |
 |---|---|---|
-| **Phase 1** | UI/UX + Auth + Bug Fixes | All 24 bugs fixed, premium UI, toast system, hardened auth |
-| **Phase 2** | DB Cart + Checkout + Midtrans | Full purchase flow end-to-end, real inventory & transactions |
-| **Phase 3** | Points + Gacha + Admin | Server-side gacha, point shop redemption, full admin panel |
-| **Phase 4** | Referral + 2FA/OAuth + QA | Referral codes, Google login, 2FA, final polish & tests |
+| **Phase 1** | UI/UX + Auth (auto-login, remove login ToS) + bug fixes | #6, #12, #14, #15, #16, #17, #19, #20, #21 |
+| **Phase 2** | DB Cart + Checkout + Midtrans + real Inventory & Transactions | #2, #3, #4, #5, #7, #8, #13, #18, #22, #23, #24, #26, #27 |
+| **Phase 3** | Point Shop + Server-side Gacha + Admin Panel | #9, #10, #11, #25 |
+| **Phase 4** | Referral wiring + Google OAuth + 2FA + Final QA | — |
 
 > **Awaiting your green light to begin Phase 1.**
