@@ -18,6 +18,7 @@
                             <th class="px-8 py-6">Amount</th>
                             <th class="px-8 py-6">Status</th>
                             <th class="px-8 py-6">Date</th>
+                            <th class="px-8 py-6">Action</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-white/5">
@@ -43,6 +44,15 @@
                                 </span>
                             </td>
                             <td class="px-8 py-6 text-[11px] font-bold text-muted-foreground">{{ $trx['date'] }}</td>
+                            <td class="px-8 py-6">
+                                <a href="{{ route('checkout.finish', $trx['order_id']) }}"
+                                   class="px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-colors
+                                       @if($trx['status'] === 'PENDING') bg-amber-500/10 text-amber-500 hover:bg-amber-500/20
+                                       @else bg-foreground/5 text-foreground hover:bg-foreground/10
+                                       @endif">
+                                    {{ $trx['status'] === 'PENDING' ? 'Resume' : 'View' }}
+                                </a>
+                            </td>
                         </tr>
                         @endforeach
                     </tbody>
