@@ -49,7 +49,7 @@ class TransactionController extends Controller
     }
 
     /**
-     * Bug 1: Cancel a pending order. Releases the voucher if one was attached.
+      * Cancel a pending order. Releases the voucher if one was attached.
      */
     public function cancel(Order $order): JsonResponse
     {
@@ -63,8 +63,6 @@ class TransactionController extends Controller
 
         $order->update(['status' => 'cancelled']);
 
-        // Voucher was never marked as used (Bug 4 fix), so no release needed.
-        // But clear the reference so the voucher isn't "locked" by this order.
         if ($order->user_discount_id) {
             $order->update(['user_discount_id' => null]);
         }

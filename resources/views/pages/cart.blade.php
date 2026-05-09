@@ -9,7 +9,6 @@
         midtransClientKey: '{{ $midtransClientKey ?? '' }}',
 
         init() {
-            // Bug 5: Pre-populate topup credentials from cart item topup_meta
             this.items.forEach(item => {
                 if (item.product_type === 'direct_topup' && item.topup_meta) {
                     this.topupCredentials[item.product_id] = { ...item.topup_meta };

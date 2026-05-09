@@ -27,6 +27,15 @@ class CheckoutController extends Controller
         Config::$isProduction = config('midtrans.is_production');
         Config::$isSanitized = true;
         Config::$is3ds = true;
+        
+        // Disable SSL verification for local development to fix cURL error 60 / 20
+        if (!config('midtrans.is_production')) {
+            Config::$curlOptions = [
+                CURLOPT_SSL_VERIFYPEER => false,
+                CURLOPT_SSL_VERIFYHOST => false,
+                CURLOPT_HTTPHEADER => [],
+            ];
+        }
     }
 
     /**
@@ -37,14 +46,12 @@ class CheckoutController extends Controller
      * Bug 5: Read topup credentials from cart_items.topup_meta instead of request body.
      */
     public function process(Request $request): JsonResponse
-    {
+    {   Log::info("PROCESSING");
         $request->validate([
             'user_discount_id' => 'nullable|integer|exists:user_discounts,id',
         ]);
 
         $user = Auth::user();
-
-        // Bug 1: Block checkout if user has a pending order
         $existingPending = Order::where('user_id', $user->id)
             ->where('status', 'pending')
             ->latest()
@@ -58,9 +65,7 @@ class CheckoutController extends Controller
             ], 422);
         }
 
-        $cartItems = CartItem::with('product')
-            ->where('user_id', $user->id)
-            ->get();
+        $cartItems = CartItem::with('product')->where('user_id', $user->id)->get();
 
         if ($cartItems->isEmpty()) {
             return response()->json(['message' => 'Your cart is empty.'], 422);
@@ -317,7 +322,6 @@ class CheckoutController extends Controller
     {
         $order->update(['status' => 'paid']);
 
-        // Bug 4: Now mark the voucher as used (payment confirmed)
         if ($order->user_discount_id) {
             UserDiscount::where('id', $order->user_discount_id)
                 ->update(['is_used' => true]);
@@ -356,12 +360,10 @@ class CheckoutController extends Controller
         }
     }
 
-    /**
-     * Resume payment for a pending order — generates a FRESH snap token
-     * with a new unique Midtrans order_id each time.
-     */
+
     public function pay(Order $order): JsonResponse
     {
+        Log::info("SNAPPED");
         if ($order->user_id !== Auth::id()) {
             return response()->json(['message' => 'Unauthorized.'], 403);
         }
@@ -371,7 +373,6 @@ class CheckoutController extends Controller
         }
 
         try {
-            // Fresh unique Midtrans order_id for this attempt
             $midtransOrderId = $order->noinv.'::'.time();
 
             $params = [
@@ -386,7 +387,7 @@ class CheckoutController extends Controller
             ];
 
             $snapToken = Snap::getSnapToken($params);
-
+            
             // Update stored token
             $order->update(['payment_gateway_ref' => $snapToken]);
 
