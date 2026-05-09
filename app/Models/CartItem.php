@@ -19,12 +19,14 @@ class CartItem extends Model
         'user_id',
         'product_id',
         'quantity',
+        'topup_meta',
     ];
 
     protected function casts(): array
     {
         return [
             'quantity' => 'integer',
+            'topup_meta' => 'array',
         ];
     }
 

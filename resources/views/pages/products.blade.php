@@ -86,6 +86,35 @@
                     <img :src="selectedProduct?.image" class="w-full h-full object-contain" />
                 </div>
 
+                <!-- Bug 5: UID input fields for direct_topup products -->
+                <template x-if="selectedProduct?.product_type === 'direct_topup'">
+                    <div class="p-5 bg-amber-500/10 border border-amber-500/20 rounded-2xl space-y-4">
+                        <div class="flex items-center gap-2 text-amber-500">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" x2="3" y1="12" y2="12"/></svg>
+                            <span class="text-[10px] font-black uppercase tracking-widest">Enter your game credentials</span>
+                        </div>
+                        <div class="space-y-3">
+                            <div>
+                                <label class="text-[9px] font-black text-muted-foreground uppercase tracking-widest mb-1 block">Player ID <span class="text-red-500">*</span></label>
+                                <input type="text" x-model="topupPlayerId" placeholder="Enter your Player ID"
+                                       class="w-full px-4 py-3 bg-background border border-border rounded-xl text-xs font-bold outline-none focus:ring-2 focus:ring-amber-500/50 placeholder:text-muted-foreground/50" />
+                            </div>
+                            <div class="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label class="text-[9px] font-black text-muted-foreground uppercase tracking-widest mb-1 block">Zone ID</label>
+                                    <input type="text" x-model="topupZoneId" placeholder="Optional"
+                                           class="w-full px-4 py-3 bg-background border border-border rounded-xl text-xs font-bold outline-none focus:ring-2 focus:ring-amber-500/50 placeholder:text-muted-foreground/50" />
+                                </div>
+                                <div>
+                                    <label class="text-[9px] font-black text-muted-foreground uppercase tracking-widest mb-1 block">Server ID</label>
+                                    <input type="text" x-model="topupServerId" placeholder="Optional"
+                                           class="w-full px-4 py-3 bg-background border border-border rounded-xl text-xs font-bold outline-none focus:ring-2 focus:ring-amber-500/50 placeholder:text-muted-foreground/50" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+
                 <div class="flex items-center justify-between p-4 bg-foreground/5 rounded-2xl border border-border">
                     <span class="text-[10px] font-black uppercase tracking-widest">Total Price</span>
                     <span class="text-2xl font-black text-primary" x-text="'Rp ' + (selectedProduct ? new Intl.NumberFormat('id-ID').format(selectedProduct.price) : 0)"></span>
@@ -123,6 +152,10 @@
             csrfToken,
                 showCartModal: false,
                 selectedProduct: null,
+                // Bug 5: UID state for direct_topup products
+                topupPlayerId: '',
+                topupZoneId: '',
+                topupServerId: '',
 
                 get categories() {
                     const uniqueCategories = [...new Set(this.products.map((product) => product.category || 'Other'))];
@@ -144,6 +177,10 @@
 
                 openBuyModal(product) {
                     this.selectedProduct = product;
+                    // Bug 5: Reset UID fields when opening a new modal
+                    this.topupPlayerId = '';
+                    this.topupZoneId = '';
+                    this.topupServerId = '';
                     this.showCartModal = true;
                 },
 
@@ -177,6 +214,27 @@
                     this.favorites.push(productId);
                 },
 
+                // Bug 5: Build request body with topup fields for direct_topup products
+                _buildCartBody() {
+                    if (!this.selectedProduct) return null;
+
+                    const body = {};
+
+                    if (this.selectedProduct.product_type === 'direct_topup') {
+                        if (!this.topupPlayerId || this.topupPlayerId.trim() === '') {
+                            window.dispatchEvent(new CustomEvent('show-toast', {
+                                detail: { message: 'Please enter your Player ID.', type: 'error' }
+                            }));
+                            return null;
+                        }
+                        body.player_id = this.topupPlayerId.trim();
+                        body.zone_id = this.topupZoneId.trim() || null;
+                        body.server_id = this.topupServerId.trim() || null;
+                    }
+
+                    return body;
+                },
+
                 async addToCart() {
                     if (!this.isAuthenticated) {
                         window.dispatchEvent(new CustomEvent('open-auth-modal', {
@@ -187,14 +245,20 @@
 
                     if (!this.selectedProduct) return;
 
+                    // Bug 5: Validate and build body
+                    const body = this._buildCartBody();
+                    if (body === null) return;
+
                     try {
                         const response = await fetch(`/cart/${this.selectedProduct.id}`, {
                             method: 'POST',
                             headers: {
                                 'Accept': 'application/json',
+                                'Content-Type': 'application/json',
                                 'X-Requested-With': 'XMLHttpRequest',
                                 'X-CSRF-TOKEN': this.csrfToken,
                             },
+                            body: JSON.stringify(body),
                         });
 
                         const data = await response.json();
@@ -222,14 +286,20 @@
 
                     if (!this.selectedProduct) return;
 
+                    // Bug 5: Validate and build body
+                    const body = this._buildCartBody();
+                    if (body === null) return;
+
                     try {
                         const response = await fetch(`/cart/${this.selectedProduct.id}`, {
                             method: 'POST',
                             headers: {
                                 'Accept': 'application/json',
+                                'Content-Type': 'application/json',
                                 'X-Requested-With': 'XMLHttpRequest',
                                 'X-CSRF-TOKEN': this.csrfToken,
                             },
+                            body: JSON.stringify(body),
                         });
 
                         if (response.ok) {

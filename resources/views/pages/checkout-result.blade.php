@@ -1,7 +1,40 @@
 <x-app-layout>
     <div class="max-w-3xl mx-auto space-y-8 py-8" x-data="{
         resuming: false,
+        cancelling: false,
+        orderStatus: '{{ $order->status }}',
         csrfToken: '{{ csrf_token() }}',
+        pollInterval: null,
+
+        init() {
+            // Bug 3: Poll for status updates on pending orders (webhook race condition)
+            if (this.orderStatus === 'pending') {
+                this.pollInterval = setInterval(() => this.checkStatus(), 3000);
+            }
+        },
+
+        async checkStatus() {
+            try {
+                const response = await fetch('/checkout/status/{{ $order->id }}', {
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest',
+                    },
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.status !== 'pending') {
+                        clearInterval(this.pollInterval);
+                        // Reload to show updated state (product keys, etc.)
+                        window.location.reload();
+                    }
+                }
+            } catch (e) {
+                // Silent fail — will retry on next interval
+            }
+        },
+
         async resumePayment() {
             if (this.resuming) return;
             this.resuming = true;
@@ -20,20 +53,52 @@
                 const data = await response.json();
 
                 if (!response.ok) {
-                    window.dispatchEvent(new CustomEvent('toast', { detail: { message: data.message || 'Unable to resume payment.', type: 'error' } }));
+                    window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: data.message || 'Unable to resume payment.', type: 'error' } }));
                     this.resuming = false;
                     return;
                 }
 
                 window.snap.pay(data.snap_token, {
                     onSuccess: () => { window.location.reload(); },
-                    onPending: () => { this.resuming = false; window.dispatchEvent(new CustomEvent('toast', { detail: { message: 'Payment still pending.', type: 'info' } })); },
-                    onError: () => { this.resuming = false; window.dispatchEvent(new CustomEvent('toast', { detail: { message: 'Payment failed.', type: 'error' } })); },
+                    onPending: () => { this.resuming = false; window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: 'Payment still pending.', type: 'info' } })); },
+                    onError: () => { this.resuming = false; window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: 'Payment failed.', type: 'error' } })); },
                     onClose: () => { this.resuming = false; },
                 });
             } catch (e) {
                 this.resuming = false;
-                window.dispatchEvent(new CustomEvent('toast', { detail: { message: 'Network error.', type: 'error' } }));
+                window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: 'Network error.', type: 'error' } }));
+            }
+        },
+
+        async cancelOrder() {
+            if (this.cancelling) return;
+            if (!confirm('Are you sure you want to cancel this order?')) return;
+            this.cancelling = true;
+
+            try {
+                const response = await fetch('/transactions/{{ $order->id }}/cancel', {
+                    method: 'POST',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRF-TOKEN': this.csrfToken,
+                    },
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: data.message, type: 'success' } }));
+                    clearInterval(this.pollInterval);
+                    setTimeout(() => { window.location.href = '/transactions'; }, 1500);
+                } else {
+                    window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: data.message || 'Failed to cancel.', type: 'error' } }));
+                    this.cancelling = false;
+                }
+            } catch (e) {
+                this.cancelling = false;
+                window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: 'Network error.', type: 'error' } }));
             }
         }
     }">
@@ -59,16 +124,33 @@
             <p class="text-muted-foreground text-xs font-bold uppercase tracking-widest">Complete your payment to receive your items.</p>
 
             <!-- Resume Payment Button -->
-            <button @click="resumePayment()" :disabled="resuming"
-                    class="inline-flex items-center gap-3 px-10 py-4 bg-amber-500 text-white font-black rounded-2xl hover:scale-105 active:scale-95 transition-all shadow-xl shadow-amber-500/20 uppercase tracking-widest text-[10px] disabled:opacity-50 disabled:hover:scale-100">
-                <template x-if="resuming">
-                    <svg class="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                </template>
-                <span x-text="resuming ? 'Opening Payment...' : 'Resume Payment'"></span>
-            </button>
+            <div class="flex items-center justify-center gap-4">
+                <button @click="resumePayment()" :disabled="resuming"
+                        class="inline-flex items-center gap-3 px-10 py-4 bg-amber-500 text-white font-black rounded-2xl hover:scale-105 active:scale-95 transition-all shadow-xl shadow-amber-500/20 uppercase tracking-widest text-[10px] disabled:opacity-50 disabled:hover:scale-100">
+                    <template x-if="resuming">
+                        <svg class="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                    </template>
+                    <span x-text="resuming ? 'Opening Payment...' : 'Resume Payment'"></span>
+                </button>
+
+                <!-- Bug 1: Cancel Order Button -->
+                <button @click="cancelOrder()" :disabled="cancelling"
+                        class="inline-flex items-center gap-3 px-10 py-4 bg-foreground/5 border border-border text-foreground font-black rounded-2xl hover:scale-105 active:scale-95 transition-all uppercase tracking-widest text-[10px] disabled:opacity-50 disabled:hover:scale-100">
+                    <span x-text="cancelling ? 'Cancelling...' : 'Cancel Order'"></span>
+                </button>
+            </div>
+        </div>
+        @elseif($order->status === 'cancelled')
+        <!-- Cancelled -->
+        <div class="text-center space-y-6">
+            <div class="w-24 h-24 mx-auto bg-muted rounded-full flex items-center justify-center text-muted-foreground">
+                <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="pixel-render"><circle cx="12" cy="12" r="10"/><path d="m15 9-6 6"/><path d="m9 9 6 6"/></svg>
+            </div>
+            <h1 class="text-3xl font-black tracking-tighter uppercase">Order <span class="text-muted-foreground">Cancelled</span></h1>
+            <p class="text-muted-foreground text-xs font-bold uppercase tracking-widest">This order has been cancelled.</p>
         </div>
         @else
         <!-- Failed -->

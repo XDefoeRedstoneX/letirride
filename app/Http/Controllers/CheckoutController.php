@@ -31,40 +31,39 @@ class CheckoutController extends Controller
 
     /**
      * Process the checkout: create Order, generate Midtrans Snap token, return JSON.
+     *
+     * Bug 1: Block checkout if a pending order exists.
+     * Bug 4: Don't mark voucher as used here — defer to fulfillOrder().
+     * Bug 5: Read topup credentials from cart_items.topup_meta instead of request body.
      */
     public function process(Request $request): JsonResponse
     {
         $request->validate([
             'user_discount_id' => 'nullable|integer|exists:user_discounts,id',
-            'topup_credentials' => 'nullable|array',
-            'topup_credentials.*.product_id' => 'required_with:topup_credentials|integer',
-            'topup_credentials.*.player_id' => 'required_with:topup_credentials|string|max:100',
-            'topup_credentials.*.zone_id' => 'nullable|string|max:50',
-            'topup_credentials.*.server_id' => 'nullable|string|max:50',
         ]);
 
         $user = Auth::user();
+
+        // Bug 1: Block checkout if user has a pending order
+        $existingPending = Order::where('user_id', $user->id)
+            ->where('status', 'pending')
+            ->latest()
+            ->first();
+
+        if ($existingPending) {
+            return response()->json([
+                'message' => 'You have a pending transaction. Please complete or cancel it before placing a new order.',
+                'order_id' => $existingPending->id,
+                'invoice' => $existingPending->noinv,
+            ], 422);
+        }
+
         $cartItems = CartItem::with('product')
             ->where('user_id', $user->id)
             ->get();
 
         if ($cartItems->isEmpty()) {
             return response()->json(['message' => 'Your cart is empty.'], 422);
-        }
-
-        // If user already has a pending order, return its snap token to resume
-        $existingPending = Order::where('user_id', $user->id)
-            ->where('status', 'pending')
-            ->whereNotNull('payment_gateway_ref')
-            ->latest()
-            ->first();
-
-        if ($existingPending) {
-            return response()->json([
-                'snap_token' => $existingPending->payment_gateway_ref,
-                'order_id' => $existingPending->id,
-                'invoice' => $existingPending->noinv,
-            ]);
         }
 
         // Calculate subtotal
@@ -85,6 +84,17 @@ class CheckoutController extends Controller
                         ->orWhere('expires_at', '>', now());
                 })
                 ->first();
+
+            // Bug 4: Prevent same voucher from being used by another pending order
+            if ($voucher) {
+                $voucherOnPending = Order::where('user_discount_id', $voucher->id)
+                    ->where('status', 'pending')
+                    ->exists();
+
+                if ($voucherOnPending) {
+                    $voucher = null; // Silently ignore — voucher is locked by another pending order
+                }
+            }
 
             if ($voucher) {
                 $discount = $voucher->discountType;
@@ -123,7 +133,7 @@ class CheckoutController extends Controller
         DB::beginTransaction();
 
         try {
-            // Create order
+            // Create order — Bug 4: record voucher reference but don't mark it as used yet
             $order = Order::create([
                 'noinv' => $invoiceId,
                 'user_id' => $user->id,
@@ -135,7 +145,7 @@ class CheckoutController extends Controller
                 'status' => 'pending',
             ]);
 
-            // Create order details + topup credentials
+            // Create order details + topup credentials (Bug 5: read from cart_items.topup_meta)
             foreach ($cartItems as $cartItem) {
                 $orderDetail = OrderDetail::create([
                     'order_id' => $order->id,
@@ -144,26 +154,21 @@ class CheckoutController extends Controller
                     'total_price_in_cart' => $cartItem->product->price * $cartItem->quantity,
                 ]);
 
-                // Store topup credentials for direct_topup products
-                if (($cartItem->product->type ?? 'voucher') === 'direct_topup' && $topupCredentials->has($cartItem->product_id)) {
-                    $creds = $topupCredentials->get($cartItem->product_id);
+                // Store topup credentials for direct_topup products (Bug 5: from topup_meta)
+                $meta = $cartItem->topup_meta;
+                if (($cartItem->product->type ?? 'voucher') === 'direct_topup' && $meta && !empty($meta['player_id'])) {
                     TopupCredential::create([
                         'order_detail_id' => $orderDetail->id,
-                        'player_id' => $creds['player_id'],
-                        'zone_id' => $creds['zone_id'] ?? null,
-                        'server_id' => $creds['server_id'] ?? null,
+                        'player_id' => $meta['player_id'],
+                        'zone_id' => $meta['zone_id'] ?? null,
+                        'server_id' => $meta['server_id'] ?? null,
                         'topup_status' => 'pending',
                         'created_at' => now(),
                     ]);
                 }
             }
 
-            // Mark voucher as used
-            if ($voucher) {
-                $voucher->update(['is_used' => true]);
-            }
-
-            // Build Midtrans item details
+            // Build Midtrans item details (Bug 4: ensure integer math matches gross_amount)
             $itemDetails = $cartItems->map(fn (CartItem $item) => [
                 'id' => (string) $item->product_id,
                 'price' => (int) $item->product->price,
@@ -181,10 +186,15 @@ class CheckoutController extends Controller
                 ];
             }
 
-            // Generate Midtrans Snap token
+            // Generate a unique Midtrans order_id per attempt.
+            // Format: INV-YYYYMMDD-XXXXXX::1715249272
+            // The '::' delimiter lets the webhook strip the suffix to find our DB order.
+            $midtransOrderId = $invoiceId.'::'.time();
+
+            // Generate Midtrans Snap token with discounted total
             $params = [
                 'transaction_details' => [
-                    'order_id' => $invoiceId,
+                    'order_id' => $midtransOrderId,
                     'gross_amount' => (int) $totalAfterDiscount,
                 ],
                 'item_details' => $itemDetails,
@@ -196,8 +206,11 @@ class CheckoutController extends Controller
 
             $snapToken = Snap::getSnapToken($params);
 
-            // Store the snap token reference
+            // Store the snap token (no need to store the Midtrans order_id — webhook will parse it)
             $order->update(['payment_gateway_ref' => $snapToken]);
+
+            // Bug 1: Clear cart immediately after creating the order
+            CartItem::where('user_id', $user->id)->delete();
 
             DB::commit();
 
@@ -230,19 +243,24 @@ class CheckoutController extends Controller
             return response()->json(['message' => 'Invalid notification.'], 400);
         }
 
-        $orderId = $notification->order_id;
+        // Midtrans sends back our suffixed order_id (e.g. INV-20260509-ABC123::1715249272).
+        // Strip the '::timestamp' suffix to get the original DB invoice number.
+        $midtransOrderId = $notification->order_id;
         $transactionStatus = $notification->transaction_status;
         $fraudStatus = $notification->fraud_status ?? 'accept';
-        $paymentType = $notification->payment_type ?? '';
 
-        $order = Order::where('noinv', $orderId)->first();
+        $dbInvoice = Str::contains($midtransOrderId, '::')
+            ? Str::before($midtransOrderId, '::')
+            : $midtransOrderId;
+
+        $order = Order::where('noinv', $dbInvoice)->first();
 
         if (! $order) {
             return response()->json(['message' => 'Order not found.'], 404);
         }
 
-        // Already finalized — don't reprocess
-        if (in_array($order->status, ['paid', 'failed'])) {
+        // Already finalized — don't reprocess (Bug 1: include 'cancelled')
+        if (in_array($order->status, ['paid', 'failed', 'cancelled'])) {
             return response()->json(['message' => 'Already processed.']);
         }
 
@@ -253,11 +271,7 @@ class CheckoutController extends Controller
         } elseif (in_array($transactionStatus, ['cancel', 'deny', 'expire'])) {
             $order->update(['status' => 'failed']);
 
-            // Release the voucher if one was used
-            if ($order->user_discount_id) {
-                UserDiscount::where('id', $order->user_discount_id)
-                    ->update(['is_used' => false]);
-            }
+            // Bug 4: No need to release voucher here — it was never marked as used
         }
 
         return response()->json(['message' => 'OK']);
@@ -280,17 +294,34 @@ class CheckoutController extends Controller
     }
 
     /**
-     * Fulfill a paid order: mark paid, assign product keys, award points, clear cart.
+     * Bug 3: Check order status (polling endpoint for checkout-result page).
+     */
+    public function status(Order $order): JsonResponse
+    {
+        if ($order->user_id !== Auth::id()) {
+            return response()->json(['message' => 'Unauthorized.'], 403);
+        }
+
+        return response()->json([
+            'status' => $order->status,
+        ]);
+    }
+
+    /**
+     * Fulfill a paid order: mark paid, mark voucher used, assign product keys, award points.
+     *
+     * Bug 1: Cart already cleared in process(), not here.
+     * Bug 4: Mark voucher as used HERE (on confirmed payment), not in process().
      */
     private function fulfillOrder(Order $order): void
     {
         $order->update(['status' => 'paid']);
 
-        // Clear only cart items that belong to this order's products
-        $orderedProductIds = $order->orderDetails->pluck('product_id')->toArray();
-        CartItem::where('user_id', $order->user_id)
-            ->whereIn('product_id', $orderedProductIds)
-            ->delete();
+        // Bug 4: Now mark the voucher as used (payment confirmed)
+        if ($order->user_discount_id) {
+            UserDiscount::where('id', $order->user_discount_id)
+                ->update(['is_used' => true]);
+        }
 
         $totalPointsAwarded = 0;
 
@@ -326,7 +357,8 @@ class CheckoutController extends Controller
     }
 
     /**
-     * Resume payment for a pending order — returns the stored snap token.
+     * Resume payment for a pending order — generates a FRESH snap token
+     * with a new unique Midtrans order_id each time.
      */
     public function pay(Order $order): JsonResponse
     {
@@ -338,16 +370,35 @@ class CheckoutController extends Controller
             return response()->json(['message' => 'This order is no longer pending.'], 422);
         }
 
-        $snapToken = $order->payment_gateway_ref;
+        try {
+            // Fresh unique Midtrans order_id for this attempt
+            $midtransOrderId = $order->noinv.'::'.time();
 
-        if (! $snapToken) {
-            return response()->json(['message' => 'Payment token not found. Please contact support.'], 422);
+            $params = [
+                'transaction_details' => [
+                    'order_id' => $midtransOrderId,
+                    'gross_amount' => (int) $order->total_price_after_discount,
+                ],
+                'customer_details' => [
+                    'first_name' => $order->user->name,
+                    'email' => $order->user->email,
+                ],
+            ];
+
+            $snapToken = Snap::getSnapToken($params);
+
+            // Update stored token
+            $order->update(['payment_gateway_ref' => $snapToken]);
+
+            return response()->json([
+                'snap_token' => $snapToken,
+                'order_id' => $order->id,
+                'invoice' => $order->noinv,
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Resume payment failed: '.$e->getMessage());
+
+            return response()->json(['message' => 'Failed to generate payment. Please try again.'], 500);
         }
-
-        return response()->json([
-            'snap_token' => $snapToken,
-            'order_id' => $order->id,
-            'invoice' => $order->noinv,
-        ]);
     }
 }

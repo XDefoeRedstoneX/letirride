@@ -51,6 +51,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/checkout', [CheckoutController::class, 'process'])->name('checkout.process');
     Route::post('/checkout/pay/{order}', [CheckoutController::class, 'pay'])->name('checkout.pay');
     Route::get('/checkout/finish/{order}', [CheckoutController::class, 'finish'])->name('checkout.finish');
+    Route::get('/checkout/status/{order}', [CheckoutController::class, 'status'])->name('checkout.status');
 
     // Profile & Settings
     Route::get('/settings', [AuthController::class, 'showSettings'])->name('settings');
@@ -61,6 +62,7 @@ Route::middleware('auth')->group(function () {
     // Inventory & Transactions (real data from DB)
     Route::get('/inventory', [InventoryController::class, 'index'])->name('inventory');
     Route::get('/transactions', [TransactionController::class, 'index'])->name('transactions');
+    Route::post('/transactions/{order}/cancel', [TransactionController::class, 'cancel'])->name('transactions.cancel');
 
     // Forgot Password
     Route::get('/forgot-password', [AuthController::class, 'showForgot'])->name('forgot-password');

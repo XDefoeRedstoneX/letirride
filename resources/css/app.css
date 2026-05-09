@@ -5,6 +5,10 @@
 @source '../**/*.blade.php';
 @source '../**/*.js';
 
+[x-cloak] {
+  display: none !important;
+}
+
 @theme {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -52,22 +56,30 @@
 :root {
   --radius: 1rem;
   /* Light Mode: Morning City (Professional Amber/Slate) */
-  --background: #f8fafc; /* Slate 50 */
-  --foreground: #0f172a; /* Slate 900 */
-  --card: #ffffff; /* Solid white for cards to avoid bleed */
+  --background: #f8fafc;
+  /* Slate 50 */
+  --foreground: #0f172a;
+  /* Slate 900 */
+  --card: #ffffff;
+  /* Solid white for cards to avoid bleed */
   --card-foreground: #0f172a;
-  --popover: #ffffff; /* Solid for dropdowns */
+  --popover: #ffffff;
+  /* Solid for dropdowns */
   --popover-foreground: #0f172a;
-  --primary: #b45309; /* Professional Amber 700 - Darker for better contrast in light mode */
+  --primary: #b45309;
+  /* Professional Amber 700 - Darker for better contrast in light mode */
   --primary-foreground: #ffffff;
   --secondary: #f1f5f9;
   --secondary-foreground: #334155;
   --muted: #f1f5f9;
   --muted-foreground: #475569;
-  --accent: #fef3c7; /* Amber 100 */
-  --accent-foreground: #92400e; /* Amber 800 */
+  --accent: #fef3c7;
+  /* Amber 100 */
+  --accent-foreground: #92400e;
+  /* Amber 800 */
   --destructive: #dc2626;
-  --border: #cbd5e1; /* Darker border for better definition in light mode */
+  --border: #cbd5e1;
+  /* Darker border for better definition in light mode */
   --input: #ffffff;
   --ring: #b45309;
 
@@ -79,18 +91,23 @@
   /* Dark Mode: Night City (Professional Deep Slate/Amber) */
   --background: #020617;
   --foreground: #f8fafc;
-  --card: #0f172a; /* Solid deep slate for cards */
+  --card: #0f172a;
+  /* Solid deep slate for cards */
   --card-foreground: #f8fafc;
-  --popover: #0f172a; /* Solid for dropdowns */
+  --popover: #0f172a;
+  /* Solid for dropdowns */
   --popover-foreground: #f8fafc;
-  --primary: #f59e0b; /* Brighter Amber 500 */
+  --primary: #f59e0b;
+  /* Brighter Amber 500 */
   --primary-foreground: #000000;
   --secondary: #1e293b;
   --secondary-foreground: #94a3b8;
   --muted: #0f172a;
   --muted-foreground: #94a3b8;
-  --accent: #451a03; /* Amber 900/950 */
-  --accent-foreground: #fef3c7; /* Amber 100 */
+  --accent: #451a03;
+  /* Amber 900/950 */
+  --accent-foreground: #fef3c7;
+  /* Amber 100 */
   --destructive: #991b1b;
   --border: #1e293b;
   --input: #0f172a;
@@ -122,12 +139,15 @@ body {
 }
 
 .dark .glass-card {
-  background: rgba(15, 23, 42, 0.8); /* Slight transparency for dark but still solid feel */
+  background: rgba(15, 23, 42, 0.8);
+  /* Slight transparency for dark but still solid feel */
 }
 
 /* Custom Pixel Animations & Styles */
-button, .btn-pixel {
-  letter-spacing: 0.05em; /* Professional balanced spacing */
+button,
+.btn-pixel {
+  letter-spacing: 0.05em;
+  /* Professional balanced spacing */
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -145,8 +165,15 @@ button, .btn-pixel {
 }
 
 @keyframes pop-up {
-  0% { opacity: 0; transform: scale(0.9) translateY(10px); }
-  100% { opacity: 1; transform: scale(1) translateY(0); }
+  0% {
+    opacity: 0;
+    transform: scale(0.9) translateY(10px);
+  }
+
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
 }
 
 .animate-pop-up {
@@ -156,9 +183,17 @@ button, .btn-pixel {
 }
 
 @keyframes glow-pulse {
-  0% { filter: drop-shadow(0 0 2px currentColor); }
-  50% { filter: drop-shadow(0 0 10px currentColor); }
-  100% { filter: drop-shadow(0 0 2px currentColor); }
+  0% {
+    filter: drop-shadow(0 0 2px currentColor);
+  }
+
+  50% {
+    filter: drop-shadow(0 0 10px currentColor);
+  }
+
+  100% {
+    filter: drop-shadow(0 0 2px currentColor);
+  }
 }
 
 .animate-glow {
@@ -167,12 +202,14 @@ button, .btn-pixel {
 
 /* Scrollbar Hide */
 .scrollbar-hide::-webkit-scrollbar {
-    display: none;
+  display: none;
 }
+
 .scrollbar-hide {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
+
 @layer utilities {
   .pixel-render {
     image-rendering: pixelated;
@@ -193,6 +230,7 @@ button, .btn-pixel {
     @apply bg-primary text-primary-foreground font-bold py-2 px-4 rounded-xl transition-all;
     box-shadow: 0 0 8px var(--primary), 0 0 16px var(--primary) inset;
   }
+
   .btn-neon-primary:hover {
     box-shadow: 0 0 12px var(--primary), 0 0 24px var(--primary) inset;
   }
@@ -201,6 +239,7 @@ button, .btn-pixel {
     @apply bg-accent text-accent-foreground font-bold py-2 px-4 rounded-xl transition-all;
     box-shadow: 0 0 8px var(--accent), 0 0 16px var(--accent) inset;
   }
+
   .btn-neon-accent:hover {
     box-shadow: 0 0 12px var(--accent), 0 0 24px var(--accent) inset;
   }
@@ -212,13 +251,23 @@ button, .btn-pixel {
 
 /* Gacha Carousel Animation */
 @keyframes gacha-spin {
-  0% { transform: translateX(0); }
-  100% { transform: translateX(-50%); }
+  0% {
+    transform: translateX(0);
+  }
+
+  100% {
+    transform: translateX(-50%);
+  }
 }
 
 @keyframes gacha-decelerate {
-  0% { transform: translateX(0); }
-  100% { transform: translateX(var(--gacha-stop-position, -2000px)); }
+  0% {
+    transform: translateX(0);
+  }
+
+  100% {
+    transform: translateX(var(--gacha-stop-position, -2000px));
+  }
 }
 
 .gacha-spinning {
@@ -230,10 +279,23 @@ button, .btn-pixel {
 }
 
 @keyframes reveal-bounce {
-  0% { transform: scale(0.3); opacity: 0; }
-  50% { transform: scale(1.1); }
-  70% { transform: scale(0.95); }
-  100% { transform: scale(1); opacity: 1; }
+  0% {
+    transform: scale(0.3);
+    opacity: 0;
+  }
+
+  50% {
+    transform: scale(1.1);
+  }
+
+  70% {
+    transform: scale(0.95);
+  }
+
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 
 .animate-reveal-bounce {
@@ -241,8 +303,15 @@ button, .btn-pixel {
 }
 
 @keyframes legendary-glow {
-  0%, 100% { box-shadow: 0 0 20px #f59e0b, 0 0 40px #f59e0b60; }
-  50% { box-shadow: 0 0 30px #f59e0b, 0 0 60px #f59e0b80; }
+
+  0%,
+  100% {
+    box-shadow: 0 0 20px #f59e0b, 0 0 40px #f59e0b60;
+  }
+
+  50% {
+    box-shadow: 0 0 30px #f59e0b, 0 0 60px #f59e0b80;
+  }
 }
 
 .animate-legendary-glow {

@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Order;
+use App\Models\UserDiscount;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 
 class TransactionController extends Controller
@@ -43,6 +45,32 @@ class TransactionController extends Controller
 
         return view('pages.transactions', [
             'orders' => $orders,
+        ]);
+    }
+
+    /**
+     * Bug 1: Cancel a pending order. Releases the voucher if one was attached.
+     */
+    public function cancel(Order $order): JsonResponse
+    {
+        if ($order->user_id !== Auth::id()) {
+            return response()->json(['message' => 'Unauthorized.'], 403);
+        }
+
+        if ($order->status !== 'pending') {
+            return response()->json(['message' => 'Only pending orders can be cancelled.'], 422);
+        }
+
+        $order->update(['status' => 'cancelled']);
+
+        // Voucher was never marked as used (Bug 4 fix), so no release needed.
+        // But clear the reference so the voucher isn't "locked" by this order.
+        if ($order->user_discount_id) {
+            $order->update(['user_discount_id' => null]);
+        }
+
+        return response()->json([
+            'message' => 'Order cancelled successfully.',
         ]);
     }
 }

@@ -29,6 +29,7 @@ class CartController extends Controller
                     'product_type' => $item->product->type ?? 'voucher',
                     'image' => '/products/'.ltrim($item->product->image ?: 'soundcloud.svg', '/'),
                     'quantity' => $item->quantity,
+                    'topup_meta' => $item->topup_meta, // Bug 5: include stored UID data
                 ];
             });
 
@@ -59,6 +60,8 @@ class CartController extends Controller
 
     /**
      * Add a product to the cart (or increment quantity if it already exists).
+     *
+     * Bug 5: Accept optional topup_meta for direct_topup products.
      */
     public function store(Request $request, Product $product): JsonResponse
     {
@@ -66,17 +69,40 @@ class CartController extends Controller
             return response()->json(['message' => 'Product is not available.'], 404);
         }
 
+        // Bug 5: Validate topup_meta for direct_topup products
+        if (($product->type ?? 'voucher') === 'direct_topup') {
+            $request->validate([
+                'player_id' => 'required|string|max:100',
+                'zone_id' => 'nullable|string|max:50',
+                'server_id' => 'nullable|string|max:50',
+            ]);
+        }
+
         $cartItem = CartItem::where('user_id', Auth::id())
             ->where('product_id', $product->id)
             ->first();
 
+        $topupMeta = null;
+        if (($product->type ?? 'voucher') === 'direct_topup') {
+            $topupMeta = [
+                'player_id' => $request->input('player_id'),
+                'zone_id' => $request->input('zone_id'),
+                'server_id' => $request->input('server_id'),
+            ];
+        }
+
         if ($cartItem) {
             $cartItem->increment('quantity');
+            // Update topup_meta if provided (user may change UID)
+            if ($topupMeta) {
+                $cartItem->update(['topup_meta' => $topupMeta]);
+            }
         } else {
             CartItem::create([
                 'user_id' => Auth::id(),
                 'product_id' => $product->id,
                 'quantity' => 1,
+                'topup_meta' => $topupMeta,
             ]);
         }
 

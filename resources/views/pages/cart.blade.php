@@ -5,10 +5,17 @@
         selectedDiscount: null,
         topupCredentials: {},
         paying: false,
-        paid: false,
-        paidOrderId: null,
         csrfToken: '{{ csrf_token() }}',
         midtransClientKey: '{{ $midtransClientKey ?? '' }}',
+
+        init() {
+            // Bug 5: Pre-populate topup credentials from cart item topup_meta
+            this.items.forEach(item => {
+                if (item.product_type === 'direct_topup' && item.topup_meta) {
+                    this.topupCredentials[item.product_id] = { ...item.topup_meta };
+                }
+            });
+        },
 
         get hasTopupProducts() {
             return this.items.some(i => i.product_type === 'direct_topup');
@@ -99,7 +106,6 @@
 
             // Validate topup credentials
             const topupItems = this.items.filter(i => i.product_type === 'direct_topup');
-            const credentials = [];
             for (const item of topupItems) {
                 const creds = this.topupCredentials[item.product_id];
                 if (!creds || !creds.player_id || creds.player_id.trim() === '') {
@@ -107,12 +113,6 @@
                     this.paying = false;
                     return;
                 }
-                credentials.push({
-                    product_id: item.product_id,
-                    player_id: creds.player_id.trim(),
-                    zone_id: (creds.zone_id || '').trim() || null,
-                    server_id: (creds.server_id || '').trim() || null,
-                });
             }
 
             try {
@@ -126,14 +126,24 @@
                     },
                     body: JSON.stringify({
                         user_discount_id: this.selectedDiscount?.id || null,
-                        topup_credentials: credentials.length > 0 ? credentials : null,
                     }),
                 });
 
                 const data = await response.json();
 
                 if (!response.ok) {
-                    window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: data.message || 'Checkout failed.', type: 'error' } }));
+                    // Bug 1: Handle pending order block
+                    if (response.status === 422 && data.order_id) {
+                        window.dispatchEvent(new CustomEvent('show-toast', {
+                            detail: {
+                                message: data.message + ' <a href=\'/checkout/finish/' + data.order_id + '\' class=\'underline font-black\'>View Order</a>',
+                                type: 'warning',
+                                duration: 8000
+                            }
+                        }));
+                    } else {
+                        window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: data.message || 'Checkout failed.', type: 'error' } }));
+                    }
                     this.paying = false;
                     return;
                 }
@@ -142,27 +152,24 @@
                 window.snap.pay(data.snap_token, {
                     onSuccess: (result) => {
                         this.paying = false;
-                        // Redirect to order result page — cart is cleared server-side by webhook
                         window.location.href = `/checkout/finish/${data.order_id}`;
                     },
                     onPending: (result) => {
                         this.paying = false;
-                        // Redirect to order result page where user can see pending status & resume
                         window.location.href = `/checkout/finish/${data.order_id}`;
                     },
                     onError: (result) => {
                         this.paying = false;
-                        window.dispatchEvent(new CustomEvent('toast', { detail: { message: 'Payment failed. Please try again.', type: 'error' } }));
+                        window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: 'Payment failed. Please try again.', type: 'error' } }));
                     },
                     onClose: () => {
                         this.paying = false;
-                        // User closed the popup — cart stays intact, order is still pending
-                        window.dispatchEvent(new CustomEvent('toast', { detail: { message: 'Payment cancelled. Your order is still pending — you can resume it from Transactions.', type: 'warning' } }));
+                        window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: 'Payment cancelled. Your order is still pending — you can resume it from Transactions.', type: 'warning' } }));
                     },
                 });
             } catch (e) {
                 this.paying = false;
-                window.dispatchEvent(new CustomEvent('toast', { detail: { message: 'Network error. Please try again.', type: 'error' } }));
+                window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: 'Network error. Please try again.', type: 'error' } }));
             }
         },
 
@@ -182,7 +189,7 @@
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <!-- Items List -->
-            <div class="lg:col-span-2 space-y-4" x-show="!paid" x-transition>
+            <div class="lg:col-span-2 space-y-4">
                 <template x-for="item in items" :key="item.id">
                     <div class="glass-card rounded-[2.5rem] p-6 flex items-center gap-6 group hover:border-primary/30 transition-all duration-500 border-border/50">
                         <div class="w-24 h-24 bg-foreground/5 rounded-3xl flex items-center justify-center p-4 shrink-0">
@@ -205,7 +212,7 @@
                                 <p class="font-black text-primary" x-text="formatRp(item.price * item.quantity)"></p>
                             </div>
 
-                            <!-- Direct Top-Up Credential Fields -->
+                            <!-- Direct Top-Up Credential Fields (Bug 5: pre-populated from topup_meta) -->
                             <template x-if="item.product_type === 'direct_topup'">
                                 <div class="mt-3 p-4 bg-amber-500/10 border border-amber-500/20 rounded-xl space-y-3">
                                     <div class="flex items-center gap-2 text-amber-500">
@@ -213,11 +220,17 @@
                                         <span class="text-[9px] font-black uppercase tracking-widest">Direct Top-Up — Enter your game credentials</span>
                                     </div>
                                     <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                                        <input type="text" placeholder="Player ID *" x-model="topupCredentials[item.product_id] = topupCredentials[item.product_id] || {}; topupCredentials[item.product_id].player_id" @input="topupCredentials[item.product_id] = {...(topupCredentials[item.product_id] || {}), player_id: $event.target.value}"
+                                        <input type="text" placeholder="Player ID *"
+                                               :value="topupCredentials[item.product_id]?.player_id || ''"
+                                               @input="topupCredentials[item.product_id] = {...(topupCredentials[item.product_id] || {}), player_id: $event.target.value}"
                                                class="px-3 py-2.5 bg-background border border-border rounded-lg text-xs font-bold outline-none focus:ring-2 focus:ring-amber-500/50 placeholder:text-muted-foreground/50" />
-                                        <input type="text" placeholder="Zone ID" @input="topupCredentials[item.product_id] = {...(topupCredentials[item.product_id] || {}), zone_id: $event.target.value}"
+                                        <input type="text" placeholder="Zone ID"
+                                               :value="topupCredentials[item.product_id]?.zone_id || ''"
+                                               @input="topupCredentials[item.product_id] = {...(topupCredentials[item.product_id] || {}), zone_id: $event.target.value}"
                                                class="px-3 py-2.5 bg-background border border-border rounded-lg text-xs font-bold outline-none focus:ring-2 focus:ring-amber-500/50 placeholder:text-muted-foreground/50" />
-                                        <input type="text" placeholder="Server ID" @input="topupCredentials[item.product_id] = {...(topupCredentials[item.product_id] || {}), server_id: $event.target.value}"
+                                        <input type="text" placeholder="Server ID"
+                                               :value="topupCredentials[item.product_id]?.server_id || ''"
+                                               @input="topupCredentials[item.product_id] = {...(topupCredentials[item.product_id] || {}), server_id: $event.target.value}"
                                                class="px-3 py-2.5 bg-background border border-border rounded-lg text-xs font-bold outline-none focus:ring-2 focus:ring-amber-500/50 placeholder:text-muted-foreground/50" />
                                     </div>
                                 </div>
@@ -233,7 +246,7 @@
             </div>
 
             <!-- Order Summary -->
-            <div class="space-y-6" x-show="!paid" x-transition>
+            <div class="space-y-6">
                 <div class="glass-card rounded-[2.5rem] p-8 space-y-6 border-border/50 sticky top-24">
                     <h3 class="text-lg font-black uppercase tracking-tighter">Summary</h3>
 
@@ -300,26 +313,6 @@
                     </button>
 
                     <p class="text-[8px] font-black text-center text-muted-foreground uppercase tracking-widest">Secure encrypted checkout via Midtrans</p>
-                </div>
-            </div>
-
-            <!-- Success State -->
-            <div class="col-span-3 py-20 text-center space-y-8" x-show="paid" x-transition:enter="transition cubic-bezier(0.34, 1.56, 0.64, 1) duration-1000" x-transition:enter-start="opacity-0 scale-50 translate-y-12" x-transition:enter-end="opacity-100 scale-100 translate-y-0">
-                <div class="relative w-32 h-32 mx-auto">
-                    <div class="absolute inset-0 bg-primary/20 rounded-full animate-ping"></div>
-                    <div class="relative w-32 h-32 bg-primary rounded-full flex items-center justify-center text-primary-foreground shadow-2xl shadow-primary/50">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" class="pixel-render"><polyline points="20 6 9 17 4 12"/></svg>
-                    </div>
-                </div>
-
-                <div class="space-y-3">
-                    <h2 class="text-4xl font-black tracking-tighter uppercase">Payment <span class="text-primary">Successful!</span></h2>
-                    <p class="text-muted-foreground text-xs font-bold uppercase tracking-widest leading-relaxed max-w-md mx-auto">Your order has been processed. The digital codes will be available in your <a href="{{ route('inventory') }}" class="text-foreground underline">Inventory</a> shortly.</p>
-                </div>
-
-                <div class="pt-6 flex items-center justify-center gap-4">
-                    <a href="{{ route('inventory') }}" class="px-10 py-4 bg-primary text-primary-foreground font-black rounded-2xl hover:scale-105 transition-all shadow-xl shadow-primary/20 uppercase tracking-widest text-[10px]">Go to Inventory</a>
-                    <a href="{{ route('home') }}" class="px-10 py-4 bg-card border-2 border-border text-foreground font-black rounded-2xl hover:scale-105 transition-all shadow-xl uppercase tracking-widest text-[10px]">Continue Shopping</a>
                 </div>
             </div>
         </div>
