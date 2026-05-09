@@ -2,17 +2,16 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
+use App\Models\Favorite;
+use App\Models\Product;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 
 class FavoriteController extends Controller
 {
     public function store(Request $request, int $productId)
     {
-        $productExists = DB::table('products')
-            ->where('id', $productId)
+        $productExists = Product::where('id', $productId)
             ->where('is_active', true)
             ->exists();
 
@@ -22,10 +21,9 @@ class FavoriteController extends Controller
             ], 404);
         }
 
-        DB::table('favorites')->insertOrIgnore([
+        Favorite::firstOrCreate([
             'user_id' => Auth::id(),
             'product_id' => $productId,
-            'created_at' => now(),
         ]);
 
         return response()->json([
@@ -37,8 +35,7 @@ class FavoriteController extends Controller
 
     public function destroy(Request $request, int $productId)
     {
-        DB::table('favorites')
-            ->where('user_id', Auth::id())
+        Favorite::where('user_id', Auth::id())
             ->where('product_id', $productId)
             ->delete();
 
@@ -51,26 +48,18 @@ class FavoriteController extends Controller
 
     public function showFavorites()
     {
-        $favorites = DB::table('favorites')
-            ->join('products', 'favorites.product_id', '=', 'products.id')
-            ->leftJoin('categories', 'products.category_id', '=', 'categories.id')
-            ->where('favorites.user_id', Auth::id())
-            ->where('products.is_active', true)
-            ->orderByDesc('favorites.created_at')
-            ->get([
-                'products.id',
-                'products.name',
-                'products.price',
-                'products.image',
-                'categories.name as category',
-            ])
-            ->map(function ($product) {
+        $favorites = Favorite::with(['product.category'])
+            ->where('user_id', Auth::id())
+            ->whereHas('product', fn ($query) => $query->where('is_active', true))
+            ->orderByDesc('created_at')
+            ->get()
+            ->map(function (Favorite $favorite) {
                 return [
-                    'id' => $product->id,
-                    'name' => $product->name,
-                    'price' => (float) $product->price,
-                    'category' => $product->category ?: 'Other',
-                    'image' => '/products/' . ltrim($product->image ?: 'soundcloud.svg', '/'),
+                    'id' => $favorite->product->id,
+                    'name' => $favorite->product->name,
+                    'price' => (float) $favorite->product->price,
+                    'category' => $favorite->product->category?->name ?: 'Other',
+                    'image' => '/products/'.ltrim($favorite->product->image ?: 'soundcloud.svg', '/'),
                 ];
             })
             ->values();

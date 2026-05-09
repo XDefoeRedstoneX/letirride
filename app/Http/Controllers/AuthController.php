@@ -2,48 +2,59 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use App\Models\User;
+use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
+
 class AuthController extends Controller
 {
- //LOGIN & REGISTER
-    public function showLogin(){
+    // LOGIN & REGISTER
+    public function showLogin()
+    {
         return view('');
     }
-    public function showRegister(){
-        return view('ganti');}
 
-    public function showSettings(){
+    public function showRegister()
+    {
+        return view('ganti');
+    }
+
+    public function showSettings()
+    {
         return view('pages.settings');
     }
 
-    public function showProfile(){
+    public function showProfile()
+    {
         return view('pages.profile');
     }
 
-    public function showInv(){
+    public function showInv()
+    {
         return view('pages.inventory');
     }
 
-    public function showTrans(){
+    public function showTrans()
+    {
         return view('pages.transactions');
     }
 
-    public function showForgot(){
+    public function showForgot()
+    {
         return view('pages.forgot-password');
     }
 
-
-    public function logAuth(Request $request){
+    public function logAuth(Request $request)
+    {
         $creds = $request->validate([
             'email' => 'required|email',
-            'password' => 'required'
+            'password' => 'required',
         ]);
 
-        if (Auth::attempt($creds)){
+        if (Auth::attempt($creds)) {
             $request->session()->regenerate();
 
             if ($request->expectsJson()) {
@@ -66,32 +77,40 @@ class AuthController extends Controller
         }
     }
 
-    public function logout(Request $request){
+    public function logout(Request $request)
+    {
         Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
+
         return redirect(route('home'));
     }
 
-    public function regAuth(Request $request){
+    public function regAuth(Request $request)
+    {
         try {
             $creds = $request->validate([
-                'name' => 'required',
-                'email' => 'required|email|unique:users',
-                'password' => 'required|min:6',
+                'name' => 'required|min:2|max:50',
+                'email' => 'required|email:dns|unique:users',
+                'password' => 'required|min:8',
             ]);
 
-            \App\Models\User::create($creds);
+            $creds['referral_code'] = strtoupper(Str::random(8));
+
+            $user = User::create($creds);
+
+            Auth::login($user);
+            $request->session()->regenerate();
 
             if ($request->expectsJson()) {
                 return response()->json([
-                    'message' => 'Registration successful! Please login.',
-                    'redirect' => route('logAuth'),
+                    'message' => 'Registration successful! Welcome to Ridly.',
+                    'redirect' => route('home'),
                 ], 200);
             }
 
-            return redirect()->route('login')->with('success', 'Registration successful! Please login.');
-        } catch (\Illuminate\Validation\ValidationException $e) {
+            return redirect()->route('home')->with('success', 'Registration successful! Welcome to Ridly.');
+        } catch (ValidationException $e) {
             if ($request->expectsJson()) {
                 return response()->json([
                     'message' => 'Validation failed.',
@@ -103,39 +122,42 @@ class AuthController extends Controller
         }
     }
 
-    //SETTINGS
-    public function changeEmail(Request $request){
+    // SETTINGS
+    public function changeEmail(Request $request)
+    {
         $request->validate([
-            'email' => 'required|email:dns|unique:users'
+            'email' => 'required|email:dns|unique:users',
         ]);
 
         Auth::user()->update($request->only('email'));
+
         return back()->with('success', 'Email updated successfully!');
     }
 
-    public function changePassword(Request $request){
-    $request->validate([
-        'current_password' => 'required',
-        'new_password' => 'required|min:6'
-    ]);
+    public function changePassword(Request $request)
+    {
+        $request->validate([
+            'current_password' => 'required',
+            'new_password' => 'required|min:6',
+        ]);
 
-    $user = Auth::user();
+        $user = Auth::user();
 
-    if (!Hash::check($request->current_password, $user->password)) {
-        return response()->json([
-            'errors' => ['current_password' => ['The current password you entered is incorrect.']]
-        ], 422); // 422 so your AJAX catches it as an error!
-    }
+        if (! Hash::check($request->current_password, $user->password)) {
+            return response()->json([
+                'errors' => ['current_password' => ['The current password you entered is incorrect.']],
+            ], 422); // 422 so your AJAX catches it as an error!
+        }
 
-    if (Hash::check($request->new_password, $user->password)) {
-        return response()->json([
-            'errors' => ['new_password' => ['New password cannot be the same as the old password.']]
-        ], 422);
-    }
+        if (Hash::check($request->new_password, $user->password)) {
+            return response()->json([
+                'errors' => ['new_password' => ['New password cannot be the same as the old password.']],
+            ], 422);
+        }
         $user->update([
-        'password' => Hash::make($request->new_password)
-    ]);
-        if($request->expectsJson()) {
+            'password' => Hash::make($request->new_password),
+        ]);
+        if ($request->expectsJson()) {
             return response()->json([
                 'message' => 'Password updated successfully.',
                 'name' => Auth::user()->name,
@@ -143,18 +165,18 @@ class AuthController extends Controller
         }
     }
 
-    public function updateProfile(Request $request){
+    public function updateProfile(Request $request)
+    {
         $request->validate([
-            'name' => 'required'
+            'name' => 'required',
         ]);
 
         Auth::user()->update($request->only('name'));
-        if($request->expectsJson()) {
+        if ($request->expectsJson()) {
             return response()->json([
                 'message' => 'Profile updated successfully.',
                 'name' => Auth::user()->name,
             ], 200);
         }
     }
-
 }

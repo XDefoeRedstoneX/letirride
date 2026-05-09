@@ -130,16 +130,16 @@ class DatabaseSeeder extends Seeder
         }
 
         $rows = [
-            ['id' => 1, 'category_id' => 1, 'name' => 'Steam Wallet $10', 'description' => 'Adds $10 to Steam', 'price' => 10.00, 'point_reward' => 100, 'is_active' => true, 'image' => 'steam-wallet.svg'],
-            ['id' => 2, 'category_id' => 1, 'name' => 'Steam Wallet $50', 'description' => 'Adds $50 to Steam', 'price' => 50.00, 'point_reward' => 500, 'is_active' => true, 'image' => 'steam-wallet.svg'],
-            ['id' => 3, 'category_id' => 2, 'name' => 'Netflix 1 Month (HD)', 'description' => 'Standard 1 Month', 'price' => 15.49, 'point_reward' => 150, 'is_active' => true, 'image' => 'netflix.svg'],
-            ['id' => 4, 'category_id' => 2, 'name' => 'Spotify 3 Months', 'description' => 'Premium Code', 'price' => 29.97, 'point_reward' => 300, 'is_active' => true, 'image' => 'spotify.svg'],
-            ['id' => 5, 'category_id' => 1, 'name' => 'PSN $25', 'description' => 'PS Store Credit', 'price' => 25.00, 'point_reward' => 250, 'is_active' => true, 'image' => 'google-play.svg'],
-            ['id' => 6, 'category_id' => 1, 'name' => '1000 Valorant Points', 'description' => 'Riot Games VP', 'price' => 9.99, 'point_reward' => 100, 'is_active' => true, 'image' => 'xbox.svg'],
-            ['id' => 7, 'category_id' => 5, 'name' => '500 ML Diamonds', 'description' => 'Moonton Diamonds', 'price' => 10.00, 'point_reward' => 100, 'is_active' => true, 'image' => 'google-play.svg'],
-            ['id' => 8, 'category_id' => 1, 'name' => 'Welkin Moon', 'description' => '30 Days Genshin', 'price' => 4.99, 'point_reward' => 50, 'is_active' => true, 'image' => 'youtube.svg'],
-            ['id' => 9, 'category_id' => 2, 'name' => 'Discord Nitro 1 Year', 'description' => 'Full Nitro', 'price' => 99.99, 'point_reward' => 1000, 'is_active' => true, 'image' => 'soundcloud.svg'],
-            ['id' => 10, 'category_id' => 1, 'name' => 'Xbox Game Pass 1 Month', 'description' => 'Ultimate Pass', 'price' => 16.99, 'point_reward' => 160, 'is_active' => true, 'image' => 'xbox.svg'],
+            ['id' => 1, 'category_id' => 1, 'name' => 'Steam Wallet Rp150.000', 'description' => 'Adds Rp150.000 to Steam', 'price' => 150000.00, 'point_reward' => 100, 'is_active' => true, 'image' => 'steam-wallet.svg'],
+            ['id' => 2, 'category_id' => 1, 'name' => 'Steam Wallet Rp750.000', 'description' => 'Adds Rp750.000 to Steam', 'price' => 750000.00, 'point_reward' => 500, 'is_active' => true, 'image' => 'steam-wallet.svg'],
+            ['id' => 3, 'category_id' => 2, 'name' => 'Netflix 1 Month (HD)', 'description' => 'Standard 1 Month', 'price' => 249000.00, 'point_reward' => 150, 'is_active' => true, 'image' => 'netflix.svg'],
+            ['id' => 4, 'category_id' => 2, 'name' => 'Spotify 3 Months', 'description' => 'Premium Code', 'price' => 449000.00, 'point_reward' => 300, 'is_active' => true, 'image' => 'spotify.svg'],
+            ['id' => 5, 'category_id' => 1, 'name' => 'PSN Rp400.000', 'description' => 'PS Store Credit', 'price' => 400000.00, 'point_reward' => 250, 'is_active' => true, 'image' => 'google-play.svg'],
+            ['id' => 6, 'category_id' => 1, 'name' => '1000 Valorant Points', 'description' => 'Riot Games VP', 'price' => 160000.00, 'point_reward' => 100, 'is_active' => true, 'image' => 'xbox.svg'],
+            ['id' => 7, 'category_id' => 5, 'name' => '500 ML Diamonds', 'description' => 'Moonton Diamonds', 'price' => 150000.00, 'point_reward' => 100, 'is_active' => true, 'image' => 'google-play.svg'],
+            ['id' => 8, 'category_id' => 1, 'name' => 'Welkin Moon', 'description' => '30 Days Genshin', 'price' => 79000.00, 'point_reward' => 50, 'is_active' => true, 'image' => 'youtube.svg'],
+            ['id' => 9, 'category_id' => 2, 'name' => 'Discord Nitro 1 Year', 'description' => 'Full Nitro', 'price' => 1499000.00, 'point_reward' => 1000, 'is_active' => true, 'image' => 'soundcloud.svg'],
+            ['id' => 10, 'category_id' => 1, 'name' => 'Xbox Game Pass 1 Month', 'description' => 'Ultimate Pass', 'price' => 259000.00, 'point_reward' => 160, 'is_active' => true, 'image' => 'xbox.svg'],
         ];
 
         DB::table('products')->upsert($rows, ['id']);
@@ -197,14 +197,14 @@ class DatabaseSeeder extends Seeder
         DB::table('discount_types')->upsert([
             ['id' => 1, 'name' => '10% Off All', 'type' => 'percent', 'value' => 10.00, 'target_category_id' => null],
             ['id' => 2, 'name' => '5% Off Steam', 'type' => 'percent', 'value' => 5.00, 'target_category_id' => 1],
-            ['id' => 3, 'name' => '$2 Off Netflix', 'type' => 'percent', 'value' => 2.00, 'target_category_id' => 2],
+            ['id' => 3, 'name' => 'Rp30.000 Off Netflix', 'type' => 'fixed', 'value' => 30000.00, 'target_category_id' => 2],
             ['id' => 4, 'name' => '20% Off PSN', 'type' => 'percent', 'value' => 20.00, 'target_category_id' => 1],
-            ['id' => 5, 'name' => '$5 Welcome Bonus', 'type' => 'percent', 'value' => 5.00, 'target_category_id' => null],
+            ['id' => 5, 'name' => 'Rp75.000 Welcome Bonus', 'type' => 'fixed', 'value' => 75000.00, 'target_category_id' => null],
             ['id' => 6, 'name' => 'Half Price Discord', 'type' => 'percent', 'value' => 50.00, 'target_category_id' => 2],
-            ['id' => 7, 'name' => '$1 Off Valorant', 'type' => 'percent', 'value' => 1.00, 'target_category_id' => 1],
+            ['id' => 7, 'name' => 'Rp15.000 Off Valorant', 'type' => 'fixed', 'value' => 15000.00, 'target_category_id' => 1],
             ['id' => 8, 'name' => '15% Off Xbox', 'type' => 'percent', 'value' => 15.00, 'target_category_id' => 1],
             ['id' => 9, 'name' => 'Whale Discount', 'type' => 'percent', 'value' => 25.00, 'target_category_id' => null],
-            ['id' => 10, 'name' => 'Free Welkin', 'type' => 'percent', 'value' => 4.99, 'target_category_id' => 1],
+            ['id' => 10, 'name' => 'Free Welkin', 'type' => 'fixed', 'value' => 79000.00, 'target_category_id' => 1],
         ], ['id'], ['name', 'type', 'value', 'target_category_id']);
     }
 
@@ -271,16 +271,16 @@ class DatabaseSeeder extends Seeder
         $ordersHasCreatedAt = Schema::hasColumn('orders', 'created_at');
 
         $rows = [
-            ['id' => 1, 'noinv' => 'INV-2024-001', 'user_id' => 1, 'user_discount_id' => null, 'subtotal' => 10.00, 'discount_amount' => 0.00, 'total_price_after_discount' => 10.00, 'payment_gateway_ref' => 'ch_1A2B3C4D5E', 'status' => 'paid'],
-            ['id' => 2, 'noinv' => 'INV-2024-002', 'user_id' => 2, 'user_discount_id' => 2, 'subtotal' => 15.49, 'discount_amount' => 5.00, 'total_price_after_discount' => 10.49, 'payment_gateway_ref' => 'ch_9Z8Y7X6W', 'status' => 'paid'],
-            ['id' => 3, 'noinv' => 'INV-2024-003', 'user_id' => 3, 'user_discount_id' => null, 'subtotal' => 29.97, 'discount_amount' => 0.00, 'total_price_after_discount' => 29.97, 'payment_gateway_ref' => 'paypal_TX123', 'status' => 'pending'],
-            ['id' => 4, 'noinv' => 'INV-2024-004', 'user_id' => 5, 'user_discount_id' => 5, 'subtotal' => 15.49, 'discount_amount' => 2.00, 'total_price_after_discount' => 13.49, 'payment_gateway_ref' => 'ch_5F4G3H2J', 'status' => 'paid'],
-            ['id' => 5, 'noinv' => 'INV-2024-005', 'user_id' => 9, 'user_discount_id' => 9, 'subtotal' => 99.99, 'discount_amount' => 49.99, 'total_price_after_discount' => 50.00, 'payment_gateway_ref' => 'paypal_TX999', 'status' => 'paid'],
-            ['id' => 6, 'noinv' => 'INV-2024-006', 'user_id' => 4, 'user_discount_id' => null, 'subtotal' => 100.00, 'discount_amount' => 0.00, 'total_price_after_discount' => 100.00, 'payment_gateway_ref' => null, 'status' => 'failed'],
-            ['id' => 7, 'noinv' => 'INV-2024-007', 'user_id' => 8, 'user_discount_id' => null, 'subtotal' => 4.99, 'discount_amount' => 0.00, 'total_price_after_discount' => 4.99, 'payment_gateway_ref' => 'ch_11223344', 'status' => 'paid'],
-            ['id' => 8, 'noinv' => 'INV-2024-008', 'user_id' => 6, 'user_discount_id' => null, 'subtotal' => 25.00, 'discount_amount' => 0.00, 'total_price_after_discount' => 25.00, 'payment_gateway_ref' => 'paypal_TX456', 'status' => 'pending'],
-            ['id' => 9, 'noinv' => 'INV-2024-009', 'user_id' => 10, 'user_discount_id' => null, 'subtotal' => 9.99, 'discount_amount' => 0.00, 'total_price_after_discount' => 9.99, 'payment_gateway_ref' => 'ch_55667788', 'status' => 'paid'],
-            ['id' => 10, 'noinv' => 'INV-2024-010', 'user_id' => 7, 'user_discount_id' => null, 'subtotal' => 16.99, 'discount_amount' => 0.00, 'total_price_after_discount' => 16.99, 'payment_gateway_ref' => 'paypal_TX789', 'status' => 'failed'],
+            ['id' => 1, 'noinv' => 'INV-2024-001', 'user_id' => 1, 'user_discount_id' => null, 'subtotal' => 150000.00, 'discount_amount' => 0.00, 'total_price_after_discount' => 150000.00, 'payment_gateway_ref' => 'ch_1A2B3C4D5E', 'status' => 'paid'],
+            ['id' => 2, 'noinv' => 'INV-2024-002', 'user_id' => 2, 'user_discount_id' => 2, 'subtotal' => 249000.00, 'discount_amount' => 75000.00, 'total_price_after_discount' => 174000.00, 'payment_gateway_ref' => 'ch_9Z8Y7X6W', 'status' => 'paid'],
+            ['id' => 3, 'noinv' => 'INV-2024-003', 'user_id' => 3, 'user_discount_id' => null, 'subtotal' => 449000.00, 'discount_amount' => 0.00, 'total_price_after_discount' => 449000.00, 'payment_gateway_ref' => 'paypal_TX123', 'status' => 'pending'],
+            ['id' => 4, 'noinv' => 'INV-2024-004', 'user_id' => 5, 'user_discount_id' => 5, 'subtotal' => 249000.00, 'discount_amount' => 30000.00, 'total_price_after_discount' => 219000.00, 'payment_gateway_ref' => 'ch_5F4G3H2J', 'status' => 'paid'],
+            ['id' => 5, 'noinv' => 'INV-2024-005', 'user_id' => 9, 'user_discount_id' => 9, 'subtotal' => 1499000.00, 'discount_amount' => 749500.00, 'total_price_after_discount' => 749500.00, 'payment_gateway_ref' => 'paypal_TX999', 'status' => 'paid'],
+            ['id' => 6, 'noinv' => 'INV-2024-006', 'user_id' => 4, 'user_discount_id' => null, 'subtotal' => 1500000.00, 'discount_amount' => 0.00, 'total_price_after_discount' => 1500000.00, 'payment_gateway_ref' => null, 'status' => 'failed'],
+            ['id' => 7, 'noinv' => 'INV-2024-007', 'user_id' => 8, 'user_discount_id' => null, 'subtotal' => 79000.00, 'discount_amount' => 0.00, 'total_price_after_discount' => 79000.00, 'payment_gateway_ref' => 'ch_11223344', 'status' => 'paid'],
+            ['id' => 8, 'noinv' => 'INV-2024-008', 'user_id' => 6, 'user_discount_id' => null, 'subtotal' => 400000.00, 'discount_amount' => 0.00, 'total_price_after_discount' => 400000.00, 'payment_gateway_ref' => 'paypal_TX456', 'status' => 'pending'],
+            ['id' => 9, 'noinv' => 'INV-2024-009', 'user_id' => 10, 'user_discount_id' => null, 'subtotal' => 160000.00, 'discount_amount' => 0.00, 'total_price_after_discount' => 160000.00, 'payment_gateway_ref' => 'ch_55667788', 'status' => 'paid'],
+            ['id' => 10, 'noinv' => 'INV-2024-010', 'user_id' => 7, 'user_discount_id' => null, 'subtotal' => 259000.00, 'discount_amount' => 0.00, 'total_price_after_discount' => 259000.00, 'payment_gateway_ref' => 'paypal_TX789', 'status' => 'failed'],
         ];
 
         if ($ordersHasCreatedAt) {
@@ -312,16 +312,16 @@ class DatabaseSeeder extends Seeder
         }
 
         DB::table('order_details')->upsert([
-            ['id' => 1, 'order_id' => 1, 'product_id' => 1, 'quantity' => 1, 'total_price_in_cart' => 10.00],
-            ['id' => 2, 'order_id' => 2, 'product_id' => 3, 'quantity' => 1, 'total_price_in_cart' => 15.49],
-            ['id' => 3, 'order_id' => 3, 'product_id' => 4, 'quantity' => 1, 'total_price_in_cart' => 29.97],
-            ['id' => 4, 'order_id' => 4, 'product_id' => 3, 'quantity' => 1, 'total_price_in_cart' => 15.49],
-            ['id' => 5, 'order_id' => 5, 'product_id' => 9, 'quantity' => 1, 'total_price_in_cart' => 99.99],
-            ['id' => 6, 'order_id' => 6, 'product_id' => 2, 'quantity' => 2, 'total_price_in_cart' => 100.00],
-            ['id' => 7, 'order_id' => 7, 'product_id' => 8, 'quantity' => 1, 'total_price_in_cart' => 4.99],
-            ['id' => 8, 'order_id' => 8, 'product_id' => 5, 'quantity' => 1, 'total_price_in_cart' => 25.00],
-            ['id' => 9, 'order_id' => 9, 'product_id' => 6, 'quantity' => 1, 'total_price_in_cart' => 9.99],
-            ['id' => 10, 'order_id' => 10, 'product_id' => 10, 'quantity' => 1, 'total_price_in_cart' => 16.99],
+            ['id' => 1, 'order_id' => 1, 'product_id' => 1, 'quantity' => 1, 'total_price_in_cart' => 150000.00],
+            ['id' => 2, 'order_id' => 2, 'product_id' => 3, 'quantity' => 1, 'total_price_in_cart' => 249000.00],
+            ['id' => 3, 'order_id' => 3, 'product_id' => 4, 'quantity' => 1, 'total_price_in_cart' => 449000.00],
+            ['id' => 4, 'order_id' => 4, 'product_id' => 3, 'quantity' => 1, 'total_price_in_cart' => 249000.00],
+            ['id' => 5, 'order_id' => 5, 'product_id' => 9, 'quantity' => 1, 'total_price_in_cart' => 1499000.00],
+            ['id' => 6, 'order_id' => 6, 'product_id' => 2, 'quantity' => 2, 'total_price_in_cart' => 1500000.00],
+            ['id' => 7, 'order_id' => 7, 'product_id' => 8, 'quantity' => 1, 'total_price_in_cart' => 79000.00],
+            ['id' => 8, 'order_id' => 8, 'product_id' => 5, 'quantity' => 1, 'total_price_in_cart' => 400000.00],
+            ['id' => 9, 'order_id' => 9, 'product_id' => 6, 'quantity' => 1, 'total_price_in_cart' => 160000.00],
+            ['id' => 10, 'order_id' => 10, 'product_id' => 10, 'quantity' => 1, 'total_price_in_cart' => 259000.00],
         ], ['id'], ['order_id', 'product_id', 'quantity', 'total_price_in_cart']);
     }
 
@@ -387,11 +387,11 @@ class DatabaseSeeder extends Seeder
         DB::table('point_shop_items')->upsert([
             [
                 'id' => 1,
-                'name' => 'Buy $5 Welcome Bonus',
-                'description' => 'Instantly get a $5 discount code!',
+                'name' => 'Buy Rp75.000 Welcome Bonus',
+                'description' => 'Instantly get a Rp75.000 discount code!',
                 'point_cost' => 500,
                 'reward_type' => 'discount_code',
-                'discount_type_id' => 5, // Links to your $5 Welcome Bonus
+                'discount_type_id' => 5,
                 'img' => null,
                 'is_active' => true,
             ],
@@ -401,7 +401,7 @@ class DatabaseSeeder extends Seeder
                 'description' => 'Unlock the massive 25% Whale Discount.',
                 'point_cost' => 5000,
                 'reward_type' => 'discount_code',
-                'discount_type_id' => 9, // Links to your Whale Discount
+                'discount_type_id' => 9,
                 'img' => null,
                 'is_active' => true,
             ],
@@ -411,7 +411,7 @@ class DatabaseSeeder extends Seeder
                 'description' => 'Redeem your points for a free Welkin Moon code!',
                 'point_cost' => 1000,
                 'reward_type' => 'discount_code',
-                'discount_type_id' => 10, // Links to your Free Welkin discount
+                'discount_type_id' => 10,
                 'img' => null,
                 'is_active' => true,
             ],
@@ -427,24 +427,24 @@ class DatabaseSeeder extends Seeder
         DB::table('point_shop_purchases')->upsert([
             [
                 'id' => 1,
-                'user_id' => 2, // Bob Jones
-                'point_shop_item_id' => 1, // Bought the $5 Welcome Bonus
+                'user_id' => 2,
+                'point_shop_item_id' => 1,
                 'points_spent' => 500,
-                'created_at' => clone $now->subDays(1),
+                'created_at' => (clone $now)->subDays(1),
             ],
             [
                 'id' => 2,
-                'user_id' => 4, // Diana Prince
-                'point_shop_item_id' => 2, // Bought the Whale Status Ticket
+                'user_id' => 4,
+                'point_shop_item_id' => 2,
                 'points_spent' => 5000,
-                'created_at' => clone $now->subHours(5),
+                'created_at' => (clone $now)->subHours(5),
             ],
             [
                 'id' => 3,
-                'user_id' => 8, // Hannah Abbott
-                'point_shop_item_id' => 3, // Bought the Free Welkin Pass
+                'user_id' => 8,
+                'point_shop_item_id' => 3,
                 'points_spent' => 1000,
-                'created_at' => clone $now->subMinutes(30),
+                'created_at' => (clone $now)->subMinutes(30),
             ],
         ], ['id'], ['user_id', 'point_shop_item_id', 'points_spent', 'created_at']);
     }
@@ -458,26 +458,26 @@ class DatabaseSeeder extends Seeder
         DB::table('favorites')->upsert([
             [
                 'id' => 1,
-                'user_id' => 1, // Alice
-                'product_id' => 3, // Netflix 1 Month
-                'created_at' => clone $now->subDays(5),
+                'user_id' => 1,
+                'product_id' => 3,
+                'created_at' => (clone $now)->subDays(5),
             ],
             [
                 'id' => 2,
-                'user_id' => 1, // Alice
-                'product_id' => 9, // Discord Nitro
-                'created_at' => clone $now->subDays(2),
+                'user_id' => 1,
+                'product_id' => 9,
+                'created_at' => (clone $now)->subDays(2),
             ],
             [
                 'id' => 3,
-                'user_id' => 2, // Bob
-                'product_id' => 1, // Steam Wallet $10
-                'created_at' => clone $now->subHours(12),
+                'user_id' => 2,
+                'product_id' => 1,
+                'created_at' => (clone $now)->subHours(12),
             ],
             [
                 'id' => 4,
-                'user_id' => 8, // Hannah
-                'product_id' => 8, // Welkin Moon
+                'user_id' => 8,
+                'product_id' => 8,
                 'created_at' => clone $now,
             ],
         ], ['id'], ['user_id', 'product_id', 'created_at']);

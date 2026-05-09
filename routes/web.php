@@ -1,49 +1,51 @@
 <?php
 
+use App\Http\Controllers\AuthController;
+use App\Http\Controllers\FavoriteController;
+use App\Http\Controllers\GachaController;
+use App\Http\Controllers\PointController;
+use App\Http\Controllers\StoreController;
 use Illuminate\Support\Facades\Route;
 
-
-
-Route::get('/', [App\Http\Controllers\StoreController::class, 'showStore'])->name('home');
-Route::post('/login', [App\Http\Controllers\AuthController::class, 'logAuth'])->name('logAuth');
-Route::post('/register', [App\Http\Controllers\AuthController::class, 'regAuth'])->name('regAuth');
-
-    Route::get('/point-shop', [App\Http\Controllers\PointController::class, 'showPointshop'])->name('point-shop');
-    Route::get('/gacha', [App\Http\Controllers\GachaController::class, 'showGacha'])->name('gacha');
+Route::get('/', [StoreController::class, 'showStore'])->name('home');
+Route::post('/login', [AuthController::class, 'logAuth'])->name('logAuth');
+Route::post('/register', [AuthController::class, 'regAuth'])->name('regAuth');
 
 Route::middleware('auth')->group(function () {
-    Route::get('/favorites', [App\Http\Controllers\FavoriteController::class, 'showFavorites'])->name('favorites');
-    Route::post('/favorites/{productId}', [App\Http\Controllers\FavoriteController::class, 'store'])->name('favorites.store');
-    Route::delete('/favorites/{productId}', [App\Http\Controllers\FavoriteController::class, 'destroy'])->name('favorites.destroy');
-    Route::post('addcart/{productId}', [App\Http\Controllers\StoreController::class, 'addCart'])->name('addCart');
-    Route::get('/cart', [App\Http\Controllers\StoreController::class, 'viewCart'])->name('viewCart');
-    Route::post('/updatecart/{productId}', [App\Http\Controllers\StoreController::class, 'updateCart'])->name('updateCart');
-    Route::post('/logout', [App\Http\Controllers\AuthController::class, 'logout'])->name('logout');
-    Route::get('/settings', [App\Http\Controllers\AuthController::class, 'showSettings'])->name('settings');
-    Route::get('/profile', [App\Http\Controllers\AuthController::class, 'showProfile'])->name('profile');
-    Route::get('/inventory', [App\Http\Controllers\AuthController::class, 'showInv'])->name('inventory');
-    Route::get('/transactions', [App\Http\Controllers\AuthController::class, 'showTrans'])->name('transactions');
-    Route::get('/forgot-password', [App\Http\Controllers\AuthController::class, 'showForgot'])->name('forgot-password');
-    Route::post('/update-profile', [App\Http\Controllers\AuthController::class, 'updateProfile'])->name('updateProfile');
-    Route::post('/change-password', [App\Http\Controllers\AuthController::class, 'changePassword'])->name('changePassword');
+    Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+
+    // Point Shop & Gacha (require auth)
+    Route::get('/point-shop', [PointController::class, 'showPointshop'])->name('point-shop');
+    Route::get('/gacha', [GachaController::class, 'showGacha'])->name('gacha');
+
+    // Favorites
+    Route::get('/favorites', [FavoriteController::class, 'showFavorites'])->name('favorites');
+    Route::post('/favorites/{productId}', [FavoriteController::class, 'store'])->name('favorites.store');
+    Route::delete('/favorites/{productId}', [FavoriteController::class, 'destroy'])->name('favorites.destroy');
+
+    // Cart
+    Route::post('addcart/{productId}', [StoreController::class, 'addCart'])->name('addCart');
+    Route::get('/cart', [StoreController::class, 'viewCart'])->name('viewCart');
+    Route::post('/updatecart/{productId}', [StoreController::class, 'updateCart'])->name('updateCart');
+
+    // Profile & Settings
+    Route::get('/settings', [AuthController::class, 'showSettings'])->name('settings');
+    Route::get('/profile', [AuthController::class, 'showProfile'])->name('profile');
+    Route::post('/update-profile', [AuthController::class, 'updateProfile'])->name('updateProfile');
+    Route::post('/change-password', [AuthController::class, 'changePassword'])->name('changePassword');
+
+    // Inventory & Transactions
+    Route::get('/inventory', [AuthController::class, 'showInv'])->name('inventory');
+    Route::get('/transactions', [AuthController::class, 'showTrans'])->name('transactions');
+
+    // Forgot Password
+    Route::get('/forgot-password', [AuthController::class, 'showForgot'])->name('forgot-password');
 });
-    Route::get('/terms', function () {
-        return view('pages.terms-of-service');
-    })->name('terms-of-service');
-    Route::get('/privacy', function () {
-        return view('pages.privacy-policy');
-    })->name('privacy-policy');
-    Route::get('/about', function () {
-        return view('pages.about');
-    })->name('about');
-    Route::get('/faq', function () {
-        return view('pages.faq');
-    })->name('faq');
-    Route::get('/contact', function () {
-        return view('pages.contact');
-    })->name('contact');
-    Route::get('/tickets', function () {
-        return view('pages.tickets');
-    })->name('tickets');
 
-
+// Static pages (no auth required)
+Route::get('/terms', fn () => view('pages.terms-of-service'))->name('terms-of-service');
+Route::get('/privacy', fn () => view('pages.privacy-policy'))->name('privacy-policy');
+Route::get('/about', fn () => view('pages.about'))->name('about');
+Route::get('/faq', fn () => view('pages.faq'))->name('faq');
+Route::get('/contact', fn () => view('pages.contact'))->name('contact');
+Route::get('/tickets', fn () => view('pages.tickets'))->name('tickets');

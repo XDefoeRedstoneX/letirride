@@ -29,7 +29,7 @@ class DiscountType extends Model
 
     public function targetCategory(): BelongsTo
     {
-        return $this->belongsTo(Product::class, 'target_category_id');
+        return $this->belongsTo(Category::class, 'target_category_id');
     }
 
     public function userDiscounts(): HasMany

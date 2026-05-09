@@ -111,7 +111,7 @@
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="pixel-render"><circle cx="12" cy="12" r="10"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/></svg>
                     </div>
                 </div>
-                <p class="text-3xl font-black text-foreground tracking-tighter">{{ number_format(Auth::user()->points) }}</p>
+                <p class="text-3xl font-black text-foreground tracking-tighter">{{ number_format(Auth::user()->points_balance) }}</p>
             </div>
             <div class="glass-card rounded-[2.5rem] p-8 space-y-3 group hover:border-primary/30 transition-all duration-500">
                 <div class="flex items-center justify-between">

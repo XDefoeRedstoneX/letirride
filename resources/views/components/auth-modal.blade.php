@@ -4,10 +4,29 @@
     email: '',
     password: '',
     username: '',
+    showLoginPassword: false,
+    showSignupPassword: false,
     loginError: '',
     loginLoading: false,
     signupError: '',
     signupLoading: false,
+    passwordStrength: 0,
+    get strengthLabel() {
+        const labels = ['', 'Weak', 'Fair', 'Good', 'Strong'];
+        return labels[this.passwordStrength] || '';
+    },
+    get strengthColor() {
+        const colors = ['', 'bg-red-500', 'bg-orange-500', 'bg-yellow-500', 'bg-green-500'];
+        return colors[this.passwordStrength] || '';
+    },
+    checkPasswordStrength(password) {
+        let score = 0;
+        if (password.length >= 8) score++;
+        if (/[A-Z]/.test(password) && /[a-z]/.test(password)) score++;
+        if (/[0-9]/.test(password)) score++;
+        if (/[^A-Za-z0-9]/.test(password)) score++;
+        this.passwordStrength = score;
+    },
     async submitLogin() {
         this.loginError = '';
         this.loginLoading = true;
@@ -50,12 +69,8 @@
         this.signupLoading = false;
 
         if (response.ok) {
-            this.signupError = '';
-            this.username = '';
-            this.email = '';
-            this.password = '';
-            this.tab = 'login';
-            alert(data.message || 'Registration successful! Please log in.');
+            // Auto-login: redirect to home
+            window.location.href = data.redirect || '{{ route('home') }}';
             return;
         }
 
@@ -112,12 +127,13 @@
                 </div>
                 <div class="space-y-2">
                     <label class="text-sm font-medium">Password</label>
-                    <input type="password" name="password" x-model="password" required class="w-full px-3 py-2 bg-background border border-input rounded-md focus:ring-2 focus:ring-primary/50 outline-none transition-all" placeholder="••••••••">
-                </div>
-
-                <div class="flex items-center gap-2">
-                    <input type="checkbox" id="login-tos" required class="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary">
-                    <label for="login-tos" class="text-xs text-muted-foreground">I agree to the <a href="#" class="text-primary hover:underline">Terms of Service</a></label>
+                    <div class="relative">
+                        <input :type="showLoginPassword ? 'text' : 'password'" name="password" x-model="password" required class="w-full px-3 py-2 pr-10 bg-background border border-input rounded-md focus:ring-2 focus:ring-primary/50 outline-none transition-all" placeholder="••••••••">
+                        <button type="button" @click="showLoginPassword = !showLoginPassword" class="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors" tabindex="-1">
+                            <svg x-show="!showLoginPassword" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+                            <svg x-show="showLoginPassword" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><line x1="2" x2="22" y1="2" y2="22"/></svg>
+                        </button>
+                    </div>
                 </div>
 
                 <button type="submit" :disabled="loginLoading" class="w-full py-2 bg-primary text-primary-foreground font-bold rounded-md hover:opacity-90 transition-opacity tracking-widest disabled:opacity-70 disabled:cursor-not-allowed">
@@ -140,12 +156,32 @@
                 </div>
                 <div class="space-y-2">
                     <label class="text-sm font-medium">Password</label>
-                    <input type="password" name="password" x-model="password" required class="w-full px-3 py-2 bg-background border border-input rounded-md focus:ring-2 focus:ring-primary/50 outline-none transition-all" placeholder="Min. 6 characters">
+                    <div class="relative">
+                        <input :type="showSignupPassword ? 'text' : 'password'" name="password" x-model="password" @input="checkPasswordStrength($event.target.value)" required minlength="8" class="w-full px-3 py-2 pr-10 bg-background border border-input rounded-md focus:ring-2 focus:ring-primary/50 outline-none transition-all" placeholder="Min. 8 characters">
+                        <button type="button" @click="showSignupPassword = !showSignupPassword" class="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors" tabindex="-1">
+                            <svg x-show="!showSignupPassword" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+                            <svg x-show="showSignupPassword" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><line x1="2" x2="22" y1="2" y2="22"/></svg>
+                        </button>
+                    </div>
+                    <!-- Password Strength Indicator -->
+                    <div x-show="password.length > 0" class="space-y-1" x-transition>
+                        <div class="flex gap-1">
+                            <template x-for="i in 4" :key="i">
+                                <div class="h-1 flex-1 rounded-full transition-all duration-300" :class="i <= passwordStrength ? strengthColor : 'bg-foreground/10'"></div>
+                            </template>
+                        </div>
+                        <p class="text-[10px] font-bold uppercase tracking-widest" :class="{
+                            'text-red-500': passwordStrength === 1,
+                            'text-orange-500': passwordStrength === 2,
+                            'text-yellow-500': passwordStrength === 3,
+                            'text-green-500': passwordStrength === 4,
+                        }" x-text="strengthLabel"></p>
+                    </div>
                 </div>
 
                 <div class="flex items-center gap-2">
                     <input type="checkbox" id="signup-tos" required class="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary">
-                    <label for="signup-tos" class="text-xs text-muted-foreground">I agree to the <a href="#" class="text-primary hover:underline">Terms of Service</a></label>
+                    <label for="signup-tos" class="text-xs text-muted-foreground">I agree to the <a href="{{ route('terms-of-service') }}" class="text-primary hover:underline" target="_blank">Terms of Service</a></label>
                 </div>
 
                 <button type="submit" :disabled="signupLoading" class="w-full py-2 bg-primary text-primary-foreground font-bold rounded-md hover:opacity-90 transition-opacity tracking-widest disabled:opacity-70 disabled:cursor-not-allowed">

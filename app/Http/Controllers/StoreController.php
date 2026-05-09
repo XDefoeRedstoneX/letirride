@@ -2,19 +2,18 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
 use App\Models\DiscountType;
+use App\Models\Favorite;
+use App\Models\Order;
+use App\Models\OrderDetail;
 use App\Models\Product;
+use App\Models\UserDiscount;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
-use App\Models\Order;
-use App\Models\OrderDetail;
-use App\Models\UserDiscount;
-use App\Models\VoucherCode;
-use Midtrans\Snap;
 use Midtrans\Config;
+use Midtrans\Snap;
 
 class StoreController extends Controller
 {
@@ -40,14 +39,13 @@ class StoreController extends Controller
                     'name' => $product->name,
                     'price' => (float) $product->price,
                     'category' => $product->category?->name ?? 'Other',
-                    'image' => '/products/' . ltrim($fileName, '/'),
+                    'image' => '/products/'.ltrim($fileName, '/'),
                 ];
             })
             ->values();
 
         $favoriteIds = Auth::check()
-            ? DB::table('favorites')
-                ->where('user_id', Auth::id())
+            ? Favorite::where('user_id', Auth::id())
                 ->pluck('product_id')
                 ->map(fn ($id) => (int) $id)
                 ->values()
@@ -59,70 +57,74 @@ class StoreController extends Controller
         ]);
     }
 
-    public function addCart(Request $request, $productId){
+    public function addCart(Request $request, $productId)
+    {
         $product = Product::findOrFail($productId);
         $cart = session()->get('cart', []);
-        if(isset($cart[$productId])) {
+        if (isset($cart[$productId])) {
             $cart[$productId]['quantity']++;
         } else {
             $cart[$productId] = [
-                "name" => $product->name,
-                "quantity" => 1,
-                "price" => $product->price,
-                "img" => $product->image
+                'name' => $product->name,
+                'quantity' => 1,
+                'price' => $product->price,
+                'img' => $product->image,
             ];
         }
         session()->put('cart', $cart);
+
         return redirect()->back()->with('success', 'Product added to cart successfully!');
     }
 
-    public function viewCart(){
+    public function viewCart()
+    {
         $cart = session()->get('cart', []);
-        return view('cart', compact('cart'));
+
+        return view('pages.cart', compact('cart'));
     }
 
-    public function updateCart(Request $request, $productId){
+    public function updateCart(Request $request, $productId)
+    {
         $cart = session()->get('cart', []);
-        if(isset($cart[$productId])) {
+        if (isset($cart[$productId])) {
             $cart[$productId]['quantity'] = $request->quantity;
             if ($cart[$productId]['quantity'] <= 0) {
                 unset($cart[$productId]);
             }
             session()->put('cart', $cart);
+
             return redirect()->back()->with('success', 'Cart updated successfully!');
         }
+
         return redirect()->back()->with('error', 'Product not found in cart!');
     }
 
-
-    public function checkout(Request $request, $discountID){
+    public function checkout(Request $request, $discountID)
+    {
         $cart = session('cart', []);
         try {
             $voucher = UserDiscount::findorFail($discountID);
             $discount = DiscountType::findOrFail($voucher->discount_type_id);
-                if ($discount->type == 'percent') {
-                    $totalPrice = collect($cart)->sum(fn($item) => $item['price'] * $item['quantity']);
-                    $discountAmount = $totalPrice * ($discount->value / 100);
-                } else {
-                    $discountAmount = $discount->value;
-                }
-        }
-        catch (\Exception $e) {
+            if ($discount->type == 'percent') {
+                $totalPrice = collect($cart)->sum(fn ($item) => $item['price'] * $item['quantity']);
+                $discountAmount = $totalPrice * ($discount->value / 100);
+            } else {
+                $discountAmount = $discount->value;
+            }
+        } catch (\Exception $e) {
             $voucher = null;
         }
-
 
         if (empty($cart)) {
             return redirect()->back()->with('error', 'Your cart is empty!');
         }
 
-
         DB::beginTransaction();
         try {
-            $totalPrice = collect($cart)->sum(fn($item) => $item['price'] * $item['quantity']);
+            $totalPrice = collect($cart)->sum(fn ($item) => $item['price'] * $item['quantity']);
 
             $order = Order::create([
-                'invoice_id' => 'INV-' . date('Ymd') . '-' . strtoupper(Str::random(6)),
+                'invoice_id' => 'INV-'.date('Ymd').'-'.strtoupper(Str::random(6)),
                 'user_id' => Auth::id(),
                 'user_discount_id' => $voucher ? $voucher->id : null,
                 'subtotal' => $totalPrice,
@@ -143,20 +145,20 @@ class StoreController extends Controller
                 ]);
             }
 
-            //Midtrans payment integration
-            \Midtrans\Config::$serverKey = config('midtrans.server_key');
-            \Midtrans\Config::$isProduction = config('midtrans.is_production');
-            \Midtrans\Config::$isSanitized = true;
-            \Midtrans\Config::$is3ds = true;
+            // Midtrans payment integration
+            Config::$serverKey = config('midtrans.server_key');
+            Config::$isProduction = config('midtrans.is_production');
+            Config::$isSanitized = true;
+            Config::$is3ds = true;
 
             // Prepare item details for Midtrans
             $item_details = [];
             foreach ($cart as $product_id => $item) {
                 $item_details[] = [
-                    'id'       => $product_id,
-                    'price'    => $item['price'],
+                    'id' => $product_id,
+                    'price' => $item['price'],
                     'quantity' => $item['quantity'],
-                    'name'     => substr($item['name'], 0, 50)
+                    'name' => substr($item['name'], 0, 50),
                 ];
             }
 
@@ -171,14 +173,14 @@ class StoreController extends Controller
                     'first_name' => Auth::user()->name,
                     'email' => Auth::user()->email,
                 ],
-				'callbacks' => [
+                'callbacks' => [
                     'finish' => route('payment_return', $order->id), // Auto-check status after return
-                ]
+                ],
             ];
 
-            $snapToken = \Midtrans\Snap::getSnapToken($params);
+            $snapToken = Snap::getSnapToken($params);
             $order->payment_url = $snapToken; // Store token to use in the modal later
-              $order->save();
+            $order->save();
 
             DB::commit();
 
@@ -187,10 +189,11 @@ class StoreController extends Controller
             // Return to a checkout payment view that triggers the Snap popup
             return view('payment', compact('snapToken', 'order'));
 
-            //return redirect()->route('store')->with('success', 'Checkout successful! Thank you for your purchase.');
-		} catch (\Exception $e) {
+            // return redirect()->route('store')->with('success', 'Checkout successful! Thank you for your purchase.');
+        } catch (\Exception $e) {
             DB::rollBack();
-            return redirect()->back()->with('error', 'Checkout failed: ' . $e->getMessage());
+
+            return redirect()->back()->with('error', 'Checkout failed: '.$e->getMessage());
         }
     }
 }

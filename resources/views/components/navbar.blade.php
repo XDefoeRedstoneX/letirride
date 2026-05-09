@@ -75,6 +75,12 @@
                 </button>
 
                 @auth
+                    <!-- Points Balance -->
+                    <div class="hidden sm:flex items-center gap-1.5 px-3 py-1.5 bg-yellow-500/10 border border-yellow-500/20 rounded-xl text-yellow-500">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="pixel-render"><circle cx="12" cy="12" r="10"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/></svg>
+                        <span class="text-[10px] font-black tracking-widest">{{ number_format(Auth::user()->points_balance) }}</span>
+                    </div>
+
                     <!-- Cart Trolley with Badge -->
                     <a href="{{ route('viewCart') }}" class="relative w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center hover:bg-white/10 transition-all group">
                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="pixel-render"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.56-7.43H5.94"/></svg>
@@ -85,9 +91,9 @@
                     <div class="relative" x-data="{ open: false }">
                         <button @click="open = !open" class="flex items-center gap-2 p-1.5 bg-foreground/5 rounded-2xl hover:bg-foreground/10 transition-all">
                             <div class="w-8 h-8 rounded-xl bg-primary flex items-center justify-center text-primary-foreground font-black text-xs">
-                                {{ strtoupper(substr(Auth::user()->username, 0, 1)) }}
+                                {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
                             </div>
-                            <span class="text-xs font-black uppercase tracking-widest hidden lg:block">{{ Auth::user()->username }}</span>
+                            <span class="text-xs font-black uppercase tracking-widest hidden lg:block">{{ Auth::user()->name }}</span>
                             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="pixel-render transition-transform" :class="open ? 'rotate-180' : ''"><path d="m6 9 6 6 6-6"/></svg>
                         </button>
 
@@ -141,8 +147,20 @@
     <div x-show="mobileMenuOpen" class="md:hidden border-t border-border/50 bg-background/95 backdrop-blur-md">
         <div class="px-4 py-3 space-y-1">
             <a href="{{ route('home') }}" class="block px-3 py-2 rounded-md text-base font-medium {{ request()->routeIs('home') ? 'bg-primary text-primary-foreground' : 'hover:bg-accent' }}">Home</a>
-            <a href="{{ route('point-shop') }}" class="block px-3 py-2 rounded-md text-base font-medium {{ request()->routeIs('point-shop') ? 'bg-primary text-primary-foreground' : 'hover:bg-accent' }}">Point Shop</a>
-            <a href="{{ route('gacha') }}" class="block px-3 py-2 rounded-md text-base font-medium {{ request()->routeIs('gacha') ? 'bg-primary text-primary-foreground' : 'hover:bg-accent' }}">Gacha</a>
+            @auth
+                <a href="{{ route('point-shop') }}" class="block px-3 py-2 rounded-md text-base font-medium {{ request()->routeIs('point-shop') ? 'bg-primary text-primary-foreground' : 'hover:bg-accent' }}">Point Shop</a>
+                <a href="{{ route('gacha') }}" class="block px-3 py-2 rounded-md text-base font-medium {{ request()->routeIs('gacha') ? 'bg-primary text-primary-foreground' : 'hover:bg-accent' }}">Carousel</a>
+                <a href="{{ route('favorites') }}" class="block px-3 py-2 rounded-md text-base font-medium {{ request()->routeIs('favorites') ? 'bg-primary text-primary-foreground' : 'hover:bg-accent' }}">Favorites</a>
+            @endauth
+            <a href="{{ route('about') }}" class="block px-3 py-2 rounded-md text-base font-medium {{ request()->routeIs('about') ? 'bg-primary text-primary-foreground' : 'hover:bg-accent' }}">About Us</a>
+            <a href="{{ route('faq') }}" class="block px-3 py-2 rounded-md text-base font-medium {{ request()->routeIs('faq') ? 'bg-primary text-primary-foreground' : 'hover:bg-accent' }}">FAQ</a>
+            <a href="{{ route('tickets') }}" class="block px-3 py-2 rounded-md text-base font-medium {{ request()->routeIs('tickets') ? 'bg-primary text-primary-foreground' : 'hover:bg-accent' }}">Support</a>
+            @auth
+                <div class="flex items-center gap-2 px-3 py-2 text-yellow-500">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/></svg>
+                    <span class="text-sm font-black">{{ number_format(Auth::user()->points_balance) }} Points</span>
+                </div>
+            @endauth
         </div>
     </div>
 </nav>
