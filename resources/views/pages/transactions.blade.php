@@ -11,7 +11,7 @@
         init() {
             setTimeout(() => this.show = true, 50);
             if (this.pendingOrders.length > 0) {
-                this.pollInterval = setInterval(() => this.checkPendingStatuses(), 15);
+                this.pollInterval = setInterval(() => this.checkPendingStatuses(), 15000);
             }
         },
 
