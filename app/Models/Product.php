@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-#[Fillable(['category_id', 'name', 'description', 'price', 'point_reward', 'image', 'img', 'is_active'])]
+#[Fillable(['category_id', 'type', 'name', 'description', 'price', 'point_reward', 'image', 'img', 'is_active'])]
 class Product extends Model
 {
     public $timestamps = false;
@@ -17,6 +17,16 @@ class Product extends Model
             'price' => 'decimal:2',
             'is_active' => 'boolean',
         ];
+    }
+
+    public function isVoucher(): bool
+    {
+        return $this->type === 'voucher';
+    }
+
+    public function isDirectTopup(): bool
+    {
+        return $this->type === 'direct_topup';
     }
 
     public function category()

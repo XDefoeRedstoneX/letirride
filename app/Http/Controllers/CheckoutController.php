@@ -7,6 +7,7 @@ use App\Models\Order;
 use App\Models\OrderDetail;
 use App\Models\Product;
 use App\Models\ProductKey;
+use App\Models\TopupCredential;
 use App\Models\UserDiscount;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -35,6 +36,11 @@ class CheckoutController extends Controller
     {
         $request->validate([
             'user_discount_id' => 'nullable|integer|exists:user_discounts,id',
+            'topup_credentials' => 'nullable|array',
+            'topup_credentials.*.product_id' => 'required_with:topup_credentials|integer',
+            'topup_credentials.*.player_id' => 'required_with:topup_credentials|string|max:100',
+            'topup_credentials.*.zone_id' => 'nullable|string|max:50',
+            'topup_credentials.*.server_id' => 'nullable|string|max:50',
         ]);
 
         $user = Auth::user();
@@ -44,6 +50,18 @@ class CheckoutController extends Controller
 
         if ($cartItems->isEmpty()) {
             return response()->json(['message' => 'Your cart is empty.'], 422);
+        }
+
+        // Validate that all direct_topup products have credentials
+        $topupCredentials = collect($request->topup_credentials ?? [])->keyBy('product_id');
+        foreach ($cartItems as $cartItem) {
+            if (($cartItem->product->type ?? 'voucher') === 'direct_topup') {
+                if (! $topupCredentials->has($cartItem->product_id)) {
+                    return response()->json([
+                        'message' => 'Please provide your Player ID for '.$cartItem->product->name.'.',
+                    ], 422);
+                }
+            }
         }
 
         // Calculate subtotal
@@ -114,14 +132,27 @@ class CheckoutController extends Controller
                 'status' => 'pending',
             ]);
 
-            // Create order details
+            // Create order details + topup credentials
             foreach ($cartItems as $cartItem) {
-                OrderDetail::create([
+                $orderDetail = OrderDetail::create([
                     'order_id' => $order->id,
                     'product_id' => $cartItem->product_id,
                     'quantity' => $cartItem->quantity,
                     'total_price_in_cart' => $cartItem->product->price * $cartItem->quantity,
                 ]);
+
+                // Store topup credentials for direct_topup products
+                if (($cartItem->product->type ?? 'voucher') === 'direct_topup' && $topupCredentials->has($cartItem->product_id)) {
+                    $creds = $topupCredentials->get($cartItem->product_id);
+                    TopupCredential::create([
+                        'order_detail_id' => $orderDetail->id,
+                        'player_id' => $creds['player_id'],
+                        'zone_id' => $creds['zone_id'] ?? null,
+                        'server_id' => $creds['server_id'] ?? null,
+                        'topup_status' => 'pending',
+                        'created_at' => now(),
+                    ]);
+                }
             }
 
             // Mark voucher as used

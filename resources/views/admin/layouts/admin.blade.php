@@ -45,6 +45,10 @@
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/></svg>
                 Tickets
             </a>
+            <a href="{{ route('admin.topups') }}" class="admin-nav-link {{ request()->routeIs('admin.topups') ? 'active' : '' }}">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" x2="3" y1="12" y2="12"/></svg>
+                Top-Ups
+            </a>
         </nav>
 
         <div class="mt-auto space-y-2">
@@ -74,7 +78,7 @@
                 {{ session('error') }}
             </div>
         @endif
-        {{ $slot }}
+        @yield('content')
     </main>
 </body>
 </html>

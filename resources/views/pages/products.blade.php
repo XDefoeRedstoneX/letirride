@@ -38,7 +38,11 @@
                 <div class="group glass-card rounded-[2.5rem] overflow-hidden hover:shadow-2xl hover:shadow-primary/10 transition-all duration-500 hover:-translate-y-2 animate-in fade-in zoom-in border-border/50">
                     <div class="aspect-square relative overflow-hidden bg-white/5">
                         <img :src="product.image" class="w-full h-full object-contain group-hover:scale-110 transition-transform duration-700" :alt="product.name">
-                        <div class="absolute top-5 left-5 px-3 py-1 rounded-full bg-black/40 backdrop-blur-md text-[8px] font-black border border-white/10 uppercase tracking-widest text-white" x-text="product.category">
+                        <div class="absolute top-5 left-5 flex items-center gap-2">
+                            <span class="px-3 py-1 rounded-full bg-black/40 backdrop-blur-md text-[8px] font-black border border-white/10 uppercase tracking-widest text-white" x-text="product.category"></span>
+                            <template x-if="product.product_type === 'direct_topup'">
+                                <span class="px-2.5 py-1 rounded-full bg-amber-500/80 backdrop-blur-md text-[7px] font-black uppercase tracking-widest text-black border border-amber-400/30">⚡ Top-Up</span>
+                            </template>
                         </div>
                     </div>
                     <div class="p-6 space-y-5">

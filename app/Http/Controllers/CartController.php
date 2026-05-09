@@ -26,6 +26,7 @@ class CartController extends Controller
                     'price' => (float) $item->product->price,
                     'category' => $item->product->category?->name ?? 'Other',
                     'category_id' => $item->product->category_id,
+                    'product_type' => $item->product->type ?? 'voucher',
                     'image' => '/products/'.ltrim($item->product->image ?: 'soundcloud.svg', '/'),
                     'quantity' => $item->quantity,
                 ];

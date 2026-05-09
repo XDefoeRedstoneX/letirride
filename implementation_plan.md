@@ -414,6 +414,64 @@ php artisan test --compact
 | **Phase 1** | UI/UX + Auth (auto-login, remove login ToS) + bug fixes | #6, #12, #14, #15, #16, #17, #19, #20, #21 |
 | **Phase 2** | DB Cart + Checkout + Midtrans + real Inventory & Transactions | #2, #3, #4, #5, #7, #8, #13, #18, #22, #23, #24, #26, #27 |
 | **Phase 3** | Point Shop + Server-side Gacha + Admin Panel | #9, #10, #11, #25 |
-| **Phase 4** | Referral wiring + Google OAuth + 2FA + Final QA | #28, #29, #30 |
+| **Phase 4** | Bug fixes (Favorites buy, Point Shop confirm, Voucher validation) | #28, #29, #30 |
+| **Phase 4.1** | Dual Product Types: Voucher Codes + Direct Top-Up | — |
 
-> **Awaiting your green light to begin Phase 1.**
+---
+
+## Phase 4.1 — Dual Product Types: Voucher Codes + Direct Top-Up
+
+*Goal*: Split the product catalog into two delivery models — auto-delivery voucher codes and manual/admin-fulfilled direct top-up products.
+
+### Database Changes
+
+| Change | File |
+|---|---|
+| Add `type` column (`voucher` / `direct_topup`) to `products` | `2026_05_09_100000_add_type_to_products_table.php` |
+| Create `topup_credentials` table | `2026_05_09_100001_create_topup_credentials_table.php` |
+
+### `topup_credentials` Schema
+
+| Column | Type | Description |
+|---|---|---|
+| `id` | bigint PK | — |
+| `order_detail_id` | FK → order_details | Links to the order line item |
+| `player_id` | string | Required — buyer's in-game Player ID |
+| `zone_id` | string (nullable) | Optional zone/region ID |
+| `server_id` | string (nullable) | Optional server ID |
+| `topup_status` | enum(`pending`, `processing`, `sent`) | Fulfillment status |
+| `fulfilled_at` | timestamp (nullable) | When admin marked as sent |
+| `created_at` | timestamp | — |
+
+### Model Changes
+
+- **Product** — Added `type` to fillable + `isVoucher()` and `isDirectTopup()` helpers
+- **OrderDetail** — Added `topupCredential()` HasOne relationship
+- **TopupCredential** — New model with `orderDetail()` BelongsTo
+
+### Seeder Changes
+
+- Products now include `type` column: 25 voucher products + 3 direct top-up (Valorant Points, ML Diamonds, Welkin Moon)
+- Fixed `seedReferrals` and `seedCartItems` for idempotent re-runs
+
+### Cart & Checkout Changes
+
+- **CartController** — passes `product_type` to frontend
+- **CheckoutController** — validates `topup_credentials` array, rejects checkout if direct_topup missing player_id, stores TopupCredential records
+- **cart.blade.php** — shows amber credential input fields inline for direct_topup items in cart
+
+### Inventory Changes
+
+- **InventoryController** — returns three item types: `voucher_key`, `direct_topup`, `discount`
+- **inventory.blade.php** — clickable cards open a detail modal:
+  - Voucher keys → shows redeem code with copy button
+  - Direct top-up → shows fulfillment status (Pending/Processing/Delivered) with submitted credentials
+  - Discount vouchers → shows code with copy button
+
+### Admin Changes
+
+- **Admin/TopupController** — lists all topup credentials, filter by status, update status
+- **admin/topups.blade.php** — table with player ID, zone, server, status dropdown, update button
+- **Admin sidebar** — added "Top-Ups" navigation link
+- **Admin route** — `GET /admin/topups`, `PATCH /admin/topups/{topup}/status`
+

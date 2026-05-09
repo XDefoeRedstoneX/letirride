@@ -30,6 +30,7 @@ class StoreController extends Controller
                     'name' => $product->name,
                     'price' => (float) $product->price,
                     'category' => $product->category?->name ?? 'Other',
+                    'product_type' => $product->type ?? 'voucher',
                     'image' => '/products/'.ltrim($fileName, '/'),
                 ];
             })

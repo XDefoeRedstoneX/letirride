@@ -3,11 +3,16 @@
         items: {{ \Illuminate\Support\Js::from($cartItems ?? []) }},
         discounts: {{ \Illuminate\Support\Js::from($userDiscounts ?? []) }},
         selectedDiscount: null,
+        topupCredentials: {},
         paying: false,
         paid: false,
         paidOrderId: null,
         csrfToken: '{{ csrf_token() }}',
         midtransClientKey: '{{ $midtransClientKey ?? '' }}',
+
+        get hasTopupProducts() {
+            return this.items.some(i => i.product_type === 'direct_topup');
+        },
 
         get cartCategoryIds() {
             return [...new Set(this.items.map(i => i.category_id))];
@@ -92,6 +97,24 @@
             if (this.items.length === 0 || this.paying) return;
             this.paying = true;
 
+            // Validate topup credentials
+            const topupItems = this.items.filter(i => i.product_type === 'direct_topup');
+            const credentials = [];
+            for (const item of topupItems) {
+                const creds = this.topupCredentials[item.product_id];
+                if (!creds || !creds.player_id || creds.player_id.trim() === '') {
+                    window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: 'Please enter your Player ID for ' + item.name + '.', type: 'error' } }));
+                    this.paying = false;
+                    return;
+                }
+                credentials.push({
+                    product_id: item.product_id,
+                    player_id: creds.player_id.trim(),
+                    zone_id: (creds.zone_id || '').trim() || null,
+                    server_id: (creds.server_id || '').trim() || null,
+                });
+            }
+
             try {
                 const response = await fetch('/checkout', {
                     method: 'POST',
@@ -103,6 +126,7 @@
                     },
                     body: JSON.stringify({
                         user_discount_id: this.selectedDiscount?.id || null,
+                        topup_credentials: credentials.length > 0 ? credentials : null,
                     }),
                 });
 
@@ -182,6 +206,24 @@
                                 </div>
                                 <p class="font-black text-primary" x-text="formatRp(item.price * item.quantity)"></p>
                             </div>
+
+                            <!-- Direct Top-Up Credential Fields -->
+                            <template x-if="item.product_type === 'direct_topup'">
+                                <div class="mt-3 p-4 bg-amber-500/10 border border-amber-500/20 rounded-xl space-y-3">
+                                    <div class="flex items-center gap-2 text-amber-500">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" x2="3" y1="12" y2="12"/></svg>
+                                        <span class="text-[9px] font-black uppercase tracking-widest">Direct Top-Up — Enter your game credentials</span>
+                                    </div>
+                                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                                        <input type="text" placeholder="Player ID *" x-model="topupCredentials[item.product_id] = topupCredentials[item.product_id] || {}; topupCredentials[item.product_id].player_id" @input="topupCredentials[item.product_id] = {...(topupCredentials[item.product_id] || {}), player_id: $event.target.value}"
+                                               class="px-3 py-2.5 bg-background border border-border rounded-lg text-xs font-bold outline-none focus:ring-2 focus:ring-amber-500/50 placeholder:text-muted-foreground/50" />
+                                        <input type="text" placeholder="Zone ID" @input="topupCredentials[item.product_id] = {...(topupCredentials[item.product_id] || {}), zone_id: $event.target.value}"
+                                               class="px-3 py-2.5 bg-background border border-border rounded-lg text-xs font-bold outline-none focus:ring-2 focus:ring-amber-500/50 placeholder:text-muted-foreground/50" />
+                                        <input type="text" placeholder="Server ID" @input="topupCredentials[item.product_id] = {...(topupCredentials[item.product_id] || {}), server_id: $event.target.value}"
+                                               class="px-3 py-2.5 bg-background border border-border rounded-lg text-xs font-bold outline-none focus:ring-2 focus:ring-amber-500/50 placeholder:text-muted-foreground/50" />
+                                    </div>
+                                </div>
+                            </template>
                         </div>
                     </div>
                 </template>

@@ -5,6 +5,7 @@ use App\Http\Controllers\Admin\GachaController as AdminGachaController;
 use App\Http\Controllers\Admin\OrderController as AdminOrderController;
 use App\Http\Controllers\Admin\ProductController as AdminProductController;
 use App\Http\Controllers\Admin\TicketController as AdminTicketController;
+use App\Http\Controllers\Admin\TopupController as AdminTopupController;
 use App\Http\Controllers\Admin\UserController as AdminUserController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CartController;
@@ -88,6 +89,9 @@ Route::prefix('admin')
 
         Route::get('/tickets', [AdminTicketController::class, 'index'])->name('admin.tickets');
         Route::patch('/tickets/{ticket}/status', [AdminTicketController::class, 'updateStatus'])->name('admin.tickets.status');
+
+        Route::get('/topups', [AdminTopupController::class, 'index'])->name('admin.topups');
+        Route::patch('/topups/{topup}/status', [AdminTopupController::class, 'updateStatus'])->name('admin.topups.status');
     });
 
 // Static pages (no auth required)
