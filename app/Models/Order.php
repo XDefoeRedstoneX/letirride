@@ -28,6 +28,7 @@ class Order extends Model
     protected function casts(): array
     {
         return [
+            'user_id' => 'integer',
             'subtotal' => 'decimal:2',
             'discount_amount' => 'decimal:2',
             'total_price_after_discount' => 'decimal:2',
