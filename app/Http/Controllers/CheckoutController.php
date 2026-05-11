@@ -28,9 +28,9 @@ class CheckoutController extends Controller
         Config::$isProduction = config('midtrans.is_production');
         Config::$isSanitized = true;
         Config::$is3ds = true;
-        
+
         // Disable SSL verification for local development to fix cURL error 60 / 20
-        if (!config('midtrans.is_production')) {
+        if (! config('midtrans.is_production')) {
             Config::$curlOptions = [
                 CURLOPT_SSL_VERIFYPEER => false,
                 CURLOPT_SSL_VERIFYHOST => false,
@@ -51,7 +51,8 @@ class CheckoutController extends Controller
      * Bug 5: Read topup credentials from cart_items.topup_meta instead of request body.
      */
     public function process(Request $request): JsonResponse
-    {   Log::info("PROCESSING");
+    {
+        Log::info('PROCESSING');
         $request->validate([
             'user_discount_id' => 'nullable|integer|exists:user_discounts,id',
         ]);
@@ -166,7 +167,7 @@ class CheckoutController extends Controller
 
                 // Store topup credentials for direct_topup products (Bug 5: from topup_meta)
                 $meta = $cartItem->topup_meta;
-                if (($cartItem->product->type ?? 'voucher') === 'direct_topup' && $meta && !empty($meta['player_id'])) {
+                if (($cartItem->product->type ?? 'voucher') === 'direct_topup' && $meta && ! empty($meta['player_id'])) {
                     TopupCredential::create([
                         'order_detail_id' => $orderDetail->id,
                         'player_id' => $meta['player_id'],
@@ -213,8 +214,13 @@ class CheckoutController extends Controller
 
             $snapToken = Snap::getSnapToken($params);
 
-            // Store the snap token (no need to store the Midtrans order_id — webhook will parse it)
-            $order->update(['payment_gateway_ref' => $snapToken]);
+            // Store the snap token AND the Midtrans order_id (with ::timestamp suffix).
+            // The ::timestamp suffix is required for verify() to query Midtrans status correctly.
+            // The callback() method already strips it to find the DB order.
+            $order->update([
+                'payment_gateway_ref' => $snapToken,
+                'noinv' => $midtransOrderId,
+            ]);
 
             // Bug 1: Clear cart immediately after creating the order
             CartItem::where('user_id', $user->id)->delete();
@@ -229,7 +235,7 @@ class CheckoutController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Checkout failed: '.$e->getMessage(), [
-                'file'     => $e->getFile().':'.$e->getLine(),
+                'file' => $e->getFile().':'.$e->getLine(),
                 'previous' => $e->getPrevious()?->getMessage(),
             ]);
 
@@ -238,7 +244,6 @@ class CheckoutController extends Controller
             ], 500);
         }
     }
-
 
     public function callback(Request $request): JsonResponse
     {
@@ -249,7 +254,6 @@ class CheckoutController extends Controller
 
             return response()->json(['message' => 'Invalid notification.'], 400);
         }
-
 
         $midtransOrderId = $notification->order_id;
         $transactionStatus = $notification->transaction_status;
@@ -313,7 +317,6 @@ class CheckoutController extends Controller
         ]);
     }
 
-
     private function fulfillOrder(Order $order): void
     {
         $order->update(['status' => 'paid']);
@@ -324,7 +327,6 @@ class CheckoutController extends Controller
         }
 
         $totalPointsAwarded = 0;
-
 
         foreach ($order->orderDetails as $detail) {
             $product = Product::find($detail->product_id);
@@ -375,7 +377,7 @@ class CheckoutController extends Controller
             } elseif (in_array($txStatus, ['cancel', 'deny', 'expire'])) {
                 $order->update(['status' => 'failed']);
             }
-            $order->save(); 
+            $order->save();
         } catch (\Exception $e) {
             Log::warning('Midtrans verify failed: '.$e->getMessage(), ['order' => $order->noinv]);
         }
@@ -385,10 +387,9 @@ class CheckoutController extends Controller
         return response()->json(['status' => $order->status]);
     }
 
-
     public function pay(Order $order): JsonResponse
     {
-        Log::info("SNAPPED");
+        Log::info('SNAPPED');
         if ($order->user_id !== Auth::id()) {
             return response()->json(['message' => 'Unauthorized.'], 403);
         }
@@ -403,20 +404,20 @@ class CheckoutController extends Controller
             if ($order->payment_gateway_ref) {
                 return response()->json([
                     'snap_token' => $order->payment_gateway_ref,
-                    'order_id'   => $order->id,
-                    'invoice'    => $order->noinv,
+                    'order_id' => $order->id,
+                    'invoice' => $order->noinv,
                 ]);
             }
 
             // No token stored yet — create a fresh one (first-time pay from cart)
             $params = [
                 'transaction_details' => [
-                    'order_id'     => $order->noinv.'::'.time(),
+                    'order_id' => $order->noinv.'::'.time(),
                     'gross_amount' => (int) $order->total_price_after_discount,
                 ],
                 'customer_details' => [
                     'first_name' => $order->user->name,
-                    'email'      => $order->user->email,
+                    'email' => $order->user->email,
                 ],
             ];
 
@@ -425,8 +426,8 @@ class CheckoutController extends Controller
 
             return response()->json([
                 'snap_token' => $snapToken,
-                'order_id'   => $order->id,
-                'invoice'    => $order->noinv,
+                'order_id' => $order->id,
+                'invoice' => $order->noinv,
             ]);
         } catch (\Exception $e) {
             Log::error('Resume payment failed: '.$e->getMessage());

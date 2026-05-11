@@ -3,13 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\Order;
-use App\Models\UserDiscount;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 
 class TransactionController extends Controller
 {
-
     public function index()
     {
         $orders = Order::with(['orderDetails.product'])
@@ -26,7 +24,7 @@ class TransactionController extends Controller
                 }
 
                 return [
-                    'id' => $order->noinv,
+                    'id' => $order->display_noinv,
                     'name' => $productName,
                     'amount' => $order->total_price_after_discount,
                     'status' => strtoupper($order->status),
@@ -47,7 +45,7 @@ class TransactionController extends Controller
     }
 
     /**
-      * Cancel a pending order. Releases the voucher if one was attached.
+     * Cancel a pending order. Releases the voucher if one was attached.
      */
     public function cancel(Order $order): JsonResponse
     {

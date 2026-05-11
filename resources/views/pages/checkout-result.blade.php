@@ -203,7 +203,7 @@
         <div class="glass-card rounded-[2.5rem] p-8 space-y-6">
             <div class="flex items-center justify-between">
                 <h3 class="text-lg font-black uppercase tracking-tighter">Order Details</h3>
-                <span class="text-xs font-mono font-black text-muted-foreground">{{ $order->noinv }}</span>
+                <span class="text-xs font-mono font-black text-muted-foreground">{{ $order->display_noinv }}</span>
             </div>
 
             <div class="space-y-4">

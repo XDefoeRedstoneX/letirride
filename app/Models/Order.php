@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Str;
 
 class Order extends Model
 {
@@ -32,6 +33,17 @@ class Order extends Model
             'total_price_after_discount' => 'decimal:2',
             'created_at' => 'datetime',
         ];
+    }
+
+    /**
+     * Returns the invoice number without the Midtrans ::timestamp suffix.
+     * The raw noinv column keeps the full ID for Midtrans API status queries.
+     */
+    public function getDisplayNoinvAttribute(): string
+    {
+        return Str::contains($this->noinv, '::')
+            ? Str::beforeLast($this->noinv, '::')
+            : $this->noinv;
     }
 
     public function user(): BelongsTo
