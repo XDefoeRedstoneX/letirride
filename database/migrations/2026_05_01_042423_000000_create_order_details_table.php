@@ -17,6 +17,7 @@ return new class extends Migration
             $table->foreignId('product_id')->constrained();
             $table->integer('quantity');
             $table->decimal('total_price_in_cart', 12, 2);
+            $table->timestamps();
         });
     }
 

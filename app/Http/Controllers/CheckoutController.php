@@ -34,7 +34,6 @@ class CheckoutController extends Controller
             Config::$curlOptions = [
                 CURLOPT_SSL_VERIFYPEER => false,
                 CURLOPT_SSL_VERIFYHOST => false,
-                CURLOPT_HTTPHEADER => [],
             ];
         }
     }
@@ -391,7 +390,12 @@ class CheckoutController extends Controller
         }
 
         try {
-            $midtransOrderId = $order->noinv.'::'.time();
+            // Strip any existing '::timestamp' suffix before appending a fresh one.
+            // Without this, repeated resume attempts cascade the suffix, exceeding Midtrans' 50-char limit.
+            $baseInvoice = Str::contains($order->noinv, '::')
+                ? Str::beforeLast($order->noinv, '::')
+                : $order->noinv;
+            $midtransOrderId = $baseInvoice.'::'.time();
 
             $params = [
                 'transaction_details' => [

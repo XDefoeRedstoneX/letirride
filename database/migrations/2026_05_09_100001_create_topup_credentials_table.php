@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('server_id')->nullable();
             $table->string('topup_status', 20)->default('pending');
             $table->timestamp('fulfilled_at')->nullable();
-            $table->timestamp('created_at');
+            $table->timestamp('created_at')->useCurrent();
         });
     }
 
