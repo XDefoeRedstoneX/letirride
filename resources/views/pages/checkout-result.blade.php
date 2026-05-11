@@ -56,13 +56,45 @@
                     return;
                 }
 
-                // Dispatch event to vanilla JS to avoid Midtrans CSP blocking Alpine's eval
-                window.dispatchEvent(new CustomEvent('snap-pay', {
-                    detail: {
-                        snapToken: data.snap_token,
-                        orderId: '{{ $order->id }}'
+                if (typeof window.snap === 'undefined') {
+                    window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: 'Payment gateway not loaded. Please refresh the page.', type: 'error' } }));
+                    this.resuming = false;
+                    return;
+                }
+
+                const csrfToken = this.csrfToken;
+                const orderId = '{{ $order->id }}';
+                const self = this;
+
+                window.snap.pay(data.snap_token, {
+                    onSuccess: async function() {
+                        try {
+                            await fetch('/checkout/verify/' + orderId, {
+                                method: 'POST',
+                                headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': csrfToken }
+                            });
+                        } catch(err) {}
+                        window.location.reload();
+                    },
+                    onPending: function() {
+                        window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: 'Payment still pending.', type: 'info' } }));
+                        self.resuming = false;
+                    },
+                    onError: function() {
+                        window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: 'Payment failed.', type: 'error' } }));
+                        self.resuming = false;
+                    },
+                    onClose: async function() {
+                        try {
+                            await fetch('/checkout/verify/' + orderId, {
+                                method: 'POST',
+                                headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': csrfToken }
+                            });
+                        } catch(err) {}
+                        self.resuming = false;
+                        window.location.reload();
                     }
-                }));
+                });
             } catch (e) {
                 this.resuming = false;
                 window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: 'Network error.', type: 'error' } }));

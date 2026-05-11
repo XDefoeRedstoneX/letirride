@@ -151,13 +151,41 @@
                     return;
                 }
 
+                if (typeof window.snap === 'undefined') {
+                    window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: 'Payment gateway not loaded. Please refresh the page.', type: 'error' } }));
+                    this.paying = false;
+                    return;
+                }
+
+                const csrfToken = this.csrfToken;
                 const orderId = data.order_id;
-                window.dispatchEvent(new CustomEvent('snap-pay-cart', {
-                    detail: {
-                        snapToken: data.snap_token,
-                        orderId: orderId
+                const self = this;
+
+                window.snap.pay(data.snap_token, {
+                    onSuccess: async function() {
+                        try {
+                            await fetch('/checkout/verify/' + orderId, {
+                                method: 'POST',
+                                headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': csrfToken }
+                            });
+                        } catch(err) {}
+                        self.paying = false;
+                        window.location.href = '/transactions';
+                    },
+                    onPending: function() {
+                        self.paying = false;
+                        window.location.href = '/transactions';
+                    },
+                    onError: function() {
+                        window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: 'Payment failed. Please try again.', type: 'error' } }));
+                        self.paying = false;
+                    },
+                    onClose: function() {
+                        window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: 'Payment cancelled. Your order is still pending — you can resume it from Transactions.', type: 'warning' } }));
+                        self.paying = false;
+                        window.location.href = '/transactions';
                     }
-                }));
+                });
             } catch (e) {
                 this.paying = false;
                 window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: 'Network error. Please try again.', type: 'error' } }));

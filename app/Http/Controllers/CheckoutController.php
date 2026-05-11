@@ -34,6 +34,11 @@ class CheckoutController extends Controller
             Config::$curlOptions = [
                 CURLOPT_SSL_VERIFYPEER => false,
                 CURLOPT_SSL_VERIFYHOST => false,
+                // Empty header array required to prevent a bug in the Midtrans PHP library.
+                // The library does Config::$curlOptions[CURLOPT_HTTPHEADER] without isset(),
+                // causing "Undefined array key 10023" if this key is absent.
+                // The library merges this with its own auth headers, so an empty array is safe.
+                CURLOPT_HTTPHEADER => [],
             ];
         }
     }
@@ -223,7 +228,10 @@ class CheckoutController extends Controller
             ]);
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Checkout failed: '.$e->getMessage(), ['trace' => $e->getTraceAsString()]);
+            Log::error('Checkout failed: '.$e->getMessage(), [
+                'file'     => $e->getFile().':'.$e->getLine(),
+                'previous' => $e->getPrevious()?->getMessage(),
+            ]);
 
             return response()->json([
                 'message' => 'Checkout failed. Please try again.',
