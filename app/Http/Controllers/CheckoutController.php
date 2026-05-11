@@ -390,34 +390,35 @@ class CheckoutController extends Controller
         }
 
         try {
-            // Strip any existing '::timestamp' suffix before appending a fresh one.
-            // Without this, repeated resume attempts cascade the suffix, exceeding Midtrans' 50-char limit.
-            $baseInvoice = Str::contains($order->noinv, '::')
-                ? Str::beforeLast($order->noinv, '::')
-                : $order->noinv;
-            $midtransOrderId = $baseInvoice.'::'.time();
+            // If we already have a token, reuse it — Midtrans tokens are valid for 24h.
+            // Generating a new token always fails with error 10023 (duplicate order_id).
+            if ($order->payment_gateway_ref) {
+                return response()->json([
+                    'snap_token' => $order->payment_gateway_ref,
+                    'order_id'   => $order->id,
+                    'invoice'    => $order->noinv,
+                ]);
+            }
 
+            // No token stored yet — create a fresh one (first-time pay from cart)
             $params = [
                 'transaction_details' => [
-                    'order_id' => $midtransOrderId,
+                    'order_id'     => $order->noinv.'::'.time(),
                     'gross_amount' => (int) $order->total_price_after_discount,
                 ],
                 'customer_details' => [
                     'first_name' => $order->user->name,
-                    'email' => $order->user->email,
+                    'email'      => $order->user->email,
                 ],
             ];
 
             $snapToken = Snap::getSnapToken($params);
-            
-            // Update stored token
             $order->update(['payment_gateway_ref' => $snapToken]);
-            $order->update(['noinv' => $midtransOrderId]);
 
             return response()->json([
                 'snap_token' => $snapToken,
-                'order_id' => $order->id,
-                'invoice' => $order->noinv,
+                'order_id'   => $order->id,
+                'invoice'    => $order->noinv,
             ]);
         } catch (\Exception $e) {
             Log::error('Resume payment failed: '.$e->getMessage());
