@@ -15,22 +15,19 @@ class DatabaseSeeder extends Seeder
     {
         $now = now();
 
-        $this->seedUsers($now);
+        // NOTE: seedUsers() and seedOrders() are intentionally NOT called here.
+        // Running them on a live server overwrites real user accounts and orders.
+        // To seed test data locally, call them manually:
+        //   $this->seedUsers($now);
+        //   $this->seedOrders($now);
+        //   $this->seedOrderDetails();
+
         $this->seedCategories();
         $this->seedProducts();
         $this->seedDiscountTypes();
         $this->seedPointShopItems();
-        $this->seedPointShopPurchases($now);
-        $this->seedUserDiscounts();
         $this->seedGachaPools();
-        $this->seedOrders($now);
-        $this->seedOrderDetails();
-        $this->seedProductKeys();
-        $this->seedTickets($now);
         $this->seedFaqs();
-        $this->seedFavorites($now);
-        $this->seedCartItems($now);
-        $this->seedReferrals($now);
     }
 
     private function seedUsers($now): void
