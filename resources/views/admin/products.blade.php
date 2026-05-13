@@ -24,7 +24,7 @@
                             <td class="px-6 py-4">
                                 <div class="flex items-center gap-3">
                                     <div class="w-8 h-8 bg-foreground/5 rounded-lg flex items-center justify-center p-1">
-                                        <img src="/products/{{ $product->image ?? 'soundcloud.svg' }}" class="w-full h-full object-contain" />
+                                        <img src="/products/{{ $product->image ?? 'soundcloud.png' }}" class="w-full h-full object-contain" />
                                     </div>
                                     <span class="text-xs font-bold">{{ $product->name }}</span>
                                 </div>

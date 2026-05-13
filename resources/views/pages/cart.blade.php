@@ -192,7 +192,7 @@
             }
         },
 
-    
+
         onSnapFinish() {
             this.paying = false;
         },
@@ -215,7 +215,7 @@
             <!-- Items List -->
             <div class="lg:col-span-2 space-y-4">
                 <template x-for="item in items" :key="item.id">
-                    <div class="glass-card rounded-[2.5rem] p-6 flex items-center gap-6 group hover:border-primary/30 transition-all duration-500 border-border/50">
+                    <div class="retro-card p-6 flex items-center gap-6 group hover:border-primary/30 transition-all duration-300">
                         <div class="w-24 h-24 bg-foreground/5 rounded-3xl flex items-center justify-center p-4 shrink-0">
                             <img :src="item.image" class="w-full h-full object-contain pixel-render group-hover:scale-110 transition-transform duration-500" />
                         </div>
@@ -271,7 +271,7 @@
 
             <!-- Order Summary -->
             <div class="space-y-6">
-                <div class="glass-card rounded-[2.5rem] p-8 space-y-6 border-border/50 sticky top-24">
+                <div class="retro-card p-8 space-y-6 sticky top-24">
                     <h3 class="text-lg font-black uppercase tracking-tighter">Summary</h3>
 
                     <div class="space-y-4">

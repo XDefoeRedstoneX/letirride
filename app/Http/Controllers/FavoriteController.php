@@ -59,7 +59,7 @@ class FavoriteController extends Controller
                     'name' => $favorite->product->name,
                     'price' => (float) $favorite->product->price,
                     'category' => $favorite->product->category?->name ?: 'Other',
-                    'image' => '/products/'.ltrim($favorite->product->image ?: 'soundcloud.svg', '/'),
+                    'image' => '/products/'.ltrim($favorite->product->image ?: 'steam-wallet.png', '/'),
                 ];
             })
             ->values();

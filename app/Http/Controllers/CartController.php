@@ -28,7 +28,7 @@ class CartController extends Controller
                     'category' => $item->product->category?->name ?? 'Other',
                     'category_id' => $item->product->category_id,
                     'product_type' => $item->product->type ?? 'voucher',
-                    'image' => '/products/'.ltrim($item->product->image ?: 'soundcloud.svg', '/'),
+                    'image' => '/products/'.ltrim($item->product->image ?: 'soundcloud.png', '/'),
                     'quantity' => $item->quantity,
                     'topup_meta' => $item->topup_meta,
                 ];

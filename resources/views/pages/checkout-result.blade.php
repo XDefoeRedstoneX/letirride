@@ -211,7 +211,7 @@
                 <div class="flex items-center justify-between py-3 border-b border-border/30 last:border-0">
                     <div class="flex items-center gap-4">
                         <div class="w-10 h-10 bg-foreground/5 rounded-xl flex items-center justify-center p-2">
-                            <img src="/products/{{ $detail->product->image ?? 'soundcloud.svg' }}" class="w-full h-full object-contain pixel-render" />
+                            <img src="/products/{{ $detail->product->image ?? 'soundcloud.png' }}" class="w-full h-full object-contain pixel-render" />
                         </div>
                         <div>
                             <p class="font-black text-sm">{{ $detail->product->name ?? 'Unknown' }}</p>

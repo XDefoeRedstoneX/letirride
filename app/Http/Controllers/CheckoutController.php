@@ -29,27 +29,15 @@ class CheckoutController extends Controller
         Config::$isSanitized = true;
         Config::$is3ds = true;
 
-        // Disable SSL verification for local development to fix cURL error 60 / 20
         if (! config('midtrans.is_production')) {
             Config::$curlOptions = [
                 CURLOPT_SSL_VERIFYPEER => false,
                 CURLOPT_SSL_VERIFYHOST => false,
-                // Empty header array required to prevent a bug in the Midtrans PHP library.
-                // The library does Config::$curlOptions[CURLOPT_HTTPHEADER] without isset(),
-                // causing "Undefined array key 10023" if this key is absent.
-                // The library merges this with its own auth headers, so an empty array is safe.
                 CURLOPT_HTTPHEADER => [],
             ];
         }
     }
 
-    /**
-     * Process the checkout: create Order, generate Midtrans Snap token, return JSON.
-     *
-     * Bug 1: Block checkout if a pending order exists.
-     * Bug 4: Don't mark voucher as used here — defer to fulfillOrder().
-     * Bug 5: Read topup credentials from cart_items.topup_meta instead of request body.
-     */
     public function process(Request $request): JsonResponse
     {
         Log::info('PROCESSING');
@@ -209,6 +197,14 @@ class CheckoutController extends Controller
                 'customer_details' => [
                     'first_name' => $user->name,
                     'email' => $user->email,
+                ],
+                'callbacks' => [
+                    'finish' => url('/transactions'),
+                ],
+                'expiry' => [
+                    'start_time' => now()->format('Y-m-d H:i:s O'),
+                    'unit' => 'hours',
+                    'duration' => 24,
                 ],
             ];
 
@@ -400,7 +396,6 @@ class CheckoutController extends Controller
 
         try {
             // If we already have a token, reuse it — Midtrans tokens are valid for 24h.
-            // Generating a new token always fails with error 10023 (duplicate order_id).
             if ($order->payment_gateway_ref) {
                 return response()->json([
                     'snap_token' => $order->payment_gateway_ref,
@@ -418,6 +413,14 @@ class CheckoutController extends Controller
                 'customer_details' => [
                     'first_name' => $order->user->name,
                     'email' => $order->user->email,
+                ],
+                'callbacks' => [
+                    'finish' => url('/transactions'),
+                ],
+                'expiry' => [
+                    'start_time' => now()->format('Y-m-d H:i:s O'),
+                    'unit' => 'hours',
+                    'duration' => 24,
                 ],
             ];
 

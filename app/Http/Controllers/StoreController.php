@@ -10,7 +10,7 @@ class StoreController extends Controller
 {
     public function showStore()
     {
-        $availableProductImages = collect(glob(public_path('products/*.svg')))
+        $availableProductImages = collect(glob(public_path('products/*.png')))
             ->map(fn (string $path) => basename($path))
             ->all();
 
@@ -19,10 +19,10 @@ class StoreController extends Controller
             ->where('is_active', true)
             ->get()
             ->map(function (Product $product) use ($availableProductImages) {
-                $fileName = $product->image ?: 'soundcloud.svg';
+                $fileName = $product->image ?: 'steam-wallet.png';
 
                 if (! in_array($fileName, $availableProductImages, true)) {
-                    $fileName = 'soundcloud.svg';
+                    $fileName = 'steam-wallet.png';
                 }
 
                 return [

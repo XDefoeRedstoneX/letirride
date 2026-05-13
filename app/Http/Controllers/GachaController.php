@@ -123,12 +123,12 @@ class GachaController extends Controller
     private function imageForRarity(string $rarity): string
     {
         return match ($rarity) {
-            'legendary' => '/gacha/jackpot.svg',
-            'grand_prize' => '/gacha/jackpot.svg',
-            'epic' => '/gacha/voucher.svg',
-            'rare' => '/gacha/voucher.svg',
-            'uncommon' => '/gacha/points.svg',
-            default => '/gacha/points.svg',
+            'legendary' => '/gacha/jackpot.png',
+            'grand_prize' => '/gacha/jackpot.png',
+            'epic' => '/gacha/voucher.png',
+            'rare' => '/gacha/voucher.png',
+            'uncommon' => '/gacha/points.png',
+            default => '/gacha/points.png',
         };
     }
 }
