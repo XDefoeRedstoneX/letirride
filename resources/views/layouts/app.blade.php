@@ -33,65 +33,55 @@
     <x-navbar />
     <x-toast-notification />
 
-    <main class="flex-1 relative z-10 pt-14 md:pt-16 pb-4">
-        <div class="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8 py-4 md:py-6 animate-in fade-in slide-in-from-bottom-4 duration-300">
+    <main class="flex-1 relative z-10 pt-14 md:pt-16 pb-4 page-enter">
+        <div class="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8 py-4 md:py-6 page-enter-content">
             {{ $slot }}
         </div>
     </main>
 
     <footer class="relative z-10 mt-auto border-t border-border/30 bg-background/50 backdrop-blur-sm">
-        <div class="max-w-7xl mx-auto px-4 py-8">
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-6 mb-8">
-                <!-- Brand -->
-                <div class="col-span-2 md:col-span-1 space-y-3">
-                    <h3 class="text-lg font-black tracking-tighter uppercase">Ridly</h3>
-                    <p class="text-xs text-muted-foreground leading-relaxed">Your premier digital voucher marketplace. Instant delivery, guaranteed.</p>
-                </div>
-
-                <!-- Quick Links -->
-                <div class="space-y-3">
-                    <h4 class="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Browse</h4>
-                    <div class="flex flex-col gap-2">
-                        <a href="{{ route('home') }}" class="text-xs text-muted-foreground hover:text-foreground transition-colors">Products</a>
-                        @auth
-                        <a href="{{ route('point-shop') }}" class="text-xs text-muted-foreground hover:text-foreground transition-colors">Point Shop</a>
-                        <a href="{{ route('gacha') }}" class="text-xs text-muted-foreground hover:text-foreground transition-colors">Gacha</a>
-                        @endauth
-                    </div>
-                </div>
-
-                <!-- Support -->
-                <div class="space-y-3">
-                    <h4 class="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Support</h4>
-                    <div class="flex flex-col gap-2">
-                        <a href="{{ route('faq') }}" class="text-xs text-muted-foreground hover:text-foreground transition-colors">FAQ</a>
-                        <a href="{{ route('tickets') }}" class="text-xs text-muted-foreground hover:text-foreground transition-colors">Contact Us</a>
-                        <a href="{{ route('about') }}" class="text-xs text-muted-foreground hover:text-foreground transition-colors">About</a>
-                    </div>
-                </div>
-
-                <!-- Legal -->
-                <div class="space-y-3">
-                    <h4 class="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Legal</h4>
-                    <div class="flex flex-col gap-2">
-                        <a href="{{ route('terms-of-service') }}" class="text-xs text-muted-foreground hover:text-foreground transition-colors">Terms & Conditions</a>
-                        <a href="{{ route('privacy-policy') }}" class="text-xs text-muted-foreground hover:text-foreground transition-colors">Privacy Policy</a>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Bottom bar -->
-            <div class="pt-6 border-t border-border/30 flex flex-col sm:flex-row items-center justify-between gap-4">
-                <p class="text-[10px] text-muted-foreground font-bold uppercase tracking-widest">
-                    © 2026 Ridly. All rights reserved.
+        <div class="max-w-7xl mx-auto px-4 py-6">
+            <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
+                <p class="text-xs text-muted-foreground">
+                    © 2026 Ridly.
                 </p>
-                <p class="text-[10px] text-muted-foreground font-bold uppercase tracking-widest">
-                    Built with 🎮 for gamers
-                </p>
+                <div class="flex items-center gap-4 text-xs font-medium uppercase tracking-widest">
+                    <a href="{{ route('terms-of-service') }}" class="text-muted-foreground hover:text-primary transition-colors">Terms of Service</a>
+                    <a href="{{ route('privacy-policy') }}" class="text-muted-foreground hover:text-primary transition-colors">Privacy Policy</a>
+                </div>
             </div>
         </div>
     </footer>
 
     <x-auth-modal />
+
+<style>
+    .page-enter {
+        animation: pageFadeIn 0.6s ease-out both;
+    }
+    .page-enter-content > * {
+        animation: pageFadeIn 0.6s ease-out both;
+    }
+    .page-enter-content > *:nth-child(1) { animation-delay: 0s; }
+    .page-enter-content > *:nth-child(2) { animation-delay: 0.08s; }
+    .page-enter-content > *:nth-child(3) { animation-delay: 0.16s; }
+    .page-enter-content > *:nth-child(4) { animation-delay: 0.24s; }
+    .page-enter-content > *:nth-child(5) { animation-delay: 0.32s; }
+    .page-enter-content > *:nth-child(6) { animation-delay: 0.40s; }
+    .page-enter-content > *:nth-child(7) { animation-delay: 0.48s; }
+    .page-enter-content > *:nth-child(8) { animation-delay: 0.56s; }
+    .page-enter-content > *:nth-child(9) { animation-delay: 0.64s; }
+    .page-enter-content > *:nth-child(10) { animation-delay: 0.72s; }
+    @keyframes pageFadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(24px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+</style>
 </body>
 </html>

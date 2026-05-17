@@ -28,6 +28,7 @@ class User extends Authenticatable
         'points_balance',
         'referral_code',
         'referred_by',
+        'profile_picture',
     ];
 
     /**
@@ -69,6 +70,20 @@ class User extends Authenticatable
     public function isAdmin(): bool
     {
         return $this->role === 'admin';
+    }
+
+    /**
+     * Get the user's avatar URL (Gravatar fallback).
+     */
+    public function getAvatarUrlAttribute(): string
+    {
+        if ($this->profile_picture) {
+            return asset('storage/'.$this->profile_picture);
+        }
+
+        $hash = md5(strtolower(trim($this->email)));
+
+        return "https://www.gravatar.com/avatar/{$hash}?s=200&d=mp";
     }
 
     /** Referrals where this user is the referrer. */

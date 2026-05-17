@@ -23,20 +23,22 @@ Route::get('/', [StoreController::class, 'showStore'])->name('home');
 Route::post('/login', [AuthController::class, 'logAuth'])->name('logAuth');
 Route::post('/register', [AuthController::class, 'regAuth'])->name('regAuth');
 
+// Guest-accessible pages
+Route::get('/point-shop', [PointController::class, 'index'])->name('point-shop');
+Route::get('/gacha', [GachaController::class, 'showGacha'])->name('gacha');
+Route::get('/favorites', [FavoriteController::class, 'showFavorites'])->name('favorites');
+
 // Midtrans webhook
 Route::post('/midtrans/callback', [CheckoutController::class, 'callback'])->name('midtrans.callback');
 
 Route::middleware('auth')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
-    // Point Shop & Gacha (require auth)
-    Route::get('/point-shop', [PointController::class, 'index'])->name('point-shop');
+    // Point Shop & Gacha (POST actions require auth)
     Route::post('/point-shop/redeem/{item}', [PointController::class, 'redeem'])->name('point-shop.redeem');
-    Route::get('/gacha', [GachaController::class, 'showGacha'])->name('gacha');
     Route::post('/gacha/roll', [GachaController::class, 'roll'])->name('gacha.roll');
 
-    // Favorites
-    Route::get('/favorites', [FavoriteController::class, 'showFavorites'])->name('favorites');
+    // Favorites (POST actions require auth)
     Route::post('/favorites/{productId}', [FavoriteController::class, 'store'])->name('favorites.store');
     Route::delete('/favorites/{productId}', [FavoriteController::class, 'destroy'])->name('favorites.destroy');
 
@@ -58,6 +60,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/settings', [AuthController::class, 'showSettings'])->name('settings');
     Route::get('/profile', [AuthController::class, 'showProfile'])->name('profile');
     Route::post('/update-profile', [AuthController::class, 'updateProfile'])->name('updateProfile');
+    Route::post('/update-profile-picture', [AuthController::class, 'updateProfilePicture'])->name('updateProfilePicture');
     Route::post('/change-password', [AuthController::class, 'changePassword'])->name('changePassword');
 
     // Inventory & Transactions (real data from DB)
@@ -96,6 +99,10 @@ Route::prefix('admin')
 
         Route::get('/topups', [AdminTopupController::class, 'index'])->name('admin.topups');
         Route::patch('/topups/{topup}/status', [AdminTopupController::class, 'updateStatus'])->name('admin.topups.status');
+
+        // UI-only pages (static views with dummy data)
+        Route::get('/point-shop', fn () => view('admin.point-shop'))->name('admin.point-shop');
+        Route::get('/faqs', fn () => view('admin.faqs'))->name('admin.faqs');
     });
 
 // Static pages (no auth required)

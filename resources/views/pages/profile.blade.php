@@ -71,24 +71,36 @@
             <!-- Cover / Header BG (Elegant City Sky) -->
             <div class="h-48 bg-gradient-to-r from-primary/20 via-primary/5 to-transparent"></div>
 
+    @auth
+    <div class="max-w-5xl mx-auto space-y-12" x-data="{ uploading: false }">
+        <!-- Profile Card -->
+        <div class="relative overflow-hidden glass-card rounded-[3rem] shadow-2xl">
+            <!-- Cover / Header BG (Elegant City Sky) -->
+            <div class="h-48 bg-gradient-to-r from-primary/20 via-primary/5 to-transparent"></div>
+            
             <div class="px-10 pb-10 -mt-20 relative z-10 flex flex-col md:flex-row items-center md:items-end gap-8">
                 <!-- Avatar -->
                 <div class="relative group">
                     <div class="w-40 h-40 rounded-[2.5rem] bg-background border-8 border-background p-1 shadow-2xl overflow-hidden">
-                        <div class="w-full h-full bg-primary/10 rounded-[2rem] flex items-center justify-center text-primary font-black text-5xl">
-                            {{ strtoupper(substr(Auth::user()->name, 0, 2)) }}
-                        </div>
+                        <img src="{{ Auth::user()->avatar_url }}" class="w-full h-full object-cover rounded-[2rem]" alt="Avatar">
                     </div>
-                    <button class="absolute bottom-2 right-2 w-10 h-10 bg-primary text-primary-foreground rounded-2xl shadow-xl flex items-center justify-center hover:scale-110 transition-all border-4 border-background">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="pixel-render"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>
+                    <button @click="$refs.avatarInput.click()" :disabled="uploading"
+                            class="absolute bottom-3 right-3 w-10 h-10 bg-primary text-primary-foreground rounded-2xl shadow-xl flex items-center justify-center hover:scale-110 transition-all border-4 border-background disabled:opacity-50">
+                        <svg x-show="!uploading" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="pixel-render"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>
+                        <svg x-show="uploading" class="animate-spin" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
                     </button>
+                    <form method="POST" action="{{ route('updateProfilePicture') }}" enctype="multipart/form-data" class="hidden">
+                        @csrf
+                        <input type="file" name="avatar" x-ref="avatarInput" accept="image/*"
+                               @change="uploading = true; $event.target.closest('form').submit();">
+                    </form>
                 </div>
 
                 <!-- Info -->
                 <div class="flex-1 text-center md:text-left space-y-3">
                     <div class="flex flex-col md:flex-row md:items-center gap-3 md:gap-6">
                         <h1 class="text-4xl font-black tracking-tighter uppercase">{{ Auth::user()->name }}</h1>
-                        @if(Auth::user()->role !== 'Customer')
+                        @if(Auth::user()->role !== 'customer')
                             <span class="px-4 py-1.5 rounded-full bg-primary text-primary-foreground text-[10px] font-black uppercase tracking-widest shadow-lg shadow-primary/20 self-center">
                                 {{ Auth::user()->role }}
                             </span>
@@ -130,6 +142,8 @@
 
         <!-- Account Settings Sections -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-8" x-show="show" x-transition:enter="md:transition md:ease-out md:duration-1000 md:delay-300" x-transition:enter-start="md:opacity-0 md:translate-y-8" x-transition:enter-end="md:opacity-100 md:translate-y-0">
+        <!-- Account Settings Sections -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
             <!-- Personal Information -->
             <div class="glass-card rounded-[2.5rem] p-8 space-y-6 group hover:border-primary/30 transition-all duration-500">
                 <div class="flex items-center gap-4">
@@ -155,6 +169,19 @@
 
                     <p x-show="profileError" x-text="profileError" class="text-sm text-red-500"></p>
                     <p x-show="profileSuccess" x-text="profileSuccess" class="text-sm text-green-600"></p>
+                
+                <form class="space-y-4">
+                    <div class="space-y-2">
+                        <label class="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Display Name</label>
+                        <input type="text" value="{{ Auth::user()->name }}" class="w-full px-6 py-3 glass-card rounded-2xl focus:ring-2 focus:ring-primary/50 outline-none transition-all font-bold text-sm">
+                    </div>
+                    
+                    <div class="space-y-2">
+                        <label class="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Email Address</label>
+                        <input type="email" value="{{ Auth::user()->email }}" disabled class="w-full px-6 py-3 glass-card rounded-2xl cursor-not-allowed opacity-50 font-bold text-sm">
+                    </div>
+
+                    <button type="submit" class="w-full px-8 py-4 bg-primary text-primary-foreground font-black text-[10px] uppercase tracking-widest rounded-2xl hover:scale-[1.02] transition-all shadow-xl shadow-primary/20">Save Changes</button>
                 </form>
             </div>
 
@@ -226,4 +253,5 @@
             </a>
         </div>
     </div>
+    @endauth
 </x-app-layout>

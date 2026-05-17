@@ -1,6 +1,6 @@
 <x-app-layout>
     <div class="max-w-2xl mx-auto space-y-8" x-data="{
-        profileName: @js(Auth::user()->name),
+        profileName: @js(Auth::check() ? Auth::user()->name : ''),
         profileError: '',
         profileSuccess: '',
         profileLoading: false,
