@@ -1,19 +1,46 @@
 <x-app-layout>
 
-{{-- ── News Ticker ─────────────────────────────────────────────── --}}
-<div class="news-ticker" aria-label="News ticker">
-    <span class="news-label">⚡ RIDLY NEWS</span>
-    <div class="news-track-wrap">
-        <div class="news-track">
-            {{-- Double the content for seamless loop --}}
-            <span>★ NEW: Steam Wallet Rp1.000.000 now available &nbsp; ✦ &nbsp; Netflix 4K UHD coming soon &nbsp; ✦ &nbsp; Use code RIDLY10 for 10% off your first purchase &nbsp; ✦ &nbsp; Mobile Top-Up now live — instant delivery &nbsp; ✦ &nbsp; Spotify Family Plan added &nbsp; ✦ &nbsp; Weekend Sale: up to 20% off Gaming vouchers &nbsp; ✦ &nbsp; New: Xbox Game Pass Ultimate &nbsp; ✦ &nbsp; Direct Top-Up now supports Mobile Legends &nbsp; ✦</span>
-            <span>★ NEW: Steam Wallet Rp1.000.000 now available &nbsp; ✦ &nbsp; Netflix 4K UHD coming soon &nbsp; ✦ &nbsp; Use code RIDLY10 for 10% off your first purchase &nbsp; ✦ &nbsp; Mobile Top-Up now live — instant delivery &nbsp; ✦ &nbsp; Spotify Family Plan added &nbsp; ✦ &nbsp; Weekend Sale: up to 20% off Gaming vouchers &nbsp; ✦ &nbsp; New: Xbox Game Pass Ultimate &nbsp; ✦ &nbsp; Direct Top-Up now supports Mobile Legends &nbsp; ✦</span>
-        </div>
-    </div>
-</div>
+{{-- ── Hero Section ─────────────────────────────────────────────── --}}
+<section class="hero-section" aria-label="Hero banner">
 
-{{-- ── Hero Image ──────────────────────────────────────────────── --}}
-<img src="" alt="" aria-hidden="true" style="display:block;width:100%;height:340px;object-fit:cover;">
+    {{-- Layer 1: Background city skyline --}}
+    <img class="hero-bg-img pixel-render" src="" alt="" aria-hidden="true">
+
+    {{-- Layer 2 + 3: NEWS FLASH frame (centered) --}}
+    <div class="hero-frame-wrap">
+
+        {{-- Layer 2: News content — shown through the transparent hole --}}
+        <div class="hero-frame-content"
+             x-data="{
+                 imgs: [
+                     '{{ asset('news/1.jpg') }}',
+                     '{{ asset('news/2.jpg') }}',
+                     '{{ asset('news/3.jpg') }}',
+                 ],
+                 i: 0,
+                 init() {
+                     if (this.imgs.length > 1)
+                         setInterval(() => this.i = (this.i + 1) % this.imgs.length, 4000)
+                 }
+             }">
+            <template x-for="(src, idx) in imgs" :key="idx">
+                <img :src="src"
+                     x-show="i === idx"
+                     x-transition.opacity.duration.500ms
+                     class="hero-news-img"
+                     alt="">
+            </template>
+        </div>
+
+        {{-- Layer 3: Pixel frame sprite on top --}}
+        <img src="{{ asset('components/frame.png') }}"
+             class="hero-frame-sprite pixel-render"
+             aria-hidden="true"
+             alt="">
+
+    </div>
+
+</section>
 
 {{-- ── Main Products Page ──────────────────────────────────────── --}}
 <div class="ridly-products"
@@ -395,7 +422,6 @@ function productsPage(initialProducts, initialFavorites, isAuthenticated, csrfTo
             return body;
         },
 
-        /* ─ Add to Cart ───────────────────────────────────────── */
         async addToCart() {
             if (!this.isAuthenticated) {
                 window.dispatchEvent(new CustomEvent('open-auth-modal', { detail: { tab: 'login' } }));

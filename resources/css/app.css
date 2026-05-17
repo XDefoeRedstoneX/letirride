@@ -99,7 +99,14 @@
   --dark-line:  #122044;
   --text-dim:   #5a7aaa;
   --red:        #ef4444;
-  --px:         'Press Start 2P', monospace;
+
+ --px:         'Press Start 2P', monospace;
+
+
+  --hero-hole-top:    10%;    /* 10 / 100 */
+  --hero-hole-left:   2.5%;   /* 10 / 400 */
+  --hero-hole-w:      95%;    /* 379 / 400 */
+  --hero-hole-h:      82%;    /* 61 / 100 */
 }
 
 .dark {
@@ -392,54 +399,53 @@ button,
     transform: translate(-2px, -2px);
 }
 
-/* ── News Ticker ─────────────────────────────────────────────── */
-.news-ticker {
-    display: flex;
-    align-items: center;
-    background: var(--gold);
-    height: 32px;
-    overflow: hidden;
+/* ── Hero Section ─────────────────────────────────────────────── */
+.hero-section {
     position: relative;
-    z-index: 10;
+    width: 100vw;
+    margin-left: calc(-50vw + 50%);
+    height: 400px;
 }
-.news-label {
-    background: var(--dark-bg);
-    color: var(--gold);
-    /* Decorative — pixel font intentional */
-    font-family: var(--px);
-    font-size: 7px;
-    padding: 0 14px;
+.hero-bg-img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
     height: 100%;
-    display: flex;
-    align-items: center;
-    flex-shrink: 0;
-    letter-spacing: 0.1em;
-    border-right: 3px solid var(--gold-dim);
-    white-space: nowrap;
+    object-fit: cover;
+    z-index: 1;
 }
-.news-track-wrap {
+.hero-frame-wrap {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+}
+.hero-frame-content {
+    position: absolute;
+    top:    var(--hero-hole-top);
+    left:   var(--hero-hole-left);
+    width:  var(--hero-hole-w);
+    height: var(--hero-hole-h);
+    z-index: 2;
     overflow: hidden;
-    flex: 1;
+    background: var(--dark-bg);
 }
-.news-track {
-    display: inline-flex;
-    align-items: center;
-    animation: ticker 45s linear infinite;
-    white-space: nowrap;
-    gap: 48px;
+.hero-news-img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: fill;
+    display: block;
 }
-.news-track span {
-    /* Decorative — pixel font intentional */
-    font-family: var(--px);
-    font-size: 7px;
-    color: var(--dark-bg);
-    letter-spacing: 0.08em;
+.hero-frame-sprite {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 3;
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
 }
-@keyframes ticker {
-    from { transform: translateX(0); }
-    to   { transform: translateX(-50%); }
-}
-
 
 /* ── Page Layout ──────────────────────────────────────────────── */
 .ridly-products {
