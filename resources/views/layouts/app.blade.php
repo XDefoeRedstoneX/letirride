@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="dark">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <meta name="description" content="Ridly - Your premier digital voucher marketplace. Buy game credits, streaming subscriptions, and more with instant delivery.">
+    <meta property="og:title" content="Ridly - Digital Voucher Marketplace">
+    <meta property="og:description" content="Buy game credits, streaming subscriptions, and digital vouchers with instant delivery.">
+    <meta property="og:type" content="website">
+    <title>Ridly - Digital Marketplace & Gacha Arcade</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.bunny.net">
+    <link href="https://fonts.bunny.net/css?family=geist-sans:400,500,600|geist-mono:400,500" rel="stylesheet" />
+
+    <!-- Styles & Scripts -->
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
+
+    <!-- Apply saved or system theme -->
+    <script>
+      (function() {
+        var stored = localStorage.theme;
+        var isDark = stored === 'dark' || (!stored && window.matchMedia('(prefers-color-scheme: dark)').matches);
+        var html = document.documentElement;
+        if (isDark) html.classList.add('dark');
+        else html.classList.remove('dark');
+      })();
+    </script>
+</head>
+<body class="antialiased bg-background text-foreground min-h-screen flex flex-col transition-colors duration-200">
+    <x-pixel-city-background />
+    <x-navbar />
+    <x-toast-notification />
+
+    <main class="flex-1 relative z-10 pt-14 md:pt-16 pb-4 page-enter">
+        <div class="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8 py-4 md:py-6 page-enter-content">
+            {{ $slot }}
+        </div>
+    </main>
+
+    <footer class="relative z-10 mt-auto border-t border-border/30 bg-background/50 backdrop-blur-sm">
+        <div class="max-w-7xl mx-auto px-4 py-6">
+            <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
+                <p class="text-xs text-muted-foreground">
+                    © 2026 Ridly.
+                </p>
+                <div class="flex items-center gap-4 text-xs font-medium uppercase tracking-widest">
+                    <a href="{{ route('terms-of-service') }}" class="text-muted-foreground hover:text-primary transition-colors">Terms of Service</a>
+                    <a href="{{ route('privacy-policy') }}" class="text-muted-foreground hover:text-primary transition-colors">Privacy Policy</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <x-auth-modal />
+
+<style>
+    .page-enter {
+        animation: pageFadeIn 0.6s ease-out both;
+    }
+    .page-enter-content > * {
+        animation: pageFadeIn 0.6s ease-out both;
+    }
+    .page-enter-content > *:nth-child(1) { animation-delay: 0s; }
+    .page-enter-content > *:nth-child(2) { animation-delay: 0.08s; }
+    .page-enter-content > *:nth-child(3) { animation-delay: 0.16s; }
+    .page-enter-content > *:nth-child(4) { animation-delay: 0.24s; }
+    .page-enter-content > *:nth-child(5) { animation-delay: 0.32s; }
+    .page-enter-content > *:nth-child(6) { animation-delay: 0.40s; }
+    .page-enter-content > *:nth-child(7) { animation-delay: 0.48s; }
+    .page-enter-content > *:nth-child(8) { animation-delay: 0.56s; }
+    .page-enter-content > *:nth-child(9) { animation-delay: 0.64s; }
+    .page-enter-content > *:nth-child(10) { animation-delay: 0.72s; }
+    @keyframes pageFadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(24px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+</style>
+</body>
+</html>

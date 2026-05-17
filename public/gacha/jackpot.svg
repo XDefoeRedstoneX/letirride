@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1a1505"/>
+      <stop offset="100%" stop-color="#2b2208"/>
+    </linearGradient>
+    <linearGradient id="gold" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffd700"/>
+      <stop offset="50%" stop-color="#ffaa00"/>
+      <stop offset="100%" stop-color="#ffd700"/>
+    </linearGradient>
+    <linearGradient id="sparkle" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fff8dc"/>
+      <stop offset="100%" stop-color="#ffd700"/>
+    </linearGradient>
+  </defs>
+  <rect width="200" height="200" rx="16" fill="url(#bg)"/>
+  <!-- Crown/Diamond - gold with sparkle -->
+  <g fill="url(#gold)">
+    <!-- Diamond shape from pixel blocks -->
+    <!-- Top point -->
+    <rect x="97" y="30" width="6" height="10" rx="1"/>
+    <rect x="91" y="40" width="18" height="10" rx="1"/>
+    <!-- Upper section -->
+    <rect x="79" y="50" width="42" height="10" rx="1"/>
+    <!-- Middle - widest -->
+    <rect x="67" y="60" width="66" height="10" rx="1"/>
+    <!-- Crown points -->
+    <rect x="55" y="50" width="12" height="20" rx="2"/>
+    <rect x="133" y="50" width="12" height="20" rx="2"/>
+    <rect x="97" y="45" width="6" height="25" rx="1" fill="#fff8dc" opacity="0.3"/>
+    <!-- Lower section -->
+    <rect x="73" y="70" width="54" height="10" rx="1"/>
+    <rect x="79" y="80" width="42" height="10" rx="1"/>
+    <rect x="85" y="90" width="30" height="10" rx="1"/>
+    <!-- Bottom point -->
+    <rect x="91" y="100" width="18" height="10" rx="1"/>
+    <rect x="97" y="110" width="6" height="10" rx="1"/>
+  </g>
+  <!-- Facet lines -->
+  <line x1="67" y1="60" x2="100" y2="120" stroke="#1a1505" stroke-width="1.5" opacity="0.3"/>
+  <line x1="133" y1="60" x2="100" y2="120" stroke="#1a1505" stroke-width="1.5" opacity="0.3"/>
+  <line x1="67" y1="60" x2="133" y2="60" stroke="#1a1505" stroke-width="1" opacity="0.2"/>
+  <!-- Sparkles -->
+  <g fill="url(#sparkle)">
+    <!-- Top-left sparkle -->
+    <rect x="38" y="38" width="4" height="12" rx="1"/>
+    <rect x="34" y="42" width="12" height="4" rx="1"/>
+    <!-- Top-right sparkle -->
+    <rect x="158" y="32" width="3" height="9" rx="1"/>
+    <rect x="155" y="35" width="9" height="3" rx="1"/>
+    <!-- Left sparkle -->
+    <rect x="30" y="100" width="3" height="8" rx="1"/>
+    <rect x="27" y="103" width="9" height="3" rx="1"/>
+    <!-- Right sparkle -->
+    <rect x="164" y="90" width="3" height="8" rx="1" opacity="0.7"/>
+    <rect x="161" y="93" width="9" height="3" rx="1" opacity="0.7"/>
+    <!-- Small dots -->
+    <rect x="45" y="70" width="4" height="4" rx="1" opacity="0.5"/>
+    <rect x="150" y="65" width="4" height="4" rx="1" opacity="0.5"/>
+    <rect x="42" y="130" width="3" height="3" rx="1" opacity="0.4"/>
+    <rect x="155" y="125" width="3" height="3" rx="1" opacity="0.4"/>
+  </g>
+  <!-- Glow ring -->
+  <circle cx="100" cy="75" r="55" fill="none" stroke="#ffd700" stroke-width="1" opacity="0.15"/>
+</svg>
