@@ -317,6 +317,21 @@ function productsPage(initialProducts, initialFavorites, isAuthenticated, csrfTo
             this.uniqueCategories.forEach(cat => {
                 this.expandedCategories[cat] = true;
             });
+
+            // Auto-open buy modal if ?buy=PRODUCT_ID is in URL (from favorites page)
+            const urlParams = new URLSearchParams(window.location.search);
+            const buyId = urlParams.get('buy');
+            if (buyId) {
+                const product = this.products.find(p => p.id == buyId);
+                if (product) {
+                    this.$nextTick(() => {
+                        this.selectedProduct = product;
+                        this.showCartModal = true;
+                    });
+                }
+                // Clean up URL without reload
+                window.history.replaceState({}, '', window.location.pathname);
+            }
         },
 
         /* ─ Computed ──────────────────────────────────────────── */

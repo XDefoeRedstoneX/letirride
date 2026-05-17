@@ -69,7 +69,7 @@ class InventoryController extends Controller
                 'item_type' => 'discount',
                 'type' => 'Voucher',
                 'date' => $ud->expires_at?->format('Y-m-d') ?? 'No Expiry',
-                'image' => '/gacha/voucher.png',
+                'image' => '/gacha-assets/voucher.png',
                 'topup_status' => null,
                 'player_id' => null,
                 'zone_id' => null,

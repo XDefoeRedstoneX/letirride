@@ -13,6 +13,9 @@
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=geist-sans:400,500,600|geist-mono:400,500" rel="stylesheet" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
 
     <!-- Styles & Scripts -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
@@ -39,15 +42,15 @@
         </div>
     </main>
 
-    <footer class="relative z-10 mt-auto border-t border-border/30 bg-background/50 backdrop-blur-sm">
+    <footer class="relative z-10 mt-auto" style="border-top: 3px solid var(--gold, #f59e0b); background: var(--dark-bg, #050c1a);">
         <div class="max-w-7xl mx-auto px-4 py-6">
             <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
-                <p class="text-xs text-muted-foreground">
-                    © 2026 Ridly.
+                <p style="font-family: var(--px, 'Press Start 2P', monospace); font-size: 7px; letter-spacing: 0.1em; color: var(--text-dim, #5a7aaa);">
+                    © 2026 RIDLY COMMERCE
                 </p>
-                <div class="flex items-center gap-4 text-xs font-medium uppercase tracking-widest">
-                    <a href="{{ route('terms-of-service') }}" class="text-muted-foreground hover:text-primary transition-colors">Terms of Service</a>
-                    <a href="{{ route('privacy-policy') }}" class="text-muted-foreground hover:text-primary transition-colors">Privacy Policy</a>
+                <div class="flex items-center gap-6" style="font-family: var(--px, 'Press Start 2P', monospace); font-size: 7px; letter-spacing: 0.1em;">
+                    <a href="{{ route('terms-of-service') }}" style="color: var(--text-dim, #5a7aaa); transition: color 0.15s;" onmouseover="this.style.color='var(--gold, #f59e0b)'" onmouseout="this.style.color='var(--text-dim, #5a7aaa)'">TERMS OF SERVICE</a>
+                    <a href="{{ route('privacy-policy') }}" style="color: var(--text-dim, #5a7aaa); transition: color 0.15s;" onmouseover="this.style.color='var(--gold, #f59e0b)'" onmouseout="this.style.color='var(--text-dim, #5a7aaa)'">PRIVACY POLICY</a>
                 </div>
             </div>
         </div>
@@ -72,14 +75,15 @@
     .page-enter-content > *:nth-child(8) { animation-delay: 0.56s; }
     .page-enter-content > *:nth-child(9) { animation-delay: 0.64s; }
     .page-enter-content > *:nth-child(10) { animation-delay: 0.72s; }
+    /* NOTE: Using opacity-only animation to avoid breaking position:fixed
+       on child modals. CSS transform creates a new containing block that
+       makes fixed-position elements behave like absolute. */
     @keyframes pageFadeIn {
         from {
             opacity: 0;
-            transform: translateY(24px);
         }
         to {
             opacity: 1;
-            transform: translateY(0);
         }
     }
 </style>

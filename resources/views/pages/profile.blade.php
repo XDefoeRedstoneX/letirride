@@ -1,6 +1,8 @@
 <x-app-layout>
+    @auth
     <div class="max-w-5xl mx-auto space-y-12" x-data="{
         show: false,
+        uploading: false,
         profileName: @js(Auth::user()->name),
         profileError: '',
         profileSuccess: '',
@@ -11,73 +13,30 @@
         currentPassword: '',
         newPassword: '',
         async submitProfile() {
-            this.profileError = '';
-            this.profileSuccess = '';
-            this.profileLoading = true;
-
+            this.profileError = ''; this.profileSuccess = ''; this.profileLoading = true;
             const form = this.$refs.profileForm;
-            const response = await fetch(form.action, {
-                method: 'POST',
-                headers: {
-                    'Accept': 'application/json',
-                    'X-Requested-With': 'XMLHttpRequest',
-                },
-                body: new FormData(form),
-            });
-
+            const response = await fetch(form.action, { method: 'POST', headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }, body: new FormData(form) });
             const data = await response.json().catch(() => ({}));
             this.profileLoading = false;
-
-            if (response.ok) {
-                this.profileName = data.name || this.profileName;
-                this.profileSuccess = data.message || 'Profile updated successfully.';
-                return;
-            }
-
+            if (response.ok) { this.profileName = data.name || this.profileName; this.profileSuccess = data.message || 'Profile updated successfully.'; return; }
             const errors = data.errors || {};
             this.profileError = errors.name?.[0] || data.message || 'Unable to update profile.';
         },
         async submitPassword() {
-            this.passwordError = '';
-            this.passwordSuccess = '';
-            this.passwordLoading = true;
-
+            this.passwordError = ''; this.passwordSuccess = ''; this.passwordLoading = true;
             const form = this.$refs.passwordForm;
-            const response = await fetch(form.action, {
-                method: 'POST',
-                headers: {
-                    'Accept': 'application/json',
-                    'X-Requested-With': 'XMLHttpRequest',
-                },
-                body: new FormData(form),
-            });
-
+            const response = await fetch(form.action, { method: 'POST', headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }, body: new FormData(form) });
             const data = await response.json().catch(() => ({}));
             this.passwordLoading = false;
-
-            if (response.ok) {
-                this.currentPassword = '';
-                this.newPassword = '';
-                this.passwordSuccess = data.message || 'Password updated successfully.';
-                return;
-            }
-
+            if (response.ok) { this.currentPassword = ''; this.newPassword = ''; this.passwordSuccess = data.message || 'Password updated successfully.'; return; }
             const errors = data.errors || {};
             this.passwordError = errors.current_password?.[0] || errors.new_password?.[0] || data.message || 'Unable to update password.';
         }
     }" x-init="setTimeout(() => show = true, 50)">
+
         <!-- Profile Card -->
         <div class="relative overflow-hidden glass-card rounded-[3rem] shadow-2xl" x-show="show" x-transition:enter="md:transition md:ease-out md:duration-1000" x-transition:enter-start="md:opacity-0 md:scale-95 md:translate-y-8" x-transition:enter-end="md:opacity-100 md:scale-100 md:translate-y-0">
-            <!-- Cover / Header BG (Elegant City Sky) -->
             <div class="h-48 bg-gradient-to-r from-primary/20 via-primary/5 to-transparent"></div>
-
-    @auth
-    <div class="max-w-5xl mx-auto space-y-12" x-data="{ uploading: false }">
-        <!-- Profile Card -->
-        <div class="relative overflow-hidden glass-card rounded-[3rem] shadow-2xl">
-            <!-- Cover / Header BG (Elegant City Sky) -->
-            <div class="h-48 bg-gradient-to-r from-primary/20 via-primary/5 to-transparent"></div>
-            
             <div class="px-10 pb-10 -mt-20 relative z-10 flex flex-col md:flex-row items-center md:items-end gap-8">
                 <!-- Avatar -->
                 <div class="relative group">
@@ -95,7 +54,6 @@
                                @change="uploading = true; $event.target.closest('form').submit();">
                     </form>
                 </div>
-
                 <!-- Info -->
                 <div class="flex-1 text-center md:text-left space-y-3">
                     <div class="flex flex-col md:flex-row md:items-center gap-3 md:gap-6">
@@ -140,10 +98,8 @@
             </div>
         </div>
 
-        <!-- Account Settings Sections -->
+        <!-- Account Settings -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-8" x-show="show" x-transition:enter="md:transition md:ease-out md:duration-1000 md:delay-300" x-transition:enter-start="md:opacity-0 md:translate-y-8" x-transition:enter-end="md:opacity-100 md:translate-y-0">
-        <!-- Account Settings Sections -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
             <!-- Personal Information -->
             <div class="glass-card rounded-[2.5rem] p-8 space-y-6 group hover:border-primary/30 transition-all duration-500">
                 <div class="flex items-center gap-4">
@@ -152,36 +108,19 @@
                     </div>
                     <h3 class="text-lg font-black uppercase tracking-widest">Personal Info</h3>
                 </div>
-
                 <form class="space-y-4" x-ref="profileForm" @submit.prevent="submitProfile" method="POST" action="{{ route('updateProfile') }}">
                     @csrf
                     <div class="space-y-2">
                         <label class="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Display Name</label>
                         <input type="text" name="name" :value="profileName" x-model="profileName" class="w-full px-6 py-3 glass-card rounded-2xl focus:ring-2 focus:ring-primary/50 outline-none transition-all font-bold text-sm">
                     </div>
-
                     <div class="space-y-2">
                         <label class="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Email Address</label>
                         <input type="email" name="email" value="{{ Auth::user()->email }}" disabled class="w-full px-6 py-3 glass-card rounded-2xl cursor-not-allowed opacity-50 font-bold text-sm">
                     </div>
-
                     <button type="submit" :disabled="profileLoading" class="w-full px-8 py-4 bg-primary text-primary-foreground font-black text-[10px] uppercase tracking-widest rounded-2xl hover:scale-[1.02] transition-all shadow-xl shadow-primary/20 disabled:opacity-70">Save Changes</button>
-
                     <p x-show="profileError" x-text="profileError" class="text-sm text-red-500"></p>
                     <p x-show="profileSuccess" x-text="profileSuccess" class="text-sm text-green-600"></p>
-                
-                <form class="space-y-4">
-                    <div class="space-y-2">
-                        <label class="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Display Name</label>
-                        <input type="text" value="{{ Auth::user()->name }}" class="w-full px-6 py-3 glass-card rounded-2xl focus:ring-2 focus:ring-primary/50 outline-none transition-all font-bold text-sm">
-                    </div>
-                    
-                    <div class="space-y-2">
-                        <label class="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Email Address</label>
-                        <input type="email" value="{{ Auth::user()->email }}" disabled class="w-full px-6 py-3 glass-card rounded-2xl cursor-not-allowed opacity-50 font-bold text-sm">
-                    </div>
-
-                    <button type="submit" class="w-full px-8 py-4 bg-primary text-primary-foreground font-black text-[10px] uppercase tracking-widest rounded-2xl hover:scale-[1.02] transition-all shadow-xl shadow-primary/20">Save Changes</button>
                 </form>
             </div>
 
@@ -193,24 +132,20 @@
                     </div>
                     <h3 class="text-lg font-black uppercase tracking-widest">Security</h3>
                 </div>
-
                 <form class="space-y-4" x-ref="passwordForm" @submit.prevent="submitPassword" method="POST" action="{{ route('changePassword') }}">
                     @csrf
                     <div class="space-y-2">
                         <label class="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Current Password</label>
                         <input type="password" name="current_password" x-model="currentPassword" placeholder="••••••••" class="w-full px-6 py-3 glass-card rounded-2xl focus:ring-2 focus:ring-primary/50 outline-none transition-all font-bold text-sm">
                     </div>
-
                     <div class="space-y-2">
                         <label class="text-[10px] font-black text-muted-foreground uppercase tracking-widest">New Password</label>
                         <input type="password" name="new_password" x-model="newPassword" placeholder="Min. 8 characters" class="w-full px-6 py-3 glass-card rounded-2xl focus:ring-2 focus:ring-primary/50 outline-none transition-all font-bold text-sm">
                     </div>
-
                     <div class="grid grid-cols-2 gap-3">
                         <button type="submit" :disabled="passwordLoading" class="px-4 py-4 bg-primary text-primary-foreground font-black text-[10px] uppercase tracking-widest rounded-2xl hover:scale-[1.02] transition-all shadow-xl shadow-primary/20 disabled:opacity-70">Update</button>
                         <a href="{{ route('forgot-password') }}" class="px-4 py-4 glass-card text-center font-black text-[10px] uppercase tracking-widest rounded-2xl hover:bg-white/10 transition-all">Forgot?</a>
                     </div>
-
                     <p x-show="passwordError" x-text="passwordError" class="text-sm text-red-500"></p>
                     <p x-show="passwordSuccess" x-text="passwordSuccess" class="text-sm text-green-600"></p>
                 </form>

@@ -1,12 +1,116 @@
 <x-app-layout>
     @auth
-        <div class="space-y-8" x-data="{
+        <div class="px-page">
+            <div class="px-page-inner space-y-8"
+                 x-data="pointShopPage({{ \Illuminate\Support\Js::from($shopItems ?? []) }}, {{ Auth::user()->points_balance }}, '{{ csrf_token() }}')"
+                 x-init="setTimeout(() => show = true, 50)">
+
+                {{-- Header --}}
+                <div>
+                    <h1 class="px-heading">Point <span class="gold">Shop</span></h1>
+                    <p class="px-subheading">EXCHANGE YOUR HARD-EARNED POINTS FOR EXCLUSIVE REWARDS</p>
+                </div>
+                <div class="px-divider"><div class="px-divider-dot"></div><div class="px-divider-line"></div><div class="px-divider-dot"></div></div>
+
+                {{-- Points Balance Card --}}
+                <div class="px-card-static" style="padding:20px;display:flex;align-items:center;gap:16px;border-color:rgba(245,158,11,0.3);">
+                    <div style="width:56px;height:56px;background:rgba(245,158,11,0.15);border:2px solid rgba(245,158,11,0.3);display:flex;align-items:center;justify-content:center;color:var(--gold);">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square"><circle cx="8" cy="8" r="6"/><path d="M18.09 10.37A6 6 0 1 1 10.34 18"/><path d="M7 6h1v4"/><path d="m16.71 13.88.7.71-2.82 2.82"/></svg>
+                    </div>
+                    <div>
+                        <p style="font-family:var(--px);font-size:7px;letter-spacing:0.12em;color:var(--text-dim);">AVAILABLE POINTS</p>
+                        <p style="font-family:var(--font-sans);font-size:32px;font-weight:800;color:var(--gold);" x-text="formatNum(userPoints)"></p>
+                    </div>
+                </div>
+
+                {{-- Shop Grid --}}
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                    <template x-for="(item, index) in items" :key="item.id">
+                        <div class="px-card" style="padding:20px;display:flex;flex-direction:column;gap:14px;">
+                            <div style="aspect-ratio:1;background:var(--dark-card2);border:2px solid var(--dark-line);display:flex;align-items:center;justify-content:center;position:relative;">
+                                <img :src="item.image" style="max-width:80px;max-height:80px;object-fit:contain;image-rendering:pixelated;" />
+                                <span class="px-badge px-badge-gold" style="position:absolute;top:8px;right:8px;" x-text="item.reward_type"></span>
+                            </div>
+                            <div style="display:flex;flex-direction:column;gap:4px;">
+                                <h3 style="font-family:var(--font-sans);font-size:14px;font-weight:800;color:#e8f0ff;" x-text="item.name"></h3>
+                                <p style="font-family:var(--font-sans);font-size:11px;color:var(--text-dim);line-height:1.5;" x-text="item.description"></p>
+                            </div>
+                            <div style="display:flex;align-items:center;justify-content:space-between;margin-top:auto;padding-top:10px;border-top:2px solid var(--dark-line);">
+                                <div>
+                                    <p style="font-family:var(--px);font-size:6px;letter-spacing:0.1em;color:var(--text-dim);">COST</p>
+                                    <div style="display:flex;align-items:center;gap:4px;color:var(--gold);">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="square"><circle cx="12" cy="12" r="10"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/></svg>
+                                        <span style="font-family:var(--font-sans);font-size:18px;font-weight:800;" x-text="formatNum(item.point_cost)"></span>
+                                    </div>
+                                </div>
+                                <button @click="openConfirm(item)"
+                                        :disabled="userPoints < item.point_cost || redeeming === item.id"
+                                        class="px-btn-gold" style="padding:10px 18px;font-size:6px;"
+                                        :style="userPoints < item.point_cost ? 'opacity:0.4;cursor:not-allowed;' : ''">
+                                    <span x-text="redeeming === item.id ? 'REDEEMING...' : (userPoints < item.point_cost ? 'INSUFFICIENT' : 'REDEEM')"></span>
+                                </button>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+
+                {{-- Empty State --}}
+                <div x-show="items.length === 0" class="px-empty-state">
+                    <div class="empty-icon"><svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="square"><circle cx="8" cy="8" r="6"/><path d="M18.09 10.37A6 6 0 1 1 10.34 18"/></svg></div>
+                    <p class="empty-text">NO ITEMS AVAILABLE RIGHT NOW</p>
+                </div>
+
+                {{-- Confirm Modal --}}
+                <div x-show="confirmItem" class="px-modal-overlay"
+                     x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
+                     x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
+                     @click.self="closeConfirm()">
+                    <div class="px-modal-box" style="text-align:center;" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100">
+                        <div style="width:64px;height:64px;background:rgba(245,158,11,0.15);border:2px solid rgba(245,158,11,0.3);display:flex;align-items:center;justify-content:center;color:var(--gold);margin:0 auto 16px;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square"><circle cx="8" cy="8" r="6"/><path d="M18.09 10.37A6 6 0 1 1 10.34 18"/><path d="M7 6h1v4"/><path d="m16.71 13.88.7.71-2.82 2.82"/></svg>
+                        </div>
+                        <h3 style="font-family:var(--font-sans);font-size:18px;font-weight:800;color:#e8f0ff;">Confirm Redemption</h3>
+                        <p style="font-family:var(--font-sans);font-size:13px;color:var(--text-dim);margin-top:6px;">Are you sure you want to redeem:</p>
+                        <p style="font-family:var(--font-sans);font-size:16px;font-weight:800;color:var(--gold);margin-top:4px;" x-text="confirmItem ? confirmItem.name : ''"></p>
+
+                        <div style="background:var(--dark-card2);border:2px solid var(--dark-line);padding:14px;margin-top:16px;display:flex;flex-direction:column;gap:8px;">
+                            <div style="display:flex;justify-content:space-between;"><span style="font-family:var(--px);font-size:6px;letter-spacing:0.1em;color:var(--text-dim);">COST</span><span style="font-family:var(--font-sans);font-size:13px;font-weight:800;color:var(--gold);" x-text="confirmItem ? formatNum(confirmItem.point_cost) + ' PTS' : ''"></span></div>
+                            <div style="display:flex;justify-content:space-between;"><span style="font-family:var(--px);font-size:6px;letter-spacing:0.1em;color:var(--text-dim);">BALANCE AFTER</span><span style="font-family:var(--font-sans);font-size:13px;font-weight:800;color:#e8f0ff;" x-text="confirmItem ? formatNum(userPoints - confirmItem.point_cost) + ' PTS' : ''"></span></div>
+                        </div>
+
+                        <div style="display:flex;gap:8px;margin-top:16px;">
+                            <button @click="closeConfirm()" class="px-btn-ghost" style="flex:1;padding:14px;">CANCEL</button>
+                            <button @click="confirmRedeem()" class="px-btn-gold" style="flex:1;padding:14px;">CONFIRM</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    @else
+        <div class="px-page">
+            <div class="px-empty-state" style="min-height:70vh;">
+                <div style="width:80px;height:80px;background:rgba(245,158,11,0.15);border:3px solid rgba(245,158,11,0.3);display:flex;align-items:center;justify-content:center;color:var(--gold);">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="square"><circle cx="8" cy="8" r="6"/><path d="M18.09 10.37A6 6 0 1 1 10.34 18"/><path d="M7 6h1v4"/><path d="m16.71 13.88.7.71-2.82 2.82"/></svg>
+                </div>
+                <h1 class="px-heading" style="text-align:center;">Elevate Your Experience with <span class="gold">Points</span></h1>
+                <p style="font-family:var(--font-sans);font-size:14px;color:var(--text-dim);text-align:center;max-width:480px;line-height:1.7;">Join our community to start earning points from every transaction and redeem them for premium digital assets.</p>
+                <div style="display:flex;gap:12px;">
+                    <button @click="$dispatch('open-auth-modal', { tab: 'login' })" class="px-btn-gold" style="padding:16px 28px;font-size:8px;">LOGIN</button>
+                    <button @click="$dispatch('open-auth-modal', { tab: 'signup' })" class="px-btn-ghost" style="padding:16px 28px;font-size:8px;">SIGN UP</button>
+                </div>
+            </div>
+        </div>
+    @endauth
+
+    <script>
+    function pointShopPage(initialItems, initialPoints, csrfToken) {
+        return {
             show: false,
-            items: {{ \Illuminate\Support\Js::from($shopItems ?? []) }},
-            userPoints: {{ Auth::user()->points_balance }},
+            items: initialItems,
+            userPoints: initialPoints,
             redeeming: null,
             confirmItem: null,
-            csrfToken: '{{ csrf_token() }}',
+            csrfToken,
 
             openConfirm(item) {
                 if (this.userPoints < item.point_cost) return;
@@ -32,149 +136,29 @@
                             'X-CSRF-TOKEN': this.csrfToken,
                         },
                     });
-
                     const data = await response.json();
-
                     if (response.ok) {
                         this.userPoints = data.new_balance;
-                        window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: data.message, type: 'success' } }));
+                        window.dispatchEvent(new CustomEvent('show-toast', {
+                            detail: { message: data.message, type: 'success' }
+                        }));
                     } else {
-                        window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: data.message || 'Failed.', type: 'error' } }));
+                        window.dispatchEvent(new CustomEvent('show-toast', {
+                            detail: { message: data.message || 'Failed.', type: 'error' }
+                        }));
                     }
                 } catch (e) {
-                    window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: 'Network error.', type: 'error' } }));
+                    window.dispatchEvent(new CustomEvent('show-toast', {
+                        detail: { message: 'Network error.', type: 'error' }
+                    }));
                 }
-
                 this.redeeming = null;
             },
 
             formatNum(n) {
                 return new Intl.NumberFormat('id-ID').format(n);
             }
-        }" x-init="setTimeout(() => show = true, 50)">
-            <!-- Header -->
-            <div class="text-center md:text-left" x-show="show" x-transition:enter="md:transition md:ease-out md:duration-500" x-transition:enter-start="md:opacity-0 md:translate-y-4" x-transition:enter-end="md:opacity-100 md:translate-y-0">
-                <h1 class="text-4xl font-black tracking-tighter uppercase">Point <span class="text-primary">Shop</span></h1>
-                <p class="text-muted-foreground font-medium">Exchange your hard-earned points for exclusive rewards and vouchers.</p>
-            </div>
-
-            <!-- User Points Card -->
-            <div class="bg-gradient-to-r from-yellow-500/20 to-amber-500/20 border border-yellow-500/30 rounded-2xl p-6 flex flex-col md:flex-row items-center justify-between gap-6"
-                 x-show="show" x-transition:enter="md:transition md:ease-out md:duration-500 md:delay-100" x-transition:enter-start="md:opacity-0 md:translate-y-4" x-transition:enter-end="md:opacity-100 md:translate-y-0">
-                <div class="flex items-center gap-4">
-                    <div class="w-16 h-16 bg-yellow-500/20 rounded-full flex items-center justify-center text-yellow-500 shadow-[0_0_20px_rgba(234,179,8,0.2)]">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="6"/><path d="M18.09 10.37A6 6 0 1 1 10.34 18"/><path d="M7 6h1v4"/><path d="m16.71 13.88.7.71-2.82 2.82"/></svg>
-                    </div>
-                    <div>
-                        <p class="text-sm font-medium text-yellow-600 dark:text-yellow-400 uppercase tracking-widest">Available Points</p>
-                        <p class="text-4xl font-black text-yellow-600 dark:text-yellow-500" x-text="formatNum(userPoints)"></p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Shop Grid -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                <template x-for="(item, index) in items" :key="item.id">
-                    <div class="group glass-card rounded-[2rem] p-6 space-y-6 hover:shadow-2xl hover:shadow-primary/10 transition-all duration-500 hover:-translate-y-2"
-                         x-show="show" x-transition:enter="md:transition md:ease-out md:duration-500" x-transition:enter-start="md:opacity-0 md:scale-95" x-transition:enter-end="md:opacity-100 md:scale-100"
-                         :style="'transition-delay: ' + ((index + 3) * 100) + 'ms'">
-                        <div class="aspect-square relative rounded-2xl bg-white/5 overflow-hidden flex items-center justify-center group-hover:bg-primary/5 transition-colors duration-500">
-                            <img :src="item.image" class="w-24 h-24 object-contain group-hover:scale-110 group-hover:rotate-3 transition-transform duration-700 pixel-render" />
-                            <div class="absolute top-3 right-3">
-                                <span class="px-3 py-1 rounded-full bg-white/10 backdrop-blur-md text-[9px] font-black border border-white/20 uppercase tracking-widest" x-text="item.reward_type"></span>
-                            </div>
-                        </div>
-                        <div class="space-y-2">
-                            <h3 class="font-black text-base leading-tight" x-text="item.name"></h3>
-                            <p class="text-[10px] text-muted-foreground font-bold uppercase tracking-widest leading-relaxed" x-text="item.description"></p>
-                        </div>
-                        <div class="flex items-center justify-between pt-2">
-                            <div class="flex flex-col">
-                                <span class="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Cost</span>
-                                <div class="flex items-center gap-1.5 text-yellow-500">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="pixel-render"><circle cx="12" cy="12" r="10"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/></svg>
-                                    <span class="font-black text-lg" x-text="formatNum(item.point_cost)"></span>
-                                </div>
-                            </div>
-                            <button @click="openConfirm(item)"
-                                    :disabled="userPoints < item.point_cost || redeeming === item.id"
-                                    :class="userPoints < item.point_cost ? 'opacity-50 cursor-not-allowed' : 'hover:scale-105 active:scale-95'"
-                                    class="px-5 py-2.5 bg-primary text-primary-foreground rounded-xl font-black text-xs transition-all shadow-lg shadow-primary/20 tracking-widest uppercase">
-                                <span x-text="redeeming === item.id ? 'Redeeming...' : (userPoints < item.point_cost ? 'Insufficient' : 'Redeem')"></span>
-                            </button>
-                        </div>
-                    </div>
-                </template>
-            </div>
-
-            <!-- Empty State -->
-            <div x-show="items.length === 0" class="py-20 text-center space-y-4">
-                <p class="text-muted-foreground font-black uppercase tracking-widest text-xs">No items available in the shop right now.</p>
-            </div>
-
-            <!-- Confirmation Modal -->
-            <div x-show="confirmItem" class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md"
-                 x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
-                 x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
-                 @click.self="closeConfirm()">
-                <div class="bg-card border-2 border-primary/30 rounded-[2rem] p-8 max-w-sm w-full text-center space-y-6 shadow-2xl shadow-primary/20"
-                     x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 scale-90" x-transition:enter-end="opacity-100 scale-100">
-                    <!-- Icon -->
-                    <div class="w-20 h-20 bg-yellow-500/10 rounded-full flex items-center justify-center mx-auto text-yellow-500">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="6"/><path d="M18.09 10.37A6 6 0 1 1 10.34 18"/><path d="M7 6h1v4"/><path d="m16.71 13.88.7.71-2.82 2.82"/></svg>
-                    </div>
-
-                    <!-- Details -->
-                    <div class="space-y-2">
-                        <h3 class="text-xl font-black uppercase tracking-tight">Confirm Redemption</h3>
-                        <p class="text-sm text-muted-foreground">Are you sure you want to redeem:</p>
-                        <p class="text-lg font-black text-primary" x-text="confirmItem ? confirmItem.name : ''"></p>
-                    </div>
-
-                    <!-- Cost Summary -->
-                    <div class="bg-foreground/5 border border-border rounded-xl p-4 space-y-2">
-                        <div class="flex items-center justify-between text-xs">
-                            <span class="font-bold text-muted-foreground uppercase tracking-widest">Cost</span>
-                            <span class="font-black text-yellow-500" x-text="confirmItem ? formatNum(confirmItem.point_cost) + ' PTS' : ''"></span>
-                        </div>
-                        <div class="flex items-center justify-between text-xs">
-                            <span class="font-bold text-muted-foreground uppercase tracking-widest">Balance After</span>
-                            <span class="font-black" x-text="confirmItem ? formatNum(userPoints - confirmItem.point_cost) + ' PTS' : ''"></span>
-                        </div>
-                    </div>
-
-                    <!-- Buttons -->
-                    <div class="flex gap-3">
-                        <button @click="closeConfirm()" class="flex-1 py-3.5 bg-foreground/5 border border-border text-foreground font-black rounded-xl hover:bg-foreground/10 transition-all uppercase tracking-widest text-[10px]">
-                            Cancel
-                        </button>
-                        <button @click="confirmRedeem()" class="flex-1 py-3.5 bg-primary text-primary-foreground font-black rounded-xl hover:scale-105 active:scale-95 transition-all shadow-lg shadow-primary/20 uppercase tracking-widest text-[10px]">
-                            Confirm
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    @else
-        <div class="min-h-[70vh] flex flex-col items-center justify-center text-center space-y-12 p-6" x-data="{ show: false }" x-init="setTimeout(() => show = true, 50)">
-            <div class="space-y-6 max-w-xl" x-show="show" x-transition:enter="md:transition md:ease-out md:duration-1000" x-transition:enter-start="md:opacity-0 md:scale-95 md:translate-y-12" x-transition:enter-end="md:opacity-100 md:scale-100 md:translate-y-0">
-                <div class="w-24 h-24 bg-primary/10 rounded-[2.5rem] flex items-center justify-center text-primary mx-auto mb-8 shadow-2xl shadow-primary/20 backdrop-blur-xl border border-white/20">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="pixel-render"><circle cx="8" cy="8" r="6"/><path d="M18.09 10.37A6 6 0 1 1 10.34 18"/><path d="M7 6h1v4"/><path d="m16.71 13.88.7.71-2.82 2.82"/></svg>
-                </div>
-                <h1 class="text-5xl font-black tracking-tighter leading-tight">Elevate Your Experience with <span class="text-primary">Points</span></h1>
-                <p class="text-muted-foreground text-lg font-medium leading-relaxed">Join our community to start earning points from every transaction and redeem them for premium digital assets and exclusive vouchers.</p>
-            </div>
-
-            <div class="flex flex-col sm:flex-row gap-6 w-full max-w-md" x-show="show" x-transition:enter="md:transition md:ease-out md:duration-1000 md:delay-300" x-transition:enter-start="md:opacity-0 md:translate-y-8" x-transition:enter-end="md:opacity-100 md:translate-y-0">
-                <button @click="$dispatch('open-auth-modal', { tab: 'login' })"
-                        class="flex-1 px-8 py-5 bg-primary text-primary-foreground font-black rounded-[1.5rem] shadow-2xl shadow-primary/30 hover:scale-105 active:scale-95 transition-all text-sm tracking-widest uppercase">
-                    Login to Access
-                </button>
-                <button @click="$dispatch('open-auth-modal', { tab: 'signup' })"
-                        class="flex-1 px-8 py-5 glass-card font-black rounded-[1.5rem] hover:bg-white/20 hover:scale-105 active:scale-95 transition-all text-sm tracking-widest uppercase">
-                    Create Account
-                </button>
-            </div>
-        </div>
-    @endauth
+        };
+    }
+    </script>
 </x-app-layout>

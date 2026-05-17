@@ -1,102 +1,79 @@
 <x-app-layout>
-    <div class="space-y-8" x-data="{
-        favoriteProducts: {{ \Illuminate\Support\Js::from($favorites) }},
-        csrfToken: '{{ csrf_token() }}',
-        addingToCart: null,
-
-        async toggleFavorite(id) {
-            const response = await fetch(`/favorites/${id}`, {
-                method: 'DELETE',
-                headers: {
-                    'Accept': 'application/json',
-                    'X-Requested-With': 'XMLHttpRequest',
-                    'X-CSRF-TOKEN': this.csrfToken,
-                },
-            });
-
-            if (!response.ok) {
-                return;
-            }
-
-            this.favoriteProducts = this.favoriteProducts.filter(product => product.id !== id);
-            window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: 'Removed from favorites.', type: 'success' } }));
-        },
-
-        async addToCart(productId) {
-            if (this.addingToCart) return;
-            this.addingToCart = productId;
-
-            try {
-                const response = await fetch(`/cart/${productId}`, {
-                    method: 'POST',
-                    headers: {
-                        'Accept': 'application/json',
-                        'X-Requested-With': 'XMLHttpRequest',
-                        'X-CSRF-TOKEN': this.csrfToken,
-                    },
-                });
-
-                const data = await response.json();
-
-                if (response.ok) {
-                    window.dispatchEvent(new CustomEvent('cart-updated', { detail: { count: data.cart_count } }));
-                    window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: data.message, type: 'success' } }));
-                } else {
-                    window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: data.message || 'Failed to add to cart.', type: 'error' } }));
-                }
-            } catch (e) {
-                window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: 'Network error. Please try again.', type: 'error' } }));
-            }
-
-            this.addingToCart = null;
-        }
-    }">
-        <!-- Header -->
-        <div class="flex flex-col space-y-2">
-            <h1 class="text-3xl font-black tracking-tighter uppercase leading-none">Your <span class="text-primary">Favorites</span></h1>
-            <p class="text-muted-foreground text-xs font-bold uppercase tracking-widest mt-2">All the items you've liked in one place.</p>
-        </div>
-
-        <!-- Favorites Grid -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            <template x-for="product in favoriteProducts" :key="product.id">
-                <div class="group glass-card rounded-[2.5rem] overflow-hidden hover:shadow-2xl hover:shadow-primary/10 transition-all duration-500 hover:-translate-y-2 animate-in fade-in zoom-in border-border/50">
-                    <div class="aspect-square relative overflow-hidden bg-white/5">
-                        <img :src="product.image" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" :alt="product.name">
-                        <div class="absolute top-5 left-5 px-3 py-1 rounded-full bg-black/40 backdrop-blur-md text-[8px] font-black border border-white/10 uppercase tracking-widest text-white" x-text="product.category">
-                        </div>
-                    </div>
-                    <div class="p-6 space-y-5">
-                        <h3 class="font-black text-sm leading-tight tracking-tight uppercase group-hover:text-primary transition-colors h-10 overflow-hidden" x-text="product.name"></h3>
-                        <div class="flex items-center justify-between pt-2">
-                            <div class="flex flex-col">
-                                <span class="text-[8px] font-black text-muted-foreground uppercase tracking-widest">Price</span>
-                                <span class="text-lg font-black text-primary" x-text="'Rp ' + new Intl.NumberFormat('id-ID').format(product.price)"></span>
-                            </div>
-                            <div class="flex items-center gap-2">
-                                <button @click="toggleFavorite(product.id)"
-                                        class="w-10 h-10 flex items-center justify-center rounded-xl bg-red-500/10 text-red-500 transition-all hover:bg-red-500/20">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="pixel-render"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
-                                </button>
-                                <button @click="addToCart(product.id)"
-                                        :disabled="addingToCart === product.id"
-                                        class="px-6 py-2.5 bg-primary text-primary-foreground rounded-xl font-black text-[10px] hover:scale-105 active:scale-95 transition-all shadow-lg shadow-primary/20 tracking-widest uppercase disabled:opacity-50">
-                                    <span x-text="addingToCart === product.id ? 'Adding...' : 'Buy'"></span>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </template>
-        </div>
-
-        <!-- Empty State -->
-        <div x-show="favoriteProducts.length === 0" class="py-20 text-center space-y-4" x-transition>
-            <div class="w-20 h-20 bg-card border border-border rounded-4xl flex items-center justify-center mx-auto text-muted-foreground">
-                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="pixel-render"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
+    <div class="px-page">
+        <div class="px-page-inner space-y-8"
+             x-data="favoritesPage({{ \Illuminate\Support\Js::from($favorites ?? []) }}, '{{ csrf_token() }}')">
+            <div>
+                <h1 class="px-heading">My <span class="gold">Favorites</span></h1>
+                <p class="px-subheading">PRODUCTS YOU'VE SAVED FOR LATER</p>
             </div>
-            <p class="text-muted-foreground font-black uppercase tracking-widest text-xs">No favorite products yet.</p>
-            <a href="{{ route('home') }}" class="inline-block px-8 py-4 bg-primary text-primary-foreground rounded-2xl font-black text-xs uppercase tracking-widest hover:scale-105 transition-all">Browse Products</a>
+            <div class="px-divider"><div class="px-divider-dot"></div><div class="px-divider-line"></div><div class="px-divider-dot"></div></div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                <template x-for="product in favorites" :key="product.id">
+                    <div class="px-card" style="padding:20px;display:flex;flex-direction:column;gap:14px;">
+                        <div style="aspect-ratio:1;background:var(--dark-card2);border:2px solid var(--dark-line);display:flex;align-items:center;justify-content:center;padding:24px;position:relative;">
+                            <img :src="product.image" style="max-width:80px;max-height:80px;width:100%;height:100%;object-fit:contain;image-rendering:pixelated;" />
+                            <span class="px-badge px-badge-gold" style="position:absolute;top:8px;right:8px;" x-text="product.category"></span>
+                        </div>
+                        <div style="display:flex;flex-direction:column;gap:6px;">
+                            <h3 style="font-family:var(--font-sans);font-size:14px;font-weight:800;color:#e8f0ff;" x-text="product.name"></h3>
+                            <p style="font-family:var(--font-sans);font-size:16px;font-weight:800;color:var(--gold);" x-text="formatRp(product.price)"></p>
+                        </div>
+                        <div style="display:flex;gap:6px;margin-top:auto;">
+                            <a :href="'/?buy=' + product.id" class="px-btn-gold" style="flex:1;text-align:center;padding:10px;font-size:6px;text-decoration:none;">BUY</a>
+                            <button @click="removeFavorite(product.id)" :disabled="removing === product.id" class="px-btn-danger" style="padding:10px;font-size:6px;">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="square"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+                            </button>
+                        </div>
+                    </div>
+                </template>
+            </div>
+
+            <div x-show="favorites.length === 0" class="px-empty-state">
+                <div class="empty-icon"><svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="square" class="pixel-render"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg></div>
+                <p class="empty-text">NO FAVORITES YET</p>
+                <a href="{{ route('home') }}" class="empty-link">BROWSE PRODUCTS →</a>
+            </div>
         </div>
     </div>
+
+    <script>
+    function favoritesPage(initialFavorites, csrfToken) {
+        return {
+            favorites: initialFavorites,
+            removing: null,
+            csrfToken,
+
+            async removeFavorite(productId) {
+                if (this.removing) return;
+                this.removing = productId;
+                try {
+                    const r = await fetch('/favorites/' + productId, {
+                        method: 'DELETE',
+                        headers: {
+                            'Accept': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'X-CSRF-TOKEN': this.csrfToken
+                        }
+                    });
+                    if (r.ok) {
+                        this.favorites = this.favorites.filter(f => f.id !== productId);
+                        window.dispatchEvent(new CustomEvent('show-toast', {
+                            detail: { message: 'Removed from favorites.', type: 'success' }
+                        }));
+                    }
+                } catch (e) {
+                    window.dispatchEvent(new CustomEvent('show-toast', {
+                        detail: { message: 'Failed to remove.', type: 'error' }
+                    }));
+                }
+                this.removing = null;
+            },
+
+            formatRp(amount) {
+                return 'Rp ' + new Intl.NumberFormat('id-ID').format(amount);
+            }
+        };
+    }
+    </script>
 </x-app-layout>

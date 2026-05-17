@@ -1,80 +1,72 @@
 <x-app-layout>
-    <div class="max-w-4xl mx-auto space-y-12" x-data="{ 
-        submitted: false,
-        email: '',
-        message: '',
-        submitForm() {
-            if (this.email && this.message) {
-                this.submitted = true;
-            }
-        }
-    }">
-        
-        <!-- Header -->
-        <div class="text-center space-y-4">
-            <div class="w-20 h-20 bg-primary/10 rounded-[2rem] flex items-center justify-center text-primary mx-auto mb-6 shadow-2xl shadow-primary/20 backdrop-blur-xl border border-white/20">
-                <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="pixel-render"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-            </div>
-            <h1 class="text-5xl font-black tracking-tighter uppercase leading-none">Customer <span class="text-primary">Support</span></h1>
-            <p class="text-muted-foreground text-lg font-medium max-w-xl mx-auto">Have a question or facing an issue? Send us a message and we'll get back to you as soon as possible.</p>
-        </div>
+    <div class="px-page">
+        <div class="px-page-inner space-y-8"
+             x-data="ticketsPage()" >
 
-        <!-- Contact Form / Success Message -->
-        <div class="glass-card rounded-[3rem] p-8 md:p-12 shadow-2xl relative overflow-hidden">
-            <!-- Background Decorative Element -->
-            <div class="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full -mr-32 -mt-32 blur-3xl"></div>
-            
-            <template x-if="!submitted">
-                <form @submit.prevent="submitForm" class="space-y-8 relative z-10">
-                    <div class="grid grid-cols-1 gap-8">
-                        <div class="space-y-3">
-                            <label class="text-[10px] font-black text-muted-foreground uppercase tracking-widest ml-4">Your Email Address</label>
-                            <input type="email" x-model="email" required placeholder="email@example.com" 
-                                   class="w-full px-8 py-5 bg-foreground/5 border border-border rounded-[2rem] focus:ring-4 focus:ring-primary/20 outline-none transition-all font-bold text-sm">
-                        </div>
-                        
-                        <div class="space-y-3">
-                            <label class="text-[10px] font-black text-muted-foreground uppercase tracking-widest ml-4">How can we help?</label>
-                            <textarea x-model="message" required rows="5" placeholder="Describe your issue or question in detail..." 
-                                      class="w-full px-8 py-6 bg-foreground/5 border border-border rounded-[2.5rem] focus:ring-4 focus:ring-primary/20 outline-none transition-all font-bold text-sm resize-none"></textarea>
-                        </div>
-                    </div>
-
-                    <button type="submit" 
-                            class="w-full py-6 bg-primary text-primary-foreground font-black rounded-[2rem] shadow-2xl shadow-primary/30 hover:scale-[1.02] active:scale-[0.98] transition-all uppercase tracking-widest text-sm flex items-center justify-center gap-3 group">
-                        Send Message
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="pixel-render group-hover:translate-x-1 transition-transform"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>
-                    </button>
-                </form>
-            </template>
-
-            <template x-if="submitted">
-                <div class="text-center py-12 space-y-8 relative z-10 animate-in fade-in zoom-in duration-500">
-                    <div class="w-24 h-24 bg-green-500/10 rounded-full flex items-center justify-center text-green-500 mx-auto shadow-2xl shadow-green-500/20">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="pixel-render"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-                    </div>
-                    <div class="space-y-4">
-                        <h2 class="text-3xl font-black uppercase tracking-tight">Message Sent Successfully!</h2>
-                        <p class="text-muted-foreground font-medium max-w-md mx-auto">
-                            Thank you for reaching out. We have received your inquiry and our team is already on it.
-                        </p>
-                    </div>
-                    <div class="bg-primary/5 border border-primary/10 rounded-2xl p-6 max-w-sm mx-auto">
-                        <p class="text-[10px] font-black uppercase tracking-widest text-primary mb-2">Next Step</p>
-                        <p class="text-xs font-bold leading-relaxed">Please check your email <span class="text-primary" x-text="email"></span> regularly. We usually respond within 24 hours.</p>
-                    </div>
-                    <button @click="submitted = false; message = ''" class="text-[10px] font-black uppercase tracking-widest text-muted-foreground hover:text-primary transition-colors">
-                        Send another message
-                    </button>
+            {{-- Header --}}
+            <div style="text-align:center;">
+                <div style="width:64px;height:64px;background:rgba(245,158,11,0.15);border:3px solid rgba(245,158,11,0.3);display:flex;align-items:center;justify-content:center;color:var(--gold);margin:0 auto 20px;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="square" class="pixel-render"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
                 </div>
-            </template>
-        </div>
+                <h1 class="px-heading">Customer <span class="gold">Support</span></h1>
+                <p style="font-family:var(--font-sans);font-size:14px;color:var(--text-dim);max-width:480px;margin:12px auto 0;line-height:1.7;">Have a question or facing an issue? Send us a message and we'll get back to you.</p>
+            </div>
+            <div class="px-divider"><div class="px-divider-dot"></div><div class="px-divider-line"></div><div class="px-divider-dot"></div></div>
 
-        <!-- FAQ Link -->
-        <div class="text-center">
-            <p class="text-xs font-bold text-muted-foreground uppercase tracking-widest">
-                Quick answer? Check our <a href="{{ route('faq') }}" class="text-primary hover:underline">Frequently Asked Questions</a>
+            {{-- Form / Success --}}
+            <div class="px-card-static" style="padding:32px;max-width:640px;margin:0 auto;">
+                <template x-if="!submitted">
+                    <form @submit.prevent="submitForm" style="display:flex;flex-direction:column;gap:20px;">
+                        <div style="display:flex;flex-direction:column;gap:6px;">
+                            <label style="font-family:var(--px);font-size:6px;letter-spacing:0.12em;color:var(--text-dim);">YOUR EMAIL ADDRESS</label>
+                            <input type="email" x-model="email" required placeholder="email@example.com" class="px-input" style="padding:14px 18px;font-size:13px;">
+                        </div>
+                        <div style="display:flex;flex-direction:column;gap:6px;">
+                            <label style="font-family:var(--px);font-size:6px;letter-spacing:0.12em;color:var(--text-dim);">HOW CAN WE HELP?</label>
+                            <textarea x-model="message" required rows="5" placeholder="Describe your issue..." class="px-input" style="padding:14px 18px;font-size:13px;resize:none;"></textarea>
+                        </div>
+                        <button type="submit" class="px-btn-gold" style="width:100%;padding:18px;font-size:8px;display:flex;align-items:center;justify-content:center;gap:8px;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="square"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>
+                            SEND MESSAGE
+                        </button>
+                    </form>
+                </template>
+
+                <template x-if="submitted">
+                    <div style="text-align:center;padding:24px 0;display:flex;flex-direction:column;align-items:center;gap:16px;">
+                        <div style="width:64px;height:64px;background:rgba(34,197,94,0.15);border:3px solid #22c55e;display:flex;align-items:center;justify-content:center;color:#22c55e;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="square"><polyline points="20 6 9 17 4 12"/></svg>
+                        </div>
+                        <h2 style="font-family:var(--font-sans);font-size:20px;font-weight:800;color:#e8f0ff;">Message Sent Successfully!</h2>
+                        <p style="font-family:var(--font-sans);font-size:13px;color:var(--text-dim);max-width:360px;line-height:1.6;">Thank you for reaching out. We have received your inquiry and our team is already on it.</p>
+                        <div style="background:var(--dark-card2);border:2px solid var(--dark-line);padding:14px;width:100%;max-width:320px;">
+                            <p style="font-family:var(--px);font-size:6px;letter-spacing:0.12em;color:var(--gold);margin-bottom:6px;">NEXT STEP</p>
+                            <p style="font-family:var(--font-sans);font-size:12px;color:var(--text-dim);line-height:1.6;">Check your email <span style="color:var(--gold);font-weight:800;" x-text="email"></span> regularly. We usually respond within 24 hours.</p>
+                        </div>
+                        <button @click="submitted = false; message = ''" style="font-family:var(--px);font-size:6px;color:var(--text-dim);cursor:pointer;background:none;border:none;letter-spacing:0.1em;" onmouseover="this.style.color='var(--gold)'" onmouseout="this.style.color='var(--text-dim)'">SEND ANOTHER MESSAGE</button>
+                    </div>
+                </template>
+            </div>
+
+            {{-- FAQ Link --}}
+            <p style="text-align:center;font-family:var(--px);font-size:6px;color:var(--text-dim);letter-spacing:0.1em;">
+                QUICK ANSWER? CHECK OUR <a href="{{ route('faq') }}" style="color:var(--gold);text-decoration:underline;">FAQ</a>
             </p>
         </div>
     </div>
+
+    <script>
+    function ticketsPage() {
+        return {
+            submitted: false,
+            email: '',
+            message: '',
+            submitForm() {
+                if (this.email && this.message) {
+                    this.submitted = true;
+                }
+            }
+        };
+    }
+    </script>
 </x-app-layout>
