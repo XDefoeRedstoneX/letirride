@@ -383,22 +383,107 @@ button,
   box-sizing: border-box;
 }
 
-/* ── Pixel Border Utilities ──────────────────────────────────── */
-.px-border {
-  border: 3px solid var(--gold);
-  box-shadow: 4px 4px 0 var(--gold-dim);
+/* ── Pixel Frame (8-piece border) ────────────────────────────── */
+:root {
+  --frame-size: 64px;
+  /* Rendered size of the frame border */
+  --bg-scale: 250%;
+  /* Math: 80px canvas / 32px actual art = 250% crop factor */
+  --edge-bg-size: calc(var(--frame-size) * 2.5);
 }
 
-.px-border-sm {
-  border: 2px solid var(--gold);
-  box-shadow: 3px 3px 0 var(--gold-dim);
+.px-frame {
+  display: grid;
+  grid-template-columns: var(--frame-size) 1fr var(--frame-size);
+  grid-template-rows: var(--frame-size) auto var(--frame-size);
+  border: none !important;
+  box-shadow: none !important;
+  background: transparent;
+  padding: 0;
 }
 
-.px-border-cyan {
-  border: 2px solid var(--cyan);
-  box-shadow: 3px 3px 0 rgba(0, 212, 255, 0.3);
+/* corners & edges — crisp pixel rendering */
+.px-frame-tl,
+.px-frame-tr,
+.px-frame-bl,
+.px-frame-br,
+.px-frame-t,
+.px-frame-b,
+.px-frame-l,
+.px-frame-r {
+  image-rendering: pixelated;
 }
 
+.px-frame-tl {
+  grid-column: 1;
+  grid-row: 1;
+  width: var(--frame-size);
+  height: var(--frame-size);
+  background: url('../images/frame/top-l.png') no-repeat left top / var(--bg-scale) var(--bg-scale);
+}
+
+.px-frame-tr {
+  grid-column: 3;
+  grid-row: 1;
+  width: var(--frame-size);
+  height: var(--frame-size);
+  background: url('../images/frame/top-r.png') no-repeat right top / var(--bg-scale) var(--bg-scale);
+}
+
+.px-frame-bl {
+  grid-column: 1;
+  grid-row: 3;
+  width: var(--frame-size);
+  height: var(--frame-size);
+  background: url('../images/frame/bot-l.png') no-repeat left bottom / var(--bg-scale) var(--bg-scale);
+}
+
+.px-frame-br {
+  grid-column: 3;
+  grid-row: 3;
+  width: var(--frame-size);
+  height: var(--frame-size);
+  background: url('../images/frame/bot-r.png') no-repeat right bottom / var(--bg-scale) var(--bg-scale);
+}
+
+/* edges — crop empty space cross-axis, repeat main-axis */
+.px-frame-t {
+  grid-column: 2;
+  grid-row: 1;
+  height: var(--frame-size);
+  background: url('../images/frame/edge-t.png') repeat-x left top / auto var(--edge-bg-size);
+}
+
+.px-frame-b {
+  grid-column: 2;
+  grid-row: 3;
+  height: var(--frame-size);
+  background: url('../images/frame/edge-b.png') repeat-x left bottom / auto var(--edge-bg-size);
+}
+
+.px-frame-l {
+  grid-column: 1;
+  grid-row: 2;
+  width: var(--frame-size);
+  background: url('../images/frame/edge-l.png') repeat-y left top / var(--edge-bg-size) auto;
+}
+
+.px-frame-r {
+  grid-column: 3;
+  grid-row: 2;
+  width: var(--frame-size);
+  background: url('../images/frame/edge-r.png') repeat-y right top / var(--edge-bg-size) auto;
+}
+
+/* content — center cell */
+.px-frame-content {
+  grid-column: 2;
+  grid-row: 2;
+  background: var(--dark-card, #08152a);
+  min-width: 0;
+}
+
+/* keep old fallback classes for product cards */
 .px-border-card {
   border: 3px solid var(--dark-line);
   box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.5);
@@ -414,33 +499,35 @@ button,
 /* ── Hero Section ─────────────────────────────────────────────── */
 .hero-section {
   position: relative;
-  width: 100vw;
-  margin-left: calc(-50vw + 50%);
-  height: 400px;
-}
-
-.hero-bg-img {
-  position: absolute;
-  inset: 0;
   width: 100%;
-  height: 100%;
-  object-fit: cover;
-  z-index: 1;
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 16px 16px 0;
 }
 
-.hero-frame-wrap {
-  position: absolute;
-  inset: 0;
-  z-index: 2;
+.hero-frame-grid {
+  display: grid;
+  grid-template-columns: var(--frame-size) 1fr var(--frame-size);
+  grid-template-rows: var(--frame-size) 1fr var(--frame-size);
+  aspect-ratio: 3.5 / 1;
+  width: 100%;
+}
+
+.hero-frame-grid .px-frame-tl,
+.hero-frame-grid .px-frame-tr,
+.hero-frame-grid .px-frame-bl,
+.hero-frame-grid .px-frame-br,
+.hero-frame-grid .px-frame-t,
+.hero-frame-grid .px-frame-b,
+.hero-frame-grid .px-frame-l,
+.hero-frame-grid .px-frame-r {
+  image-rendering: pixelated;
 }
 
 .hero-frame-content {
-  position: absolute;
-  top: var(--hero-hole-top);
-  left: var(--hero-hole-left);
-  width: var(--hero-hole-w);
-  height: var(--hero-hole-h);
-  z-index: 2;
+  grid-column: 2;
+  grid-row: 2;
+  position: relative;
   overflow: hidden;
   background: var(--dark-bg);
 }
@@ -450,18 +537,26 @@ button,
   inset: 0;
   width: 100%;
   height: 100%;
-  object-fit: fill;
+  object-fit: contain;
   display: block;
 }
 
-.hero-frame-sprite {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  z-index: 3;
+.hero-frameplate {
+  display: flex;
+  justify-content: center;
+  margin-top: calc(var(--frame-size) * -1);
+  /* Math to mount on the bottom edge */
+  position: relative;
+  z-index: 4;
+}
+
+.hero-frameplate img {
+  height: 80px;
+  /* 4x scale of native 20px height */
   image-rendering: pixelated;
   image-rendering: crisp-edges;
+  filter: drop-shadow(0 8px 0 rgba(0, 0, 0, 0.5));
+  /* add shadow to look mounted */
 }
 
 /* ── Page Layout ──────────────────────────────────────────────── */
@@ -1184,7 +1279,7 @@ button,
 .px-card {
   background: var(--dark-card);
   border: 3px solid var(--dark-line);
-  box-shadow: 4px 4px 0 rgba(0,0,0,0.5);
+  box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.5);
   transition: all 0.15s ease;
 }
 
@@ -1197,7 +1292,7 @@ button,
 .px-card-static {
   background: var(--dark-card);
   border: 3px solid var(--dark-line);
-  box-shadow: 4px 4px 0 rgba(0,0,0,0.5);
+  box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.5);
 }
 
 /* ── Headings ─────────────────────────────────────────────────── */
@@ -1210,7 +1305,9 @@ button,
   line-height: 1.1;
 }
 
-.px-heading .gold { color: var(--gold); }
+.px-heading .gold {
+  color: var(--gold);
+}
 
 .px-subheading {
   font-family: var(--px);
@@ -1234,32 +1331,32 @@ button,
 }
 
 .px-badge-gold {
-  background: rgba(245,158,11,0.15);
-  border: 2px solid rgba(245,158,11,0.3);
+  background: rgba(245, 158, 11, 0.15);
+  border: 2px solid rgba(245, 158, 11, 0.3);
   color: var(--gold);
 }
 
 .px-badge-green {
-  background: rgba(34,197,94,0.1);
-  border: 2px solid rgba(34,197,94,0.25);
+  background: rgba(34, 197, 94, 0.1);
+  border: 2px solid rgba(34, 197, 94, 0.25);
   color: #22c55e;
 }
 
 .px-badge-red {
-  background: rgba(239,68,68,0.1);
-  border: 2px solid rgba(239,68,68,0.25);
+  background: rgba(239, 68, 68, 0.1);
+  border: 2px solid rgba(239, 68, 68, 0.25);
   color: #ef4444;
 }
 
 .px-badge-blue {
-  background: rgba(59,130,246,0.1);
-  border: 2px solid rgba(59,130,246,0.25);
+  background: rgba(59, 130, 246, 0.1);
+  border: 2px solid rgba(59, 130, 246, 0.25);
   color: #3b82f6;
 }
 
 .px-badge-amber {
-  background: rgba(245,158,11,0.1);
-  border: 2px solid rgba(245,158,11,0.25);
+  background: rgba(245, 158, 11, 0.1);
+  border: 2px solid rgba(245, 158, 11, 0.25);
   color: #f59e0b;
 }
 
@@ -1301,7 +1398,7 @@ button,
   background: var(--dark-card2);
   color: #e8f0ff;
   border: 2px solid var(--dark-line);
-  box-shadow: 3px 3px 0 rgba(0,0,0,0.4);
+  box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.4);
   padding: 12px 20px;
   cursor: pointer;
   text-transform: uppercase;
@@ -1312,22 +1409,22 @@ button,
   border-color: var(--gold);
   color: var(--gold);
   transform: translate(-1px, -1px);
-  box-shadow: 4px 4px 0 rgba(0,0,0,0.5);
+  box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.5);
 }
 
 .px-btn-ghost:active {
   transform: translate(2px, 2px);
-  box-shadow: 1px 1px 0 rgba(0,0,0,0.4);
+  box-shadow: 1px 1px 0 rgba(0, 0, 0, 0.4);
 }
 
 .px-btn-danger {
   font-family: var(--px);
   font-size: 7px;
   letter-spacing: 0.1em;
-  background: rgba(239,68,68,0.15);
+  background: rgba(239, 68, 68, 0.15);
   color: #ef4444;
-  border: 2px solid rgba(239,68,68,0.3);
-  box-shadow: 3px 3px 0 rgba(239,68,68,0.15);
+  border: 2px solid rgba(239, 68, 68, 0.3);
+  box-shadow: 3px 3px 0 rgba(239, 68, 68, 0.15);
   padding: 12px 20px;
   cursor: pointer;
   text-transform: uppercase;
@@ -1380,12 +1477,12 @@ button,
 .px-accordion {
   background: var(--dark-card);
   border: 3px solid var(--dark-line);
-  box-shadow: 4px 4px 0 rgba(0,0,0,0.5);
+  box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.5);
   transition: border-color 0.15s;
 }
 
 .px-accordion:hover {
-  border-color: rgba(245,158,11,0.3);
+  border-color: rgba(245, 158, 11, 0.3);
 }
 
 .px-accordion-btn {
@@ -1420,7 +1517,7 @@ button,
 .px-stat-card {
   background: var(--dark-card);
   border: 3px solid var(--dark-line);
-  box-shadow: 4px 4px 0 rgba(0,0,0,0.5);
+  box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.5);
   padding: 20px;
 }
 
@@ -1440,7 +1537,9 @@ button,
   margin-top: 4px;
 }
 
-.px-stat-card .stat-value .gold { color: var(--gold); }
+.px-stat-card .stat-value .gold {
+  color: var(--gold);
+}
 
 /* ── Empty State ──────────────────────────────────────────────── */
 .px-empty-state {
@@ -1502,7 +1601,7 @@ button,
   align-items: center;
   justify-content: center;
   padding: 16px;
-  background: rgba(0,0,0,0.85);
+  background: rgba(0, 0, 0, 0.85);
 }
 
 .px-modal-box {
@@ -1530,8 +1629,8 @@ button,
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(245,158,11,0.1);
-  border: 2px solid rgba(245,158,11,0.25);
+  background: rgba(245, 158, 11, 0.1);
+  border: 2px solid rgba(245, 158, 11, 0.25);
   color: var(--gold);
 }
 

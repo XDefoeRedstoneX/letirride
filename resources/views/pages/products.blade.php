@@ -1,21 +1,22 @@
 <x-app-layout>
 
-{{-- ── Hero Section ─────────────────────────────────────────────── --}}
+{{-- ── Hero Billboard ──────────────────────────────────────────── --}}
 <section class="hero-section" aria-label="Hero banner">
+    <div class="hero-frame-grid">
+        {{-- Frame border pieces --}}
+        <div class="px-frame-tl"></div>
+        <div class="px-frame-t"></div>
+        <div class="px-frame-tr"></div>
+        <div class="px-frame-l"></div>
 
-    {{-- Layer 1: Background city skyline --}}
-    <img class="hero-bg-img pixel-render" src="" alt="" aria-hidden="true">
-
-    {{-- Layer 2 + 3: NEWS FLASH frame (centered) --}}
-    <div class="hero-frame-wrap">
-
-        {{-- Layer 2: News content — shown through the transparent hole --}}
+        {{-- News slideshow inside the frame --}}
         <div class="hero-frame-content"
              x-data="{
                  imgs: [
                      '{{ asset('news/1.jpg') }}',
                      '{{ asset('news/2.jpg') }}',
                      '{{ asset('news/3.jpg') }}',
+                     '{{ asset('news/4.jpg') }}',
                  ],
                  i: 0,
                  init() {
@@ -32,14 +33,16 @@
             </template>
         </div>
 
-        {{-- Layer 3: Pixel frame sprite on top --}}
-        <img src="{{ asset('components/frame.png') }}"
-             class="hero-frame-sprite pixel-render"
-             aria-hidden="true"
-             alt="">
-
+        <div class="px-frame-r"></div>
+        <div class="px-frame-bl"></div>
+        <div class="px-frame-b"></div>
+        <div class="px-frame-br"></div>
     </div>
 
+    {{-- Frameplate label below the banner --}}
+    <div class="hero-frameplate">
+        <img src="{{ asset('components/frame/frameplate.png') }}" alt="RIDLY NEWS" class="pixel-render">
+    </div>
 </section>
 
 {{-- ── Main Products Page ──────────────────────────────────────── --}}
@@ -200,33 +203,43 @@
          x-transition:leave-end="opacity-0">
 
         <div @click.away="showCartModal = false"
-             class="modal-box px-border"
+             class="px-frame"
+             style="max-width: 480px; width: 100%;"
              x-transition:enter="transition ease-out duration-200"
              x-transition:enter-start="opacity-0 scale-95"
              x-transition:enter-end="opacity-100 scale-100">
 
-            {{-- Header --}}
-            <div class="modal-header">
-                <div>
-                    <h2 class="modal-title" x-text="selectedProduct?.name"></h2>
-                    <p class="modal-cat" x-text="selectedProduct?.category"></p>
+            {{-- Frame border pieces --}}
+            <div class="px-frame-tl"></div>
+            <div class="px-frame-t"></div>
+            <div class="px-frame-tr"></div>
+            <div class="px-frame-l"></div>
+
+            {{-- Content inside the frame --}}
+            <div class="px-frame-content" style="padding: 24px; display: flex; flex-direction: column; gap: 16px;">
+
+                {{-- Header --}}
+                <div class="modal-header">
+                    <div>
+                        <h2 class="modal-title" x-text="selectedProduct?.name"></h2>
+                        <p class="modal-cat" x-text="selectedProduct?.category"></p>
+                    </div>
+                    <button @click="showCartModal = false" class="modal-close" title="Close">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+                             fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="square">
+                            <path d="M18 6 6 18"/><path d="m6 6 12 12"/>
+                        </svg>
+                    </button>
                 </div>
-                <button @click="showCartModal = false" class="modal-close" title="Close">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
-                         fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="square">
-                        <path d="M18 6 6 18"/><path d="m6 6 12 12"/>
-                    </svg>
-                </button>
-            </div>
 
-            {{-- Product Image --}}
-            <div class="modal-img-wrap">
-                <img :src="selectedProduct?.image" :alt="selectedProduct?.name">
-            </div>
+                {{-- Product Image --}}
+                <div class="modal-img-wrap">
+                    <img :src="selectedProduct?.image" :alt="selectedProduct?.name">
+                </div>
 
-            {{-- Direct Top-Up Fields --}}
-            <template x-if="selectedProduct?.product_type === 'direct_topup'">
-                <div class="modal-topup-box">
+                {{-- Direct Top-Up Fields --}}
+                <template x-if="selectedProduct?.product_type === 'direct_topup'">
+                    <div class="modal-topup-box">
                     <div class="topup-heading">
                         <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
                              fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="square">
@@ -280,10 +293,16 @@
                 <button @click="buyNow()" class="modal-btn-primary">
                     BUY NOW
                 </button>
-            </div>
+                </div>
 
-        </div>
-    </div>
+            </div>{{-- /px-frame-content --}}
+
+            <div class="px-frame-r"></div>
+            <div class="px-frame-bl"></div>
+            <div class="px-frame-b"></div>
+            <div class="px-frame-br"></div>
+        </div>{{-- /px-frame --}}
+    </div>{{-- /modal overlay --}}
 
 </div>{{-- /ridly-products --}}
 
