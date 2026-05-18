@@ -5,11 +5,8 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-<<<<<<< HEAD
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use App\Models\Subcategory;
-=======
->>>>>>> 21ff44bd863032902fc1f40bd815d9c0190a7dda
 
 #[Fillable(['category_id', 'type', 'name', 'description', 'price', 'point_multiplier', 'image', 'img', 'is_active'])]
 class Product extends Model
