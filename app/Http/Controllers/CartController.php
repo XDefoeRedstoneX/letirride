@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\CartItem;
-use App\Models\Order;
 use App\Models\Product;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -52,19 +51,12 @@ class CartController extends Controller
                 'target_category_name' => $ud->discountType->targetCategory?->name,
             ]);
 
-        $pendingOrder = Order::where('user_id', Auth::id())
-            ->where('status', 'pending')
-            ->latest()
-            ->first(['id', 'noinv']);
-
         return view('pages.cart', [
             'cartItems' => $cartItems,
             'userDiscounts' => $userDiscounts,
             'midtransClientKey' => config('midtrans.client_key'),
-            'pendingOrder' => $pendingOrder,
         ]);
     }
-
 
     public function store(Request $request, Product $product): JsonResponse
     {

@@ -25,6 +25,7 @@ class CartItem extends Model
     protected function casts(): array
     {
         return [
+            'user_id' => 'integer',
             'quantity' => 'integer',
             'topup_meta' => 'array',
         ];

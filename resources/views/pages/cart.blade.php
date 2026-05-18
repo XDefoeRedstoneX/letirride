@@ -8,7 +8,7 @@
         selectedDiscount: null,
         topupCredentials: {},
         paying: false,
-        pendingOrder: {{Js::from($pendingOrder ?? null) }},
+
         csrfToken: '{{ csrf_token() }}',
         midtransClientKey: '{{ $midtransClientKey ?? '' }}',
 
@@ -135,18 +135,7 @@
                 const data = await response.json();
 
                 if (!response.ok) {
-                    // Bug 1: Handle pending order block
-                    if (response.status === 422 && data.order_id) {
-                        window.dispatchEvent(new CustomEvent('show-toast', {
-                            detail: {
-                                message: data.message + ' <a href=\'/checkout/finish/' + data.order_id + '\' class=\'underline font-black\'>View Order</a>',
-                                type: 'warning',
-                                duration: 8000
-                            }
-                        }));
-                    } else {
-                        window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: data.message || 'Checkout failed.', type: 'error' } }));
-                    }
+                    window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: data.message || 'Checkout failed.', type: 'error' } }));
                     this.paying = false;
                     return;
                 }
@@ -325,19 +314,7 @@
                         </div>
                     </div>
 
-                    <!-- Pending order warning -->
-                    <template x-if="pendingOrder">
-                        <div class="bg-amber-500/10 border border-amber-500/20 rounded-xl p-4 space-y-2">
-                            <div class="flex items-center gap-2 text-amber-500">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                                <span class="text-[9px] font-black uppercase tracking-widest">Pending Order</span>
-                            </div>
-                            <p class="text-[10px] font-bold text-amber-400">Complete or cancel your pending order before placing a new one.</p>
-                            <a :href="'/checkout/finish/' + pendingOrder.id" class="inline-block mt-1 px-4 py-2 bg-amber-500 text-white rounded-lg text-[9px] font-black uppercase tracking-widest hover:bg-amber-600 transition-colors">View Pending Order</a>
-                        </div>
-                    </template>
-
-                    <button @click="pay()" :disabled="items.length === 0 || paying || pendingOrder"
+                    <button @click="pay()" :disabled="items.length === 0 || paying"
                             class="w-full py-5 bg-primary text-primary-foreground font-black rounded-2xl hover:scale-105 active:scale-95 transition-all shadow-xl shadow-primary/20 uppercase tracking-widest text-xs flex items-center justify-center gap-3 disabled:opacity-50 disabled:hover:scale-100">
                         <template x-if="paying">
                             <svg class="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -345,7 +322,7 @@
                                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                             </svg>
                         </template>
-                        <span x-text="paying ? 'Processing...' : (pendingOrder ? 'Complete Pending Order' : 'Pay Now')"></span>
+                        <span x-text="paying ? 'Processing...' : 'Pay Now'"></span>
                     </button>
 
                     <p class="text-[8px] font-black text-center text-muted-foreground uppercase tracking-widest">Secure encrypted checkout via Midtrans</p>

@@ -58,18 +58,6 @@ class CheckoutController extends Controller
         ]);
 
         $user = Auth::user();
-        $existingPending = Order::where('user_id', $user->id)
-            ->where('status', 'pending')
-            ->latest()
-            ->first();
-
-        if ($existingPending) {
-            return response()->json([
-                'message' => 'You have a pending transaction. Please complete or cancel it before placing a new order.',
-                'order_id' => $existingPending->id,
-                'invoice' => $existingPending->noinv,
-            ], 422);
-        }
 
         $cartItems = CartItem::with('product')->where('user_id', $user->id)->get();
 
@@ -200,6 +188,7 @@ class CheckoutController extends Controller
             $midtransOrderId = $invoiceId.'::'.time();
 
             // Generate Midtrans Snap token with discounted total
+            $finishUrl = route('checkout.finish', $order->id);
             $params = [
                 'transaction_details' => [
                     'order_id' => $midtransOrderId,
@@ -209,6 +198,9 @@ class CheckoutController extends Controller
                 'customer_details' => [
                     'first_name' => $user->name,
                     'email' => $user->email,
+                ],
+                'callbacks' => [
+                    'finish' => $finishUrl,
                 ],
             ];
 
