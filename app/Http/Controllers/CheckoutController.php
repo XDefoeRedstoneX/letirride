@@ -326,7 +326,11 @@ class CheckoutController extends Controller
                 ->update(['is_used' => true]);
         }
 
-        $totalPointsAwarded = 0;
+        $totalPointsAwarded = 0.0;
+
+        $orderSubtotal = (float) $order->subtotal;
+        $orderTotal = (float) $order->total_price_after_discount;
+        $discountRatio = $orderSubtotal > 0 ? ($orderTotal / $orderSubtotal) : 1.0;
 
         foreach ($order->orderDetails as $detail) {
             $product = Product::find($detail->product_id);
@@ -346,13 +350,19 @@ class CheckoutController extends Controller
                 ]);
             }
 
+            // Calculate final fiat price for this specific item (accounting for order-level discounts)
+            $itemOriginalPrice = (float) $detail->total_price_in_cart;
+            $itemFinalPrice = $itemOriginalPrice * $discountRatio;
+
             // Award points
-            $totalPointsAwarded += ($product->point_reward ?? 0) * $detail->quantity;
+            $totalPointsAwarded += $product->calculatePoints($itemFinalPrice);
         }
 
+        $finalPoints = (int) floor($totalPointsAwarded);
+
         // Credit points to user
-        if ($totalPointsAwarded > 0) {
-            $order->user()->increment('points_balance', $totalPointsAwarded);
+        if ($finalPoints > 0) {
+            $order->user()->increment('points_balance', $finalPoints);
         }
     }
 

@@ -40,18 +40,25 @@ class InventoryController extends Controller
             ->whereHas('product', fn ($q) => $q->where('type', 'direct_topup'))
             ->orderByDesc('order_id')
             ->get()
-            ->map(fn (OrderDetail $detail) => [
-                'name' => $detail->product->name,
-                'code' => null,
-                'item_type' => 'direct_topup',
-                'type' => 'Product',
-                'date' => $detail->order?->created_at?->format('Y-m-d') ?? '-',
-                'image' => '/products/'.ltrim($detail->product->image ?: 'soundcloud.svg', '/'),
-                'topup_status' => $detail->topupCredential?->topup_status ?? 'pending',
-                'player_id' => $detail->topupCredential?->player_id,
-                'zone_id' => $detail->topupCredential?->zone_id,
-                'server_id' => $detail->topupCredential?->server_id,
-            ]);
+            ->flatMap(function (OrderDetail $detail) {
+                $items = [];
+                for ($i = 0; $i < $detail->quantity; $i++) {
+                    $items[] = [
+                        'name' => $detail->product->name,
+                        'code' => null,
+                        'item_type' => 'direct_topup',
+                        'type' => 'Product',
+                        'date' => $detail->order?->created_at?->format('Y-m-d') ?? '-',
+                        'image' => '/products/'.ltrim($detail->product->image ?: 'soundcloud.svg', '/'),
+                        'topup_status' => $detail->topupCredential?->topup_status ?? 'pending',
+                        'player_id' => $detail->topupCredential?->player_id,
+                        'zone_id' => $detail->topupCredential?->zone_id,
+                        'server_id' => $detail->topupCredential?->server_id,
+                    ];
+                }
+
+                return $items;
+            });
 
         // Active discount vouchers
         $vouchers = UserDiscount::with('discountType')

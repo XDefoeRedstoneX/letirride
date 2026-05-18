@@ -148,6 +148,10 @@
             </div>
             <h1 class="text-3xl font-black tracking-tighter uppercase">Payment <span class="text-primary">Successful!</span></h1>
             <p class="text-muted-foreground text-xs font-bold uppercase tracking-widest">Your digital codes are now in your inventory.</p>
+            
+            <div class="inline-block mt-4 px-6 py-2 bg-primary/10 border border-primary/20 rounded-xl">
+                <p class="text-primary font-black text-sm uppercase tracking-widest">+ {{ number_format($order->calculateTotalPointsAwarded(), 0, ',', '.') }} Points Earned</p>
+            </div>
         </div>
         @elseif($order->status === 'pending')
         <!-- Pending -->

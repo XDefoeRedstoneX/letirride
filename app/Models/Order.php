@@ -47,6 +47,31 @@ class Order extends Model
             : $this->noinv;
     }
 
+    /**
+     * Calculates the total points awarded for this order based on dynamic point multipliers.
+     */
+    public function calculateTotalPointsAwarded(): int
+    {
+        $totalPointsAwarded = 0.0;
+        $orderSubtotal = (float) $this->subtotal;
+        $orderTotal = (float) $this->total_price_after_discount;
+        $discountRatio = $orderSubtotal > 0 ? ($orderTotal / $orderSubtotal) : 1.0;
+
+        foreach ($this->orderDetails as $detail) {
+            $product = $detail->product;
+            if (! $product) {
+                continue;
+            }
+
+            $itemOriginalPrice = (float) $detail->total_price_in_cart;
+            $itemFinalPrice = $itemOriginalPrice * $discountRatio;
+
+            $totalPointsAwarded += $product->calculatePoints($itemFinalPrice);
+        }
+
+        return (int) floor($totalPointsAwarded);
+    }
+
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);

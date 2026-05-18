@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-#[Fillable(['category_id', 'type', 'name', 'description', 'price', 'point_reward', 'image', 'img', 'is_active'])]
+#[Fillable(['category_id', 'type', 'name', 'description', 'price', 'point_multiplier', 'image', 'img', 'is_active'])]
 class Product extends Model
 {
     public $timestamps = false;
@@ -15,8 +15,19 @@ class Product extends Model
     {
         return [
             'price' => 'decimal:2',
+            'point_multiplier' => 'decimal:2',
             'is_active' => 'boolean',
         ];
+    }
+
+    /**
+     * Calculate points based on the final fiat price and the product's point multiplier.
+     * 1 point per Rp 1,000 spent.
+     */
+    public function calculatePoints(float $finalPrice): float
+    {
+        // Calculate dynamic points and handle potential floating point inaccuracies
+        return ($finalPrice / 1000.0) * (float) $this->point_multiplier;
     }
 
     public function isVoucher(): bool
