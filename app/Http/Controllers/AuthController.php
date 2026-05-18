@@ -6,6 +6,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
@@ -47,14 +48,18 @@ class AuthController extends Controller
         if (Auth::attempt($creds)) {
             $request->session()->regenerate();
 
+            $redirect = Auth::user()->isAdmin()
+                ? route('admin.dashboard')
+                : route('home');
+
             if ($request->expectsJson()) {
                 return response()->json([
                     'message' => 'Login successful.',
-                    'redirect' => route('home'),
+                    'redirect' => $redirect,
                 ]);
             }
 
-            return redirect()->intended(route('home'));
+            return redirect()->intended($redirect);
         }
 
         if ($request->expectsJson()) {
@@ -92,14 +97,18 @@ class AuthController extends Controller
             Auth::login($user);
             $request->session()->regenerate();
 
+            $redirect = Auth::user()->isAdmin()
+                ? route('admin.dashboard')
+                : route('home');
+
             if ($request->expectsJson()) {
                 return response()->json([
                     'message' => 'Registration successful! Welcome to Ridly.',
-                    'redirect' => route('home'),
+                    'redirect' => $redirect,
                 ], 200);
             }
 
-            return redirect()->route('home')->with('success', 'Registration successful! Welcome to Ridly.');
+            return redirect()->to($redirect)->with('success', 'Registration successful! Welcome to Ridly.');
         } catch (ValidationException $e) {
             if ($request->expectsJson()) {
                 return response()->json([
@@ -168,5 +177,33 @@ class AuthController extends Controller
                 'name' => Auth::user()->name,
             ], 200);
         }
+    }
+
+    public function updateProfilePicture(Request $request)
+    {
+        $request->validate([
+            'avatar' => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+        ]);
+
+        $user = Auth::user();
+
+        // Delete old picture if exists
+        if ($user->profile_picture) {
+            Storage::disk('public')->delete($user->profile_picture);
+        }
+
+        // Store new picture
+        $path = $request->file('avatar')->store('avatars', 'public');
+
+        $user->update(['profile_picture' => $path]);
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'message' => 'Profile picture updated successfully.',
+                'avatar_url' => $user->avatar_url,
+            ]);
+        }
+
+        return back()->with('success', 'Profile picture updated successfully!');
     }
 }

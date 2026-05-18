@@ -29,7 +29,7 @@ class TransactionController extends Controller
                     'amount' => $order->total_price_after_discount,
                     'status' => strtoupper($order->status),
                     'date' => $order->created_at?->format('M d, Y') ?? '-',
-                    'image' => '/products/'.ltrim($firstDetail?->product?->image ?: 'soundcloud.svg', '/'),
+                    'image' => '/products/'.ltrim($firstDetail?->product?->image ?: 'soundcloud.png', '/'),
                     'order_id' => $order->id,
                     'details' => $order->orderDetails->map(fn ($d) => [
                         'product' => $d->product?->name ?? 'Unknown',

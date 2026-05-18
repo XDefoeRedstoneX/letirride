@@ -26,147 +26,177 @@
             localStorage.setItem('theme', 'light');
         }
     }
-}" class="fixed top-0 left-0 right-0 z-50 bg-background/40 backdrop-blur-xl border-b border-white/10 shadow-sm transition-all duration-300">
+}" style="position: fixed; top: 0; left: 0; right: 0; z-index: 50; background: var(--dark-bg, #050c1a); border-bottom: 3px solid var(--gold, #f59e0b); box-shadow: 0 4px 0 var(--gold-dim, #92650a);">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex items-center justify-between h-16 md:h-20">
-            <!-- Logo -->
-            <a href="/" class="flex items-center">
-                <span class="font-black text-2xl tracking-tighter leading-none text-foreground">Ridly.</span>
+        <div style="display: flex; align-items: center; justify-content: space-between; height: 56px; gap: 8px;">
+            {{-- Logo --}}
+            <a href="/" style="display: flex; align-items: center; flex-shrink: 0; text-decoration: none;">
+                <span style="font-family: var(--px, 'Press Start 2P', monospace); font-size: 16px; color: var(--gold, #f59e0b); letter-spacing: 0.05em;">RIDLY</span>
+                <span style="font-family: var(--px, 'Press Start 2P', monospace); font-size: 16px; color: #e8f0ff;">.</span>
             </a>
 
-            <!-- Desktop Navigation -->
-            <div class="hidden md:flex items-center gap-1.5 p-1.5 bg-foreground/5 rounded-2xl backdrop-blur-md">
-                <a href="{{ route('home') }}" class="flex items-center gap-2 px-4 py-2 text-xs font-black rounded-xl transition-all {{ request()->routeIs('home') ? 'bg-primary text-primary-foreground shadow-md shadow-primary/20' : 'text-foreground/70 hover:text-foreground hover:bg-white/10' }}">
-                    <span>HOME</span>
-                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="pixel-render"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-                </a>
-                <a href="{{ route('point-shop') }}" class="flex items-center gap-2 px-4 py-2 text-xs font-black rounded-xl transition-all {{ request()->routeIs('point-shop') ? 'bg-primary text-primary-foreground shadow-md shadow-primary/20' : 'text-foreground/70 hover:text-foreground hover:bg-white/10' }}">
-                    <span>POINT SHOP</span>
-                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="pixel-render"><circle cx="8" cy="8" r="6"/><path d="M18.09 10.37A6 6 0 1 1 10.34 18"/><path d="M7 6h1v4"/><path d="m16.71 13.88.7.71-2.82 2.82"/></svg>
-                </a>
-                <a href="{{ route('gacha') }}" class="flex items-center gap-2 px-4 py-2 text-xs font-black rounded-xl transition-all {{ request()->routeIs('gacha') ? 'bg-primary text-primary-foreground shadow-md shadow-primary/20' : 'text-foreground/70 hover:text-foreground hover:bg-white/10' }}">
-                    <span>CAROUSEL</span>
-                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="pixel-render"><path d="M7 11V7a5 5 0 0 1 10 0v4"/><rect width="18" height="12" x="3" y="11" rx="2"/><circle cx="12" cy="17" r="1"/></svg>
-                </a>
-                <a href="{{ route('favorites') }}" class="flex items-center gap-2 px-4 py-2 text-xs font-black rounded-xl transition-all {{ request()->routeIs('favorites') ? 'bg-primary text-primary-foreground shadow-md shadow-primary/20' : 'text-foreground/70 hover:text-foreground hover:bg-white/10' }}">
-                    <span>FAVORITES</span>
-                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="pixel-render"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
-                </a>
-                <a href="{{ route('about') }}" class="flex items-center gap-2 px-4 py-2 text-xs font-black rounded-xl transition-all {{ request()->routeIs('about') ? 'bg-primary text-primary-foreground shadow-md shadow-primary/20' : 'text-foreground/70 hover:text-foreground hover:bg-white/10' }}">
-                    <span>ABOUT US</span>
-                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="pixel-render"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg>
-                </a>
-                <a href="{{ route('faq') }}" class="flex items-center gap-2 px-4 py-2 text-xs font-black rounded-xl transition-all {{ request()->routeIs('faq') ? 'bg-primary text-primary-foreground shadow-md shadow-primary/20' : 'text-foreground/70 hover:text-foreground hover:bg-white/10' }}">
-                    <span>FAQ</span>
-                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="pixel-render"><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg>
-                </a>
-                <a href="{{ route('tickets') }}" class="flex items-center gap-2 px-4 py-2 text-xs font-black rounded-xl transition-all {{ request()->routeIs('tickets') ? 'bg-primary text-primary-foreground shadow-md shadow-primary/20' : 'text-foreground/70 hover:text-foreground hover:bg-white/10' }}">
-                    <span>SUPPORT</span>
-                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="pixel-render"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><path d="M12 7v5"/><path d="M12 16h.01"/></svg>
-                </a>
+            {{-- Desktop Navigation --}}
+            @unless(Auth::check() && Auth::user()->isAdmin())
+            <div class="hidden md:flex" style="align-items: center; gap: 4px; padding: 4px; background: var(--dark-card, #08152a); border: 2px solid var(--dark-line, #122044);">
+                @php
+                    $navItems = [
+                        ['route' => 'home', 'label' => 'HOME', 'icon' => '<path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>'],
+                        ['route' => 'point-shop', 'label' => 'SHOP', 'icon' => '<circle cx="8" cy="8" r="6"/><path d="M18.09 10.37A6 6 0 1 1 10.34 18"/><path d="M7 6h1v4"/><path d="m16.71 13.88.7.71-2.82 2.82"/>'],
+                        ['route' => 'gacha', 'label' => 'ARCADE', 'icon' => '<path d="M7 11V7a5 5 0 0 1 10 0v4"/><rect width="18" height="12" x="3" y="11" rx="2"/><circle cx="12" cy="17" r="1"/>'],
+                        ['route' => 'favorites', 'label' => 'FAVS', 'icon' => '<path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/>'],
+                        ['route' => 'about', 'label' => 'ABOUT', 'icon' => '<circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/>'],
+                        ['route' => 'faq', 'label' => 'FAQ', 'icon' => '<path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/>'],
+                        ['route' => 'tickets', 'label' => 'HELP', 'icon' => '<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><path d="M12 7v5"/><path d="M12 16h.01"/>'],
+                    ];
+                @endphp
+                @foreach($navItems as $item)
+                    <a href="{{ route($item['route']) }}"
+                       style="display: flex; align-items: center; gap: 5px; padding: 6px 10px; font-family: var(--px, 'Press Start 2P', monospace); font-size: 8px; letter-spacing: 0.08em; white-space: nowrap; text-decoration: none; transition: all 0.1s;
+                              {{ request()->routeIs($item['route']) 
+                                  ? 'background: var(--gold, #f59e0b); color: var(--dark-bg, #050c1a); box-shadow: 2px 2px 0 var(--gold-dim, #92650a);' 
+                                  : 'color: var(--text-dim, #5a7aaa);' }}"
+                       onmouseover="if(!this.classList.contains('nav-active')){this.style.color='var(--gold)';this.style.borderColor='var(--gold)';}"
+                       onmouseout="if(!this.classList.contains('nav-active')){this.style.color='var(--text-dim)';this.style.borderColor='transparent';}">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="square" stroke-linejoin="miter" class="pixel-render">{!! $item['icon'] !!}</svg>
+                        <span>{{ $item['label'] }}</span>
+                    </a>
+                @endforeach
             </div>
+            @endunless
 
-            <!-- Right Side Actions -->
-            <div class="flex items-center gap-3">
-                <!-- Theme Toggle -->
-                <button @click="toggleTheme()" class="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center hover:bg-white/10 transition-all">
-                    <svg x-show="theme === 'dark'" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="text-amber-400 pixel-render"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>
-                    <svg x-show="theme === 'light'" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="text-slate-600 pixel-render"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
-                </button>
-
+            {{-- Right side: Actions --}}
+            <div style="display: flex; align-items: center; gap: 6px; flex-shrink: 0;">
                 @auth
-                    <!-- Points Balance -->
-                    <div class="hidden sm:flex items-center gap-1.5 px-3 py-1.5 bg-yellow-500/10 border border-yellow-500/20 rounded-xl text-yellow-500">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="pixel-render"><circle cx="12" cy="12" r="10"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/></svg>
-                        <span class="text-[10px] font-black tracking-widest">{{ number_format(Auth::user()->points_balance) }}</span>
+                    @unless(Auth::user()->isAdmin())
+                    {{-- Points Balance --}}
+                    <div class="hidden sm:flex" style="align-items: center; gap: 6px; padding: 5px 10px; background: rgba(245,158,11,0.1); border: 2px solid rgba(245,158,11,0.25);">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="square" style="color: var(--gold);"><circle cx="12" cy="12" r="10"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/></svg>
+                        <span style="font-family: var(--px); font-size: 8px; color: var(--gold); letter-spacing: 0.08em;">{{ number_format(Auth::user()->points_balance) }}</span>
                     </div>
 
-                    <!-- Cart Trolley with Badge -->
-                    <a href="{{ route('cart') }}" class="relative w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center hover:bg-white/10 transition-all group">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="pixel-render"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.56-7.43H5.94"/></svg>
-                        <span x-show="cartCount > 0" x-text="cartCount" class="absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-600 text-white text-[10px] font-black rounded-full flex items-center justify-center border-2 border-background"></span>
+                    {{-- Cart --}}
+                    <a href="{{ route('cart') }}" style="position: relative; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; background: var(--dark-card2, #0c1d38); border: 2px solid var(--dark-line, #122044); color: var(--text-dim); text-decoration: none; transition: all 0.15s;"
+                       onmouseover="this.style.borderColor='var(--gold)';this.style.color='var(--gold)';"
+                       onmouseout="this.style.borderColor='var(--dark-line)';this.style.color='var(--text-dim)';">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="square"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.56-7.43H5.94"/></svg>
+                        <span x-show="cartCount > 0" x-text="cartCount"
+                              style="position: absolute; top: -6px; right: -6px; min-width: 18px; height: 18px; background: #ef4444; color: white; font-family: var(--px); font-size: 7px; display: flex; align-items: center; justify-content: center; border: 2px solid var(--dark-bg);"></span>
                     </a>
+                    @endunless
 
-                    <!-- User Dropdown (Opaque) -->
-                    <div class="relative" x-data="{ open: false }">
-                        <button @click="open = !open" class="flex items-center gap-2 p-1.5 bg-foreground/5 rounded-2xl hover:bg-foreground/10 transition-all">
-                            <div class="w-8 h-8 rounded-xl bg-primary flex items-center justify-center text-primary-foreground font-black text-xs">
-                                {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
+                    {{-- Theme Toggle --}}
+                    <button @click="toggleTheme()" style="width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; background: var(--dark-card2); border: 2px solid var(--dark-line); color: var(--text-dim); cursor: pointer; transition: all 0.15s;"
+                            onmouseover="this.style.borderColor='var(--gold)';this.style.color='var(--gold)';"
+                            onmouseout="this.style.borderColor='var(--dark-line)';this.style.color='var(--text-dim)';">
+                        <svg x-show="theme === 'dark'" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="square"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>
+                        <svg x-show="theme === 'light'" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="square"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
+                    </button>
+
+                    {{-- User Dropdown --}}
+                    <div style="position: relative;" x-data="{ open: false }">
+                        <button @click="open = !open" style="display: flex; align-items: center; gap: 8px; padding: 4px 8px; background: var(--dark-card2); border: 2px solid var(--dark-line); cursor: pointer; transition: all 0.15s;"
+                                onmouseover="this.style.borderColor='var(--gold)';"
+                                onmouseout="this.style.borderColor='var(--dark-line)';">
+                            <div style="width: 28px; height: 28px; overflow: hidden;">
+                                <img src="{{ Auth::user()->avatar_url }}" style="width: 100%; height: 100%; object-fit: cover;" alt="Avatar">
                             </div>
-                            <span class="text-xs font-black uppercase tracking-widest hidden lg:block">{{ Auth::user()->name }}</span>
-                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="pixel-render transition-transform" :class="open ? 'rotate-180' : ''"><path d="m6 9 6 6 6-6"/></svg>
+                            <span class="hidden lg:block" style="font-family: var(--px); font-size: 8px; color: #e8f0ff; letter-spacing: 0.08em;">{{ Auth::user()->name }}</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="square" style="color: var(--text-dim); transition: transform 0.2s;" :style="open ? 'transform: rotate(180deg)' : ''"><path d="m6 9 6 6 6-6"/></svg>
                         </button>
 
                         <div x-show="open" @click.away="open = false"
-                             class="absolute right-0 mt-3 w-56 menu-opaque border border-border shadow-2xl rounded-2xl overflow-hidden py-2 z-[100]"
+                             style="position: absolute; right: 0; margin-top: 8px; width: 220px; background: var(--dark-card, #08152a); border: 3px solid var(--gold, #f59e0b); box-shadow: 4px 4px 0 var(--gold-dim, #92650a); z-index: 100; padding: 6px 0;"
                              x-transition:enter="transition ease-out duration-200"
-                             x-transition:enter-start="opacity-0 scale-95 -translate-y-2"
-                             x-transition:enter-end="opacity-100 scale-100 translate-y-0">
-                            <a href="{{ route('profile') }}" class="flex items-center gap-3 px-4 py-3 text-xs font-black uppercase tracking-widest hover:bg-foreground/5 transition-colors">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="pixel-render"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                                My Profile
-                            </a>
-                            <a href="{{ route('inventory') }}" class="flex items-center gap-3 px-4 py-3 text-xs font-black uppercase tracking-widest hover:bg-foreground/5 transition-colors">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="pixel-render"><path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/></svg>
-                                Inventory
-                            </a>
-                            <a href="{{ route('transactions') }}" class="flex items-center gap-3 px-4 py-3 text-xs font-black uppercase tracking-widest hover:bg-foreground/5 transition-colors">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="pixel-render"><path d="M12 2v20"/><path d="m17 5-5-3-5 3"/><path d="m17 19-5 3-5-3"/><path d="M2 12h20"/><path d="m7 7-5 5 5 5"/><path d="m17 7 5 5-5 5"/></svg>
-                                Transactions
-                            </a>
+                             x-transition:enter-start="opacity-0 scale-95"
+                             x-transition:enter-end="opacity-100 scale-100">
+                            @unless(Auth::user()->isAdmin())
+                            @php
+                                $menuItems = [
+                                    ['route' => 'profile', 'label' => 'MY PROFILE', 'icon' => '<path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>'],
+                                    ['route' => 'inventory', 'label' => 'INVENTORY', 'icon' => '<path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/>'],
+                                    ['route' => 'transactions', 'label' => 'TRANSACTIONS', 'icon' => '<path d="M12 2v20"/><path d="m17 5-5-3-5 3"/><path d="m17 19-5 3-5-3"/><path d="M2 12h20"/><path d="m7 7-5 5 5 5"/><path d="m17 7 5 5-5 5"/>'],
+                                ];
+                            @endphp
+                            @foreach($menuItems as $mi)
+                                <a href="{{ route($mi['route']) }}" style="display: flex; align-items: center; gap: 10px; padding: 10px 16px; font-family: var(--px); font-size: 7px; letter-spacing: 0.08em; color: #e8f0ff; text-decoration: none; transition: all 0.1s;"
+                                   onmouseover="this.style.background='var(--dark-card2)';this.style.color='var(--gold)';"
+                                   onmouseout="this.style.background='transparent';this.style.color='#e8f0ff';">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="square">{!! $mi['icon'] !!}</svg>
+                                    {{ $mi['label'] }}
+                                </a>
+                            @endforeach
+                            @endunless
                             @if(Auth::user()->isAdmin())
-                                <a href="{{ route('admin.dashboard') }}" class="flex items-center gap-3 px-4 py-3 text-xs font-black uppercase tracking-widest text-primary hover:bg-primary/5 transition-colors">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="pixel-render"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg>
-                                    Admin Panel
+                                <a href="{{ route('admin.dashboard') }}" style="display: flex; align-items: center; gap: 10px; padding: 10px 16px; font-family: var(--px); font-size: 7px; letter-spacing: 0.08em; color: var(--gold); text-decoration: none; transition: all 0.1s;"
+                                   onmouseover="this.style.background='var(--dark-card2)';"
+                                   onmouseout="this.style.background='transparent';">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="square"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg>
+                                    ADMIN PANEL
                                 </a>
                             @endif
-                            <div class="h-px bg-border my-1"></div>
+                            <div style="height: 2px; background: var(--dark-line); margin: 4px 0;"></div>
                             <form method="POST" action="{{ route('logout') }}">
                                 @csrf
-                                <button type="submit" class="w-full flex items-center gap-3 px-4 py-3 text-xs font-black uppercase tracking-widest text-destructive hover:bg-destructive/5 transition-colors">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="pixel-render"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/></svg>
-                                    Sign Out
+                                <button type="submit" style="display: flex; align-items: center; gap: 10px; padding: 10px 16px; font-family: var(--px); font-size: 7px; letter-spacing: 0.08em; color: #ef4444; cursor: pointer; background: none; border: none; width: 100%; text-align: left; transition: all 0.1s;"
+                                        onmouseover="this.style.background='rgba(239,68,68,0.1)';"
+                                        onmouseout="this.style.background='transparent';">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="square"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/></svg>
+                                    SIGN OUT
                                 </button>
                             </form>
                         </div>
                     </div>
                 @else
-                    <div class="flex items-center gap-1">
-                        <button @click="$dispatch('open-auth-modal', { tab: 'login' })" class="px-3 py-1.5 text-sm font-medium hover:bg-accent rounded-md">
-                            Login
-                        </button>
-                        <button @click="$dispatch('open-auth-modal', { tab: 'signup' })" class="px-3 py-1.5 text-sm font-medium bg-primary text-primary-foreground rounded-md hover:opacity-90">
-                            Sign Up
-                        </button>
-                    </div>
+                    {{-- Guest: Login / Signup --}}
+                    <button @click="$dispatch('open-auth-modal', { tab: 'login' })"
+                            class="modal-btn-secondary" style="padding: 8px 14px; font-size: 7px;">
+                        LOGIN
+                    </button>
+                    <button @click="$dispatch('open-auth-modal', { tab: 'signup' })"
+                            class="buy-btn" style="padding: 8px 14px;">
+                        SIGN UP
+                    </button>
                 @endauth
 
-                <!-- Mobile Menu Toggle -->
-                <button @click="mobileMenuOpen = !mobileMenuOpen" class="md:hidden p-2 rounded-md hover:bg-accent">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></svg>
+                {{-- Mobile Menu Toggle --}}
+                <button @click="mobileMenuOpen = !mobileMenuOpen" class="md:hidden" style="padding: 8px; background: var(--dark-card2); border: 2px solid var(--dark-line); color: var(--text-dim); cursor: pointer;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="square"><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></svg>
                 </button>
             </div>
         </div>
     </div>
 
-    <!-- Mobile Menu -->
-    <div x-show="mobileMenuOpen" class="md:hidden border-t border-border/50 bg-background/95 backdrop-blur-md">
-        <div class="px-4 py-3 space-y-1">
-            <a href="{{ route('home') }}" class="block px-3 py-2 rounded-md text-base font-medium {{ request()->routeIs('home') ? 'bg-primary text-primary-foreground' : 'hover:bg-accent' }}">Home</a>
+    {{-- Mobile Menu --}}
+    <div x-show="mobileMenuOpen" class="md:hidden" style="border-top: 2px solid var(--dark-line, #122044); background: var(--dark-bg, #050c1a);">
+        <div style="padding: 8px;">
+            @unless(Auth::check() && Auth::user()->isAdmin())
+            @php
+                $mobileNav = [
+                    ['route' => 'home', 'label' => 'HOME'],
+                    ['route' => 'point-shop', 'label' => 'POINT SHOP'],
+                    ['route' => 'gacha', 'label' => 'ARCADE'],
+                    ['route' => 'favorites', 'label' => 'FAVORITES'],
+                    ['route' => 'about', 'label' => 'ABOUT US'],
+                    ['route' => 'faq', 'label' => 'FAQ'],
+                    ['route' => 'tickets', 'label' => 'SUPPORT'],
+                ];
+            @endphp
+            @foreach($mobileNav as $mn)
+                <a href="{{ route($mn['route']) }}"
+                   style="display: block; padding: 10px 14px; font-family: var(--px); font-size: 7px; letter-spacing: 0.1em; text-decoration: none; transition: all 0.1s;
+                          {{ request()->routeIs($mn['route'])
+                              ? 'background: var(--gold); color: var(--dark-bg);'
+                              : 'color: var(--text-dim);' }}">
+                    {{ $mn['label'] }}
+                </a>
+            @endforeach
             @auth
-                <a href="{{ route('point-shop') }}" class="block px-3 py-2 rounded-md text-base font-medium {{ request()->routeIs('point-shop') ? 'bg-primary text-primary-foreground' : 'hover:bg-accent' }}">Point Shop</a>
-                <a href="{{ route('gacha') }}" class="block px-3 py-2 rounded-md text-base font-medium {{ request()->routeIs('gacha') ? 'bg-primary text-primary-foreground' : 'hover:bg-accent' }}">Carousel</a>
-                <a href="{{ route('favorites') }}" class="block px-3 py-2 rounded-md text-base font-medium {{ request()->routeIs('favorites') ? 'bg-primary text-primary-foreground' : 'hover:bg-accent' }}">Favorites</a>
-            @endauth
-            <a href="{{ route('about') }}" class="block px-3 py-2 rounded-md text-base font-medium {{ request()->routeIs('about') ? 'bg-primary text-primary-foreground' : 'hover:bg-accent' }}">About Us</a>
-            <a href="{{ route('faq') }}" class="block px-3 py-2 rounded-md text-base font-medium {{ request()->routeIs('faq') ? 'bg-primary text-primary-foreground' : 'hover:bg-accent' }}">FAQ</a>
-            <a href="{{ route('tickets') }}" class="block px-3 py-2 rounded-md text-base font-medium {{ request()->routeIs('tickets') ? 'bg-primary text-primary-foreground' : 'hover:bg-accent' }}">Support</a>
-            @auth
-                <div class="flex items-center gap-2 px-3 py-2 text-yellow-500">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/></svg>
-                    <span class="text-sm font-black">{{ number_format(Auth::user()->points_balance) }} Points</span>
+                <div style="display: flex; align-items: center; gap: 6px; padding: 10px 14px; color: var(--gold);">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="square"><circle cx="12" cy="12" r="10"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/></svg>
+                    <span style="font-family: var(--px); font-size: 7px; letter-spacing: 0.08em;">{{ number_format(Auth::user()->points_balance) }} POINTS</span>
                 </div>
             @endauth
+            @endunless
         </div>
     </div>
 </nav>
