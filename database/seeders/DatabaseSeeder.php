@@ -23,10 +23,7 @@ class DatabaseSeeder extends Seeder
         //   $this->seedOrderDetails();
 
         $this->seedCategories();
-<<<<<<< HEAD
         $this->seedSubcategories();
-=======
->>>>>>> 21ff44bd863032902fc1f40bd815d9c0190a7dda
         $this->seedProducts();
         $this->seedDiscountTypes();
         $this->seedPointShopItems();
@@ -115,7 +112,6 @@ class DatabaseSeeder extends Seeder
         }
 
         DB::table('categories')->upsert([
-<<<<<<< HEAD
             ['id' => 1, 'name' => 'Games', 'slug' => 'games'],
             ['id' => 2, 'name' => 'Wallet Top-Ups', 'slug' => 'wallet-top-ups'],
             ['id' => 3, 'name' => 'In-Game Currency', 'slug' => 'in-game-currency'],
@@ -161,17 +157,6 @@ class DatabaseSeeder extends Seeder
         ], ['id'], ['category_id', 'name', 'slug']);
     }
 
-=======
-            ['id' => 1, 'name' => 'Gaming', 'slug' => 'gaming'],
-            ['id' => 2, 'name' => 'Entertainment', 'slug' => 'entertainment'],
-            ['id' => 3, 'name' => 'Software & Utilities', 'slug' => 'software-utilities'],
-            ['id' => 4, 'name' => 'Gift Cards', 'slug' => 'gift-cards'],
-            ['id' => 5, 'name' => 'Mobile Top-Up', 'slug' => 'mobile-top-up'],
-            ['id' => 6, 'name' => 'Other', 'slug' => 'other'],
-        ], ['id'], ['name', 'slug']);
-    }
-
->>>>>>> 21ff44bd863032902fc1f40bd815d9c0190a7dda
     private function seedProducts(): void
     {
         if (! Schema::hasTable('products')) {
@@ -182,36 +167,36 @@ class DatabaseSeeder extends Seeder
 
         $rows = [
             // ===== VOUCHER CODE products (auto-delivery key) =====
-            ['id' => 1, 'category_id' => 2, 'subcategory_id' => 2, 'type' => 'voucher', 'name' => 'Steam Wallet Rp150.000', 'description' => 'Adds Rp150.000 to Steam', 'price' => 150000.00, 'point_reward' => 100, 'is_active' => true, 'image' => 'steam-wallet.svg'],
-            ['id' => 2, 'category_id' => 2, 'subcategory_id' => 2, 'type' => 'voucher', 'name' => 'Steam Wallet Rp750.000', 'description' => 'Adds Rp750.000 to Steam', 'price' => 750000.00, 'point_reward' => 500, 'is_active' => true, 'image' => 'steam-wallet.svg'],
-            ['id' => 3, 'category_id' => 5, 'subcategory_id' => 10, 'type' => 'voucher', 'name' => 'Netflix 1 Month (HD)', 'description' => 'Standard 1 Month', 'price' => 249000.00, 'point_reward' => 150, 'is_active' => true, 'image' => 'netflix.svg'],
-            ['id' => 4, 'category_id' => 5, 'subcategory_id' => 11, 'type' => 'voucher', 'name' => 'Spotify 3 Months', 'description' => 'Premium Code', 'price' => 449000.00, 'point_reward' => 300, 'is_active' => true, 'image' => 'spotify.svg'],
-            ['id' => 5, 'category_id' => 2, 'subcategory_id' => 3, 'type' => 'voucher', 'name' => 'PSN Rp400.000', 'description' => 'PS Store Credit', 'price' => 400000.00, 'point_reward' => 250, 'is_active' => true, 'image' => 'google-play.svg'],
-            ['id' => 9, 'category_id' => 5, 'subcategory_id' => 12, 'type' => 'voucher', 'name' => 'Discord Nitro 1 Year', 'description' => 'Full Nitro', 'price' => 1499000.00, 'point_reward' => 1000, 'is_active' => true, 'image' => 'soundcloud.svg'],
-            ['id' => 10, 'category_id' => 5, 'subcategory_id' => 13, 'type' => 'voucher', 'name' => 'Xbox Game Pass 1 Month', 'description' => 'Ultimate Pass', 'price' => 259000.00, 'point_reward' => 160, 'is_active' => true, 'image' => 'xbox.svg'],
-            ['id' => 11, 'category_id' => 2, 'subcategory_id' => 4, 'type' => 'voucher', 'name' => 'Nintendo EShop $10', 'description' => '$10 Gift Card for Nintendo EShop', 'price' => 158000.00, 'point_reward' => 160, 'is_active' => true, 'image' => 'nintendo.svg'],
-            ['id' => 12, 'category_id' => 2, 'subcategory_id' => 4, 'type' => 'voucher', 'name' => 'Nintendo EShop $20', 'description' => '$20 Gift Card for Nintendo EShop', 'price' => 314000.00, 'point_reward' => 160, 'is_active' => true, 'image' => 'nintendo.svg'],
-            ['id' => 13, 'category_id' => 4, 'subcategory_id' => 8, 'type' => 'voucher', 'name' => 'Roblox Gift Card Rp.50000', 'description' => 'Rp.50000 Gift card for Robux', 'price' => 50000.00, 'point_reward' => 160, 'is_active' => true, 'image' => 'roblox.svg'],
-            ['id' => 14, 'category_id' => 4, 'subcategory_id' => 8, 'type' => 'voucher', 'name' => 'Roblox Gift Card Rp.100000', 'description' => 'Rp.100000 Gift card for Robux', 'price' => 100000.00, 'point_reward' => 160, 'is_active' => true, 'image' => 'roblox.svg'],
-            ['id' => 15, 'category_id' => 4, 'subcategory_id' => 8, 'type' => 'voucher', 'name' => 'Roblox Gift Card Rp.500000', 'description' => 'Rp.500000 Gift card for Robux', 'price' => 500000.00, 'point_reward' => 160, 'is_active' => true, 'image' => 'roblox.svg'],
-            ['id' => 16, 'category_id' => 3, 'subcategory_id' => 7, 'type' => 'voucher', 'name' => 'Fortnite V-Bucks 1000', 'description' => 'Adds 1000 V-Bucks', 'price' => 100000.00, 'point_reward' => 160, 'is_active' => true, 'image' => 'fortnite.svg'],
-            ['id' => 17, 'category_id' => 3, 'subcategory_id' => 7, 'type' => 'voucher', 'name' => 'Fortnite V-Bucks 2500', 'description' => 'Adds 2500 V-Bucks', 'price' => 250000.00, 'point_reward' => 160, 'is_active' => true, 'image' => 'fortnite.svg'],
-            ['id' => 18, 'category_id' => 3, 'subcategory_id' => 7, 'type' => 'voucher', 'name' => 'Fortnite V-Bucks 5000', 'description' => 'Adds 5000 V-Bucks', 'price' => 400000.00, 'point_reward' => 160, 'is_active' => true, 'image' => 'fortnite.svg'],
-            ['id' => 19, 'category_id' => 3, 'subcategory_id' => 7, 'type' => 'voucher', 'name' => 'Fortnite V-Bucks 12500', 'description' => 'Adds 12500 V-Bucks', 'price' => 800000.00, 'point_reward' => 160, 'is_active' => true, 'image' => 'fortnite.svg'],
-            ['id' => 20, 'category_id' => 5, 'subcategory_id' => 14, 'type' => 'voucher', 'name' => 'Youtube Premium Individual', 'description' => '1 Month Premium for 1 User', 'price' => 65000.00, 'point_reward' => 160, 'is_active' => true, 'image' => 'youtube.svg'],
-            ['id' => 21, 'category_id' => 5, 'subcategory_id' => 14, 'type' => 'voucher', 'name' => 'Youtube Premium Family', 'description' => '1 Month Premium for up to 5 Users', 'price' => 130000.00, 'point_reward' => 160, 'is_active' => true, 'image' => 'youtube.svg'],
-            ['id' => 22, 'category_id' => 5, 'subcategory_id' => 15, 'type' => 'voucher', 'name' => 'Canva Pro', 'description' => '1 Month Pro for 1 User', 'price' => 90000.00, 'point_reward' => 160, 'is_active' => true, 'image' => 'canva.svg'],
-            ['id' => 23, 'category_id' => 5, 'subcategory_id' => 16, 'type' => 'voucher', 'name' => 'Chatgpt Go', 'description' => '1 Month Go tier', 'price' => 75000.00, 'point_reward' => 160, 'is_active' => true, 'image' => 'chatgpt.svg'],
-            ['id' => 24, 'category_id' => 5, 'subcategory_id' => 16, 'type' => 'voucher', 'name' => 'Chatgpt Plus', 'description' => '1 Month Plus tier', 'price' => 300000.00, 'point_reward' => 160, 'is_active' => true, 'image' => 'chatgpt.svg'],
-            ['id' => 25, 'category_id' => 5, 'subcategory_id' => 16, 'type' => 'voucher', 'name' => 'Chatgpt Pro', 'description' => '1 Month Pro tier', 'price' => 1500000.00, 'point_reward' => 160, 'is_active' => true, 'image' => 'chatgpt.svg'],
-            ['id' => 26, 'category_id' => 5, 'subcategory_id' => 17, 'type' => 'voucher', 'name' => 'Adobe Creative Cloud Pro', 'description' => '1 Month Pro Subscription', 'price' => 500000.00, 'point_reward' => 160, 'is_active' => true, 'image' => 'adobe-creative.svg'],
-            ['id' => 27, 'category_id' => 1, 'subcategory_id' => 1, 'type' => 'voucher', 'name' => 'Pragmata', 'description' => 'Steam code for Pragmata', 'price' => 750000.00, 'point_reward' => 160, 'is_active' => true, 'image' => 'steam-wallet.svg'],
-            ['id' => 28, 'category_id' => 1, 'subcategory_id' => 1, 'type' => 'voucher', 'name' => 'Resident Evil Requiem', 'description' => 'Steam code for Resident Evil Requiem', 'price' => 900000.00, 'point_reward' => 160, 'is_active' => true, 'image' => 'steam-wallet.svg'],
+            ['id' => 1, 'category_id' => 2, 'subcategory_id' => 2, 'type' => 'voucher', 'name' => 'Steam Wallet Rp150.000', 'description' => 'Adds Rp150.000 to Steam', 'price' => 150000.00, 'point_reward' => 100, 'is_active' => true, 'image' => 'steam-wallet.png'],
+            ['id' => 2, 'category_id' => 2, 'subcategory_id' => 2, 'type' => 'voucher', 'name' => 'Steam Wallet Rp750.000', 'description' => 'Adds Rp750.000 to Steam', 'price' => 750000.00, 'point_reward' => 500, 'is_active' => true, 'image' => 'steam-wallet.png'],
+            ['id' => 3, 'category_id' => 5, 'subcategory_id' => 10, 'type' => 'voucher', 'name' => 'Netflix 1 Month (HD)', 'description' => 'Standard 1 Month', 'price' => 249000.00, 'point_reward' => 150, 'is_active' => true, 'image' => 'netflix.png'],
+            ['id' => 4, 'category_id' => 5, 'subcategory_id' => 11, 'type' => 'voucher', 'name' => 'Spotify 3 Months', 'description' => 'Premium Code', 'price' => 449000.00, 'point_reward' => 300, 'is_active' => true, 'image' => 'spotify.png'],
+            ['id' => 5, 'category_id' => 2, 'subcategory_id' => 3, 'type' => 'voucher', 'name' => 'PSN Rp400.000', 'description' => 'PS Store Credit', 'price' => 400000.00, 'point_reward' => 250, 'is_active' => true, 'image' => 'google-play.png'],
+            ['id' => 9, 'category_id' => 5, 'subcategory_id' => 12, 'type' => 'voucher', 'name' => 'Discord Nitro 1 Year', 'description' => 'Full Nitro', 'price' => 1499000.00, 'point_reward' => 1000, 'is_active' => true, 'image' => 'discord.png'],
+            ['id' => 10, 'category_id' => 5, 'subcategory_id' => 13, 'type' => 'voucher', 'name' => 'Xbox Game Pass 1 Month', 'description' => 'Ultimate Pass', 'price' => 259000.00, 'point_reward' => 160, 'is_active' => true, 'image' => 'steam-wallet.png'],
+            ['id' => 11, 'category_id' => 2, 'subcategory_id' => 4, 'type' => 'voucher', 'name' => 'Nintendo EShop $10', 'description' => '$10 Gift Card for Nintendo EShop', 'price' => 158000.00, 'point_reward' => 160, 'is_active' => true, 'image' => 'steam-wallet.png'],
+            ['id' => 12, 'category_id' => 2, 'subcategory_id' => 4, 'type' => 'voucher', 'name' => 'Nintendo EShop $20', 'description' => '$20 Gift Card for Nintendo EShop', 'price' => 314000.00, 'point_reward' => 160, 'is_active' => true, 'image' => 'steam-wallet.png'],
+            ['id' => 13, 'category_id' => 4, 'subcategory_id' => 8, 'type' => 'voucher', 'name' => 'Roblox Gift Card Rp.50000', 'description' => 'Rp.50000 Gift card for Robux', 'price' => 50000.00, 'point_reward' => 160, 'is_active' => true, 'image' => 'steam-wallet.png'],
+            ['id' => 14, 'category_id' => 4, 'subcategory_id' => 8, 'type' => 'voucher', 'name' => 'Roblox Gift Card Rp.100000', 'description' => 'Rp.100000 Gift card for Robux', 'price' => 100000.00, 'point_reward' => 160, 'is_active' => true, 'image' => 'steam-wallet.png'],
+            ['id' => 15, 'category_id' => 4, 'subcategory_id' => 8, 'type' => 'voucher', 'name' => 'Roblox Gift Card Rp.500000', 'description' => 'Rp.500000 Gift card for Robux', 'price' => 500000.00, 'point_reward' => 160, 'is_active' => true, 'image' => 'steam-wallet.png'],
+            ['id' => 16, 'category_id' => 3, 'subcategory_id' => 7, 'type' => 'voucher', 'name' => 'Fortnite V-Bucks 1000', 'description' => 'Adds 1000 V-Bucks', 'price' => 100000.00, 'point_reward' => 160, 'is_active' => true, 'image' => 'steam-wallet.png'],
+            ['id' => 17, 'category_id' => 3, 'subcategory_id' => 7, 'type' => 'voucher', 'name' => 'Fortnite V-Bucks 2500', 'description' => 'Adds 2500 V-Bucks', 'price' => 250000.00, 'point_reward' => 160, 'is_active' => true, 'image' => 'steam-wallet.png'],
+            ['id' => 18, 'category_id' => 3, 'subcategory_id' => 7, 'type' => 'voucher', 'name' => 'Fortnite V-Bucks 5000', 'description' => 'Adds 5000 V-Bucks', 'price' => 400000.00, 'point_reward' => 160, 'is_active' => true, 'image' => 'steam-wallet.png'],
+            ['id' => 19, 'category_id' => 3, 'subcategory_id' => 7, 'type' => 'voucher', 'name' => 'Fortnite V-Bucks 12500', 'description' => 'Adds 12500 V-Bucks', 'price' => 800000.00, 'point_reward' => 160, 'is_active' => true, 'image' => 'steam-wallet.png'],
+            ['id' => 20, 'category_id' => 5, 'subcategory_id' => 14, 'type' => 'voucher', 'name' => 'Youtube Premium Individual', 'description' => '1 Month Premium for 1 User', 'price' => 65000.00, 'point_reward' => 160, 'is_active' => true, 'image' => 'youtube.png'],
+            ['id' => 21, 'category_id' => 5, 'subcategory_id' => 14, 'type' => 'voucher', 'name' => 'Youtube Premium Family', 'description' => '1 Month Premium for up to 5 Users', 'price' => 130000.00, 'point_reward' => 160, 'is_active' => true, 'image' => 'youtube.png'],
+            ['id' => 22, 'category_id' => 5, 'subcategory_id' => 15, 'type' => 'voucher', 'name' => 'Canva Pro', 'description' => '1 Month Pro for 1 User', 'price' => 90000.00, 'point_reward' => 160, 'is_active' => true, 'image' => 'steam-wallet.png'],
+            ['id' => 23, 'category_id' => 5, 'subcategory_id' => 16, 'type' => 'voucher', 'name' => 'Chatgpt Go', 'description' => '1 Month Go tier', 'price' => 75000.00, 'point_reward' => 160, 'is_active' => true, 'image' => 'steam-wallet.png'],
+            ['id' => 24, 'category_id' => 5, 'subcategory_id' => 16, 'type' => 'voucher', 'name' => 'Chatgpt Plus', 'description' => '1 Month Plus tier', 'price' => 300000.00, 'point_reward' => 160, 'is_active' => true, 'image' => 'steam-wallet.png'],
+            ['id' => 25, 'category_id' => 5, 'subcategory_id' => 16, 'type' => 'voucher', 'name' => 'Chatgpt Pro', 'description' => '1 Month Pro tier', 'price' => 1500000.00, 'point_reward' => 160, 'is_active' => true, 'image' => 'steam-wallet.png'],
+            ['id' => 26, 'category_id' => 5, 'subcategory_id' => 17, 'type' => 'voucher', 'name' => 'Adobe Creative Cloud Pro', 'description' => '1 Month Pro Subscription', 'price' => 500000.00, 'point_reward' => 160, 'is_active' => true, 'image' => 'steam-wallet.png'],
+            ['id' => 27, 'category_id' => 1, 'subcategory_id' => 1, 'type' => 'voucher', 'name' => 'Pragmata', 'description' => 'Steam code for Pragmata', 'price' => 750000.00, 'point_reward' => 160, 'is_active' => true, 'image' => 'steam-wallet.png'],
+            ['id' => 28, 'category_id' => 1, 'subcategory_id' => 1, 'type' => 'voucher', 'name' => 'Resident Evil Requiem', 'description' => 'Steam code for Resident Evil Requiem', 'price' => 900000.00, 'point_reward' => 160, 'is_active' => true, 'image' => 'steam-wallet.png'],
 
             // ===== DIRECT TOP-UP products (buyer inputs Player ID) =====
-            ['id' => 6, 'category_id' => 3, 'subcategory_id' => 5, 'type' => 'direct_topup', 'name' => '1000 Valorant Points', 'description' => 'Riot Games VP — requires Riot ID', 'price' => 160000.00, 'point_reward' => 100, 'is_active' => true, 'image' => 'xbox.svg'],
-            ['id' => 7, 'category_id' => 3, 'subcategory_id' => 6, 'type' => 'direct_topup', 'name' => '500 ML Diamonds', 'description' => 'Mobile Legends — requires Player ID & Zone ID', 'price' => 150000.00, 'point_reward' => 100, 'is_active' => true, 'image' => 'google-play.svg'],
-            ['id' => 8, 'category_id' => 5, 'subcategory_id' => 9, 'type' => 'direct_topup', 'name' => 'Welkin Moon', 'description' => 'Genshin Impact — requires UID', 'price' => 79000.00, 'point_reward' => 50, 'is_active' => true, 'image' => 'youtube.svg'],
+            ['id' => 6, 'category_id' => 3, 'subcategory_id' => 5, 'type' => 'direct_topup', 'name' => '1000 Valorant Points', 'description' => 'Riot Games VP — requires Riot ID', 'price' => 160000.00, 'point_reward' => 100, 'is_active' => true, 'image' => 'steam-wallet.png'],
+            ['id' => 7, 'category_id' => 3, 'subcategory_id' => 6, 'type' => 'direct_topup', 'name' => '500 ML Diamonds', 'description' => 'Mobile Legends — requires Player ID & Zone ID', 'price' => 150000.00, 'point_reward' => 100, 'is_active' => true, 'image' => 'google-play.png'],
+            ['id' => 8, 'category_id' => 5, 'subcategory_id' => 9, 'type' => 'direct_topup', 'name' => 'Welkin Moon', 'description' => 'Genshin Impact — requires UID', 'price' => 79000.00, 'point_reward' => 50, 'is_active' => true, 'image' => 'youtube.png'],
         ];
 
         if (! $hasType) {
@@ -467,13 +452,8 @@ class DatabaseSeeder extends Seeder
         DB::table('point_shop_items')->upsert([
             [
                 'id' => 1,
-<<<<<<< HEAD
                 'name' => 'Steam Master Discount',
                 'description' => 'Get 20% off all Steam products and wallet top-ups.',
-=======
-                'name' => 'Buy Rp75.000 Welcome Bonus',
-                'description' => 'Instantly get a Rp75.000 discount code!',
->>>>>>> 21ff44bd863032902fc1f40bd815d9c0190a7dda
                 'point_cost' => 500,
                 'reward_type' => 'discount_code',
                 'discount_type_id' => 5,
@@ -482,13 +462,8 @@ class DatabaseSeeder extends Seeder
             ],
             [
                 'id' => 2,
-<<<<<<< HEAD
                 'name' => 'Fortnite V-Bucks Frenzy',
                 'description' => 'Receive 25% off every Fortnite V-Bucks package.',
-=======
-                'name' => 'Whale Status Ticket',
-                'description' => 'Unlock the massive 25% Whale Discount.',
->>>>>>> 21ff44bd863032902fc1f40bd815d9c0190a7dda
                 'point_cost' => 5000,
                 'reward_type' => 'discount_code',
                 'discount_type_id' => 9,
@@ -497,13 +472,8 @@ class DatabaseSeeder extends Seeder
             ],
             [
                 'id' => 3,
-<<<<<<< HEAD
                 'name' => 'ChatGPT Premium Saver',
                 'description' => 'Enjoy 10% off all ChatGPT subscription plans.',
-=======
-                'name' => 'Free Welkin Pass',
-                'description' => 'Redeem your points for a free Welkin Moon code!',
->>>>>>> 21ff44bd863032902fc1f40bd815d9c0190a7dda
                 'point_cost' => 1000,
                 'reward_type' => 'discount_code',
                 'discount_type_id' => 10,
