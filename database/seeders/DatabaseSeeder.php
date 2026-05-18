@@ -38,16 +38,8 @@ class DatabaseSeeder extends Seeder
         }
 
         $users = [
-            ['id' => 1, 'name' => 'Alice Smith', 'email' => 'alice@example.com', 'password' => '$2y$10$dummyhashplaceholder', 'role' => 'buyer', 'points_balance' => 1500],
+            ['id' => 1, 'name' => 'nig', 'email' => 'text@example.com', 'password' => 'password', 'role' => 'buyer', 'points_balance' =>9999],
             ['id' => 2, 'name' => 'Bob Jones', 'email' => 'bob@example.com', 'password' => '$2y$10$dummyhashplaceholder', 'role' => 'buyer', 'points_balance' => 0],
-            ['id' => 3, 'name' => 'Charlie Brown', 'email' => 'charlie@example.com', 'password' => '$2y$10$dummyhashplaceholder', 'role' => 'buyer', 'points_balance' => 500],
-            ['id' => 4, 'name' => 'Diana Prince', 'email' => 'diana@example.com', 'password' => '$2y$10$dummyhashplaceholder', 'role' => 'admin', 'points_balance' => 9999],
-            ['id' => 5, 'name' => 'Ethan Hunt', 'email' => 'ethan@example.com', 'password' => '$2y$10$dummyhashplaceholder', 'role' => 'buyer', 'points_balance' => 100],
-            ['id' => 6, 'name' => 'Fiona Gallagher', 'email' => 'fiona@example.com', 'password' => '$2y$10$dummyhashplaceholder', 'role' => 'buyer', 'points_balance' => 300],
-            ['id' => 7, 'name' => 'George Costanza', 'email' => 'george@example.com', 'password' => '$2y$10$dummyhashplaceholder', 'role' => 'buyer', 'points_balance' => 0],
-            ['id' => 8, 'name' => 'Hannah Abbott', 'email' => 'hannah@example.com', 'password' => '$2y$10$dummyhashplaceholder', 'role' => 'buyer', 'points_balance' => 2000],
-            ['id' => 9, 'name' => 'Ian Malcolm', 'email' => 'ian@example.com', 'password' => '$2y$10$dummyhashplaceholder', 'role' => 'buyer', 'points_balance' => 50],
-            ['id' => 10, 'name' => 'Julia Child', 'email' => 'julia@example.com', 'password' => '$2y$10$dummyhashplaceholder', 'role' => 'buyer', 'points_balance' => 750],
         ];
 
         $usersHasRole = Schema::hasColumn('users', 'role');
@@ -223,7 +215,7 @@ class DatabaseSeeder extends Seeder
             ['id' => 2, 'product_id' => 1, 'key_code' => 'STM-9876-WXYZ-1234', 'status' => 'sold'],
             ['id' => 3, 'product_id' => 3, 'key_code' => 'NF-AAAA-BBBB-CCCC', 'status' => 'available'],
             ['id' => 4, 'product_id' => 4, 'key_code' => 'SPO-QWER-TYUI-OPAS', 'status' => 'sold'],
-            ['id' => 5, 'product_id' => 5, 'key_code' => 'PSN-ZZZZ-XXXX-YYYY', 'status' => 'bugged'],
+            ['id' => 5, 'product_id' => 5, 'key_code' => 'PSN-ZZZZ-XXXX-YYYY', 'status' => 'sold'],
             ['id' => 6, 'product_id' => 6, 'key_code' => 'VAL-1111-2222-3333', 'status' => 'available'],
             ['id' => 7, 'product_id' => 7, 'key_code' => 'ML-9999-8888-7777', 'status' => 'available'],
             ['id' => 8, 'product_id' => 8, 'key_code' => 'GEN-5555-4444-3333', 'status' => 'available'],
