@@ -23,7 +23,10 @@ class DatabaseSeeder extends Seeder
         //   $this->seedOrderDetails();
 
         $this->seedCategories();
+<<<<<<< HEAD
         $this->seedSubcategories();
+=======
+>>>>>>> 21ff44bd863032902fc1f40bd815d9c0190a7dda
         $this->seedProducts();
         $this->seedDiscountTypes();
         $this->seedPointShopItems();
@@ -112,6 +115,7 @@ class DatabaseSeeder extends Seeder
         }
 
         DB::table('categories')->upsert([
+<<<<<<< HEAD
             ['id' => 1, 'name' => 'Games', 'slug' => 'games'],
             ['id' => 2, 'name' => 'Wallet Top-Ups', 'slug' => 'wallet-top-ups'],
             ['id' => 3, 'name' => 'In-Game Currency', 'slug' => 'in-game-currency'],
@@ -157,6 +161,17 @@ class DatabaseSeeder extends Seeder
         ], ['id'], ['category_id', 'name', 'slug']);
     }
 
+=======
+            ['id' => 1, 'name' => 'Gaming', 'slug' => 'gaming'],
+            ['id' => 2, 'name' => 'Entertainment', 'slug' => 'entertainment'],
+            ['id' => 3, 'name' => 'Software & Utilities', 'slug' => 'software-utilities'],
+            ['id' => 4, 'name' => 'Gift Cards', 'slug' => 'gift-cards'],
+            ['id' => 5, 'name' => 'Mobile Top-Up', 'slug' => 'mobile-top-up'],
+            ['id' => 6, 'name' => 'Other', 'slug' => 'other'],
+        ], ['id'], ['name', 'slug']);
+    }
+
+>>>>>>> 21ff44bd863032902fc1f40bd815d9c0190a7dda
     private function seedProducts(): void
     {
         if (! Schema::hasTable('products')) {
@@ -452,8 +467,13 @@ class DatabaseSeeder extends Seeder
         DB::table('point_shop_items')->upsert([
             [
                 'id' => 1,
+<<<<<<< HEAD
                 'name' => 'Steam Master Discount',
                 'description' => 'Get 20% off all Steam products and wallet top-ups.',
+=======
+                'name' => 'Buy Rp75.000 Welcome Bonus',
+                'description' => 'Instantly get a Rp75.000 discount code!',
+>>>>>>> 21ff44bd863032902fc1f40bd815d9c0190a7dda
                 'point_cost' => 500,
                 'reward_type' => 'discount_code',
                 'discount_type_id' => 5,
@@ -462,8 +482,13 @@ class DatabaseSeeder extends Seeder
             ],
             [
                 'id' => 2,
+<<<<<<< HEAD
                 'name' => 'Fortnite V-Bucks Frenzy',
                 'description' => 'Receive 25% off every Fortnite V-Bucks package.',
+=======
+                'name' => 'Whale Status Ticket',
+                'description' => 'Unlock the massive 25% Whale Discount.',
+>>>>>>> 21ff44bd863032902fc1f40bd815d9c0190a7dda
                 'point_cost' => 5000,
                 'reward_type' => 'discount_code',
                 'discount_type_id' => 9,
@@ -472,8 +497,13 @@ class DatabaseSeeder extends Seeder
             ],
             [
                 'id' => 3,
+<<<<<<< HEAD
                 'name' => 'ChatGPT Premium Saver',
                 'description' => 'Enjoy 10% off all ChatGPT subscription plans.',
+=======
+                'name' => 'Free Welkin Pass',
+                'description' => 'Redeem your points for a free Welkin Moon code!',
+>>>>>>> 21ff44bd863032902fc1f40bd815d9c0190a7dda
                 'point_cost' => 1000,
                 'reward_type' => 'discount_code',
                 'discount_type_id' => 10,
