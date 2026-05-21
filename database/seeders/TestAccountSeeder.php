@@ -24,13 +24,13 @@ class TestAccountSeeder extends Seeder
 
         // 1. Create or Update Test User
         $user = User::updateOrCreate(
-            ['email' => 'test@example.com'],
+            ['email' => 'a@a.a'],
             [
                 'name' => 'Test Master',
-                'password' => Hash::make('password'),
+                'password' => Hash::make('a'),
                 'role' => 'admin',
                 'points_balance' => 50000,
-                'referral_code' => 'TESTMASTER99',
+                'referral_code' => 'isdnfainf',
             ]
         );
 }

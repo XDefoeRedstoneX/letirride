@@ -118,15 +118,6 @@
                         <p class="text-[9px] text-muted-foreground font-bold uppercase tracking-widest">{{ $stats['pending_orders'] ?? 0 }} orders need attention</p>
                     </div>
                 </a>
-                <a href="{{ route('admin.topups', ['status' => 'pending']) }}" class="flex items-center gap-3 px-4 py-3 bg-foreground/5 rounded-xl hover:bg-blue-500/10 transition-colors">
-                    <div class="w-8 h-8 bg-blue-500/10 rounded-lg flex items-center justify-center text-blue-500">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="10 17 15 12 10 7"/><line x1="15" x2="3" y1="12" y2="12"/></svg>
-                    </div>
-                    <div>
-                        <p class="text-xs font-black uppercase">Pending Top-Ups</p>
-                        <p class="text-[9px] text-muted-foreground font-bold uppercase tracking-widest">Process direct top-up requests</p>
-                    </div>
-                </a>
                 <a href="{{ route('admin.tickets', ['status' => 'open']) }}" class="flex items-center gap-3 px-4 py-3 bg-foreground/5 rounded-xl hover:bg-green-500/10 transition-colors">
                     <div class="w-8 h-8 bg-green-500/10 rounded-lg flex items-center justify-center text-green-500">
                         <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\CartItem;
 use App\Models\Product;
+use App\Models\ProductKey;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -64,8 +65,10 @@ class CartController extends Controller
             return response()->json(['message' => 'Product is not available.'], 404);
         }
 
+        $type = $product->type ?? 'voucher';
+
         // Bug 5: Validate topup_meta for direct_topup products
-        if (($product->type ?? 'voucher') === 'direct_topup') {
+        if ($type === 'direct_topup') {
             $request->validate([
                 'player_id' => 'required|string|max:100',
                 'zone_id' => 'nullable|string|max:50',
@@ -77,8 +80,26 @@ class CartController extends Controller
             ->where('product_id', $product->id)
             ->first();
 
+        // Stockout check: voucher products require at least one available key.
+        // direct_topup products have no inventory and are always purchasable.
+        if ($type === 'voucher') {
+            $availableKeys = ProductKey::where('product_id', $product->id)
+                ->where('status', 'available')
+                ->count();
+
+            $alreadyInCart = $cartItem?->quantity ?? 0;
+
+            if ($availableKeys <= $alreadyInCart) {
+                return response()->json([
+                    'message' => $availableKeys === 0
+                        ? $product->name.' is out of stock.'
+                        : 'Only '.$availableKeys.' in stock — you already have '.$alreadyInCart.' in your cart.',
+                ], 422);
+            }
+        }
+
         $topupMeta = null;
-        if (($product->type ?? 'voucher') === 'direct_topup') {
+        if ($type === 'direct_topup') {
             $topupMeta = [
                 'player_id' => $request->input('player_id'),
                 'zone_id' => $request->input('zone_id'),

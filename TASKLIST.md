@@ -30,7 +30,9 @@
 
 - [x] Categories (5 seeded) & Subcategories (17 seeded) — [DatabaseSeeder.php](database/seeders/DatabaseSeeder.php#L108-L158)
 - [x] Product listing with search + category filter — [StoreController.php](app/Http/Controllers/StoreController.php), [products.blade.php](resources/views/pages/products.blade.php)
-- [x] Product detail modal
+- [x] **Subcategory accordion** inside each category (drill down: Subscriptions → Netflix → products) — [products.blade.php](resources/views/pages/products.blade.php)
+- [x] **Stockout UI** — voucher products show "OUT OF STOCK" overlay + disabled BUY when no `product_keys` available; cart endpoint rejects add-to-cart past available stock — [StoreController.php](app/Http/Controllers/StoreController.php), [CartController.php](app/Http/Controllers/CartController.php)
+- [x] Product detail modal (stock count shown for voucher products)
 - [x] Direct-topup flow with player-ID capture (extra) — [TopupCredential.php](app/Models/TopupCredential.php)
 
 ## 3. Cart & Checkout
@@ -54,7 +56,6 @@
 - [x] Point shop browse + redeem → discount voucher — [PointController.php](app/Http/Controllers/PointController.php), [point-shop.blade.php](resources/views/pages/point-shop.blade.php)
 - [x] Gacha roll (weighted RNG → discount) — [GachaController.php](app/Http/Controllers/GachaController.php), [gacha.blade.php](resources/views/pages/gacha.blade.php)
 - [ ] Spend points to boost gacha win chance (extreme spec)
-- [ ] Gifting (send voucher/points to another user)
 
 ## 6. Customer Support & Engagement
 
@@ -81,8 +82,7 @@
 - [x] Order management (list + status update) — [Admin/OrderController.php](app/Http/Controllers/Admin/OrderController.php)
 - [x] Gacha pool CRUD — [Admin/GachaController.php](app/Http/Controllers/Admin/GachaController.php)
 - [x] Ticket triage (list + status update) — [Admin/TicketController.php](app/Http/Controllers/Admin/TicketController.php)
-- [x] Topup credential review (status update) — [Admin/TopupController.php](app/Http/Controllers/Admin/TopupController.php)
-- [x] Separate admin layout/sidebar — [resources/views/admin/layouts/](resources/views/admin/layouts/)
+- [x] Separate admin layout/sidebar (fixed broken Products link) — [resources/views/admin/layouts/](resources/views/admin/layouts/)
 - [~] Point-shop item CRUD — route is `fn () => view(...)`, no controller — [routes/web.php:104](routes/web.php#L104)
 - [~] FAQ CRUD — route is `fn () => view(...)`, no controller — [routes/web.php:105](routes/web.php#L105)
 - [ ] Dedicated voucher / redeem-code generator
@@ -98,11 +98,11 @@
 | Area | Done | Partial | Todo |
 |---|---:|---:|---:|
 | 1. Auth & Account | 5 | 2 | 1 |
-| 2. Catalogue | 4 | 0 | 0 |
+| 2. Catalogue | 6 | 0 | 0 |
 | 3. Cart & Checkout | 4 | 0 | 1 |
 | 4. Inventory & Transactions | 3 | 0 | 0 |
 | 5. Points & Gacha | 4 | 0 | 2 |
 | 6. Customer Support | 1 | 2 | 5 |
 | 7. Extras | 2 | 0 | 0 |
-| 8. Admin Panel | 9 | 2 | 5 |
-| **Total** | **32** | **6** | **14** |
+| 8. Admin Panel | 8 | 2 | 5 |
+| **Total** | **33** | **6** | **14** |

@@ -1,5 +1,95 @@
 <x-app-layout>
 
+{{-- ── Page-scoped styles for stockout + buy-modal states ──────── --}}
+<style>
+    /* Stockout overlay on product card image */
+    .product-card { position: relative; }
+    .product-card.is-out-of-stock { cursor: not-allowed; opacity: 0.78; }
+    .product-card.is-out-of-stock .card-img { filter: grayscale(0.85); }
+    .stockout-overlay {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(0, 0, 0, 0.55);
+        pointer-events: none;
+    }
+    .stockout-text {
+        padding: 6px 14px;
+        font-size: 11px;
+        font-weight: 900;
+        letter-spacing: 0.18em;
+        color: #fff;
+        background: #dc2626;
+        border: 2px solid #fff;
+        transform: rotate(-6deg);
+    }
+
+    /* Inline stock indicator on card */
+    .stock-line {
+        display: block;
+        margin-top: 4px;
+        font-size: 9px;
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+    }
+    .stock-line.ok   { color: #16a34a; }
+    .stock-line.low  { color: #f59e0b; }
+    .stock-line.none { color: #dc2626; }
+
+    /* Disabled buy button (card) */
+    .buy-btn-disabled {
+        padding: 6px 14px;
+        font-size: 10px;
+        font-weight: 900;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: hsl(var(--muted-foreground));
+        background: hsl(var(--foreground) / 0.08);
+        border: 1px solid hsl(var(--border));
+        border-radius: 6px;
+        cursor: not-allowed;
+    }
+
+    /* Stock row in buy modal */
+    .modal-stock-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 8px 12px;
+        border-radius: 8px;
+        font-size: 10px;
+        font-weight: 800;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+    }
+    .modal-stock-row.ok   { background: rgb(22 163 74 / 0.10); color: #16a34a; }
+    .modal-stock-row.low  { background: rgb(245 158 11 / 0.10); color: #f59e0b; }
+    .modal-stock-row.none { background: rgb(220 38 38 / 0.10); color: #dc2626; }
+    .modal-stock-label { opacity: 0.8; }
+    .modal-stock-val   { font-weight: 900; }
+
+    /* Disabled modal button */
+    .modal-btn-disabled {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        padding: 10px 16px;
+        font-size: 11px;
+        font-weight: 900;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: hsl(var(--muted-foreground));
+        background: hsl(var(--foreground) / 0.08);
+        border: 1px solid hsl(var(--border));
+        border-radius: 8px;
+        cursor: not-allowed;
+    }
+</style>
+
 {{-- ── Hero Billboard ──────────────────────────────────────────── --}}
 <section class="hero-section" aria-label="Hero banner">
     <div class="hero-frame-grid">
@@ -97,91 +187,125 @@
             </template>
         </div>
 
-        {{-- ── Category Accordion Sections ─────────────────────── --}}
-        <div style="display: flex; flex-direction: column; gap: 8px;">
-            <template x-for="cat in uniqueCategories" :key="cat">
-                <section class="cat-section" x-show="productsForCategory(cat).length > 0">
+        {{-- ── Browse By Brand ─────────────────────────────────── --}}
+        <section class="brand-section" x-show="brands.length > 0">
+            <div class="section-bar">
+                <span class="section-title">▣ BROWSE BY BRAND</span>
+                <div class="section-right">
+                    <span class="section-meta"
+                          x-text="brands.length + ' BRAND' + (brands.length !== 1 ? 'S' : '')"></span>
+                </div>
+            </div>
 
-                    {{-- Category Toggle Header --}}
-                    <button class="cat-header-btn" @click="toggleCategory(cat)" type="button">
-                        <div class="cat-header-left">
-                            <span class="cat-emoji" x-text="categoryEmoji(cat)"></span>
-                            <span class="cat-name" x-text="cat"></span>
+            <div class="brand-grid">
+                <template x-for="brand in brands" :key="brand.name">
+                    <button class="brand-tile"
+                            :class="selectedBrand === brand.name ? 'active' : ''"
+                            @click="selectBrand(brand.name)"
+                            type="button">
+                        <div class="brand-img-wrap">
+                            <img :src="brand.image" alt="steam-wallet.png" class="brand-img">
                         </div>
-                        <div class="cat-header-right">
-                            <span class="cat-count"
-                                  x-text="productsForCategory(cat).length + ' ITEM' + (productsForCategory(cat).length !== 1 ? 'S' : '')">
-                            </span>
-                            <span class="cat-arrow" :class="expandedCategories[cat] ? 'open' : ''">▼</span>
-                        </div>
+                        <span class="brand-name" x-text="brand.name"></span>
+                        <span class="brand-count"
+                              x-text="brand.count + ' ITEM' + (brand.count !== 1 ? 'S' : '')"></span>
                     </button>
+                </template>
+            </div>
+        </section>
 
-                    {{-- Product Grid --}}
-                    <div x-show="expandedCategories[cat]"
-                         x-transition:enter="transition ease-out duration-200"
-                         x-transition:enter-start="opacity-0 translate-y-[-8px]"
-                         x-transition:enter-end="opacity-100 translate-y-0"
-                         x-transition:leave="transition ease-in duration-150"
-                         x-transition:leave-start="opacity-100"
-                         x-transition:leave-end="opacity-0">
+        {{-- ── Product Groups (catalog OR selected brand variants) ─ --}}
+        <template x-for="group in displayGroups" :key="group.key">
+            <section class="products-section">
 
-                        <div class="product-grid">
-                            <template x-for="product in productsForCategory(cat)" :key="product.id">
-                                <div class="product-card px-border-card"
-                                     @click="openBuyModal(product)">
-
-                                    {{-- Image --}}
-                                    <div class="card-img-wrap">
-                                        <img :src="product.image"
-                                             :alt="product.name"
-                                             class="card-img">
-                                        <div class="card-badges">
-                                            <span class="badge-cat" x-text="product.category"></span>
-                                            <span class="badge-topup"
-                                                  x-show="product.product_type === 'direct_topup'">
-                                                ⚡ TOP-UP
-                                            </span>
-                                        </div>
-                                    </div>
-
-                                    {{-- Body --}}
-                                    <div class="card-body">
-                                        <h3 class="card-title" x-text="product.name"></h3>
-                                        <div class="card-footer">
-                                            <div>
-                                                <span class="price-label">PRICE</span>
-                                                <span class="price-value"
-                                                      x-text="'Rp ' + new Intl.NumberFormat('id-ID').format(product.price)">
-                                                </span>
-                                            </div>
-                                            <div class="card-actions" @click.stop>
-                                                <button @click="toggleFavorite(product.id)"
-                                                        :class="favorites.includes(product.id) ? 'active' : ''"
-                                                        class="fav-btn"
-                                                        title="Favorite">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
-                                                         viewBox="0 0 24 24"
-                                                         :fill="favorites.includes(product.id) ? 'currentColor' : 'none'"
-                                                         stroke="currentColor" stroke-width="2.5"
-                                                         stroke-linecap="square">
-                                                        <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/>
-                                                    </svg>
-                                                </button>
-                                                <button @click="openBuyModal(product)" class="buy-btn">
-                                                    BUY
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                </div>
-                            </template>
-                        </div>
-
+                {{-- Group header (non-collapsible) --}}
+                <div class="section-bar">
+                    <span class="section-title">
+                        <span class="cat-emoji" x-show="group.emoji" x-text="group.emoji"></span>
+                        <span x-text="(group.isBrand ? '▣ ' : '') + group.label"></span>
+                    </span>
+                    <div class="section-right">
+                        <span class="section-meta"
+                              x-text="group.products.length + ' ITEM' + (group.products.length !== 1 ? 'S' : '')"></span>
+                        <button x-show="group.isBrand"
+                                class="clear-brand-btn"
+                                @click="clearBrand()"
+                                type="button">✕ CLEAR</button>
                     </div>
-                </section>
-            </template>
-        </div>
+                </div>
+
+                {{-- Product grid --}}
+                <div class="product-grid">
+                    <template x-for="product in group.products" :key="product.id">
+                        <div class="product-card px-border-card"
+                             :class="!product.in_stock ? 'is-out-of-stock' : ''"
+                             @click="product.in_stock && openBuyModal(product)">
+
+                            {{-- Image --}}
+                            <div class="card-img-wrap">
+                                <img :src="product.image"
+                                     alt="steam-wallet.png"
+                                     class="card-img">
+                                <div class="card-badges">
+                                    <span class="badge-cat" x-text="product.category"></span>
+                                    <span class="badge-topup"
+                                          x-show="product.product_type === 'direct_topup'">
+                                        ⚡ TOP-UP
+                                    </span>
+                                </div>
+
+                                {{-- Stockout Overlay --}}
+                                <template x-if="!product.in_stock">
+                                    <div class="stockout-overlay">
+                                        <span class="stockout-text">OUT OF STOCK</span>
+                                    </div>
+                                </template>
+                            </div>
+
+                            {{-- Body --}}
+                            <div class="card-body">
+                                <h3 class="card-title" x-text="product.name"></h3>
+                                <div class="card-footer">
+                                    <div>
+                                        <span class="price-label">PRICE</span>
+                                        <span class="price-value"
+                                              x-text="'Rp ' + new Intl.NumberFormat('id-ID').format(product.price)">
+                                        </span>
+                                        <template x-if="product.product_type === 'voucher'">
+                                            <span class="stock-line"
+                                                  :class="product.in_stock ? (product.stock <= 3 ? 'low' : 'ok') : 'none'"
+                                                  x-text="product.in_stock ? (product.stock + ' IN STOCK') : 'OUT OF STOCK'">
+                                            </span>
+                                        </template>
+                                    </div>
+                                    <div class="card-actions" @click.stop>
+                                        <button @click="toggleFavorite(product.id)"
+                                                :class="favorites.includes(product.id) ? 'active' : ''"
+                                                class="fav-btn"
+                                                title="Favorite">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+                                                 viewBox="0 0 24 24"
+                                                 :fill="favorites.includes(product.id) ? 'currentColor' : 'none'"
+                                                 stroke="currentColor" stroke-width="2.5"
+                                                 stroke-linecap="square">
+                                                <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/>
+                                            </svg>
+                                        </button>
+                                        <button @click="product.in_stock && openBuyModal(product)"
+                                                :disabled="!product.in_stock"
+                                                :class="!product.in_stock ? 'buy-btn-disabled' : 'buy-btn'"
+                                                x-text="product.in_stock ? 'BUY' : 'SOLD OUT'">
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </template>
+                </div>
+
+            </section>
+        </template>
 
         {{-- ── Empty State ─────────────────────────────────────── --}}
         <div x-show="!hasResults" class="empty-state" x-transition>
@@ -234,7 +358,7 @@
 
                 {{-- Product Image --}}
                 <div class="modal-img-wrap">
-                    <img :src="selectedProduct?.image" :alt="selectedProduct?.name">
+                    <img :src="selectedProduct?.image" alt="steam-wallet.png">
                 </div>
 
                 {{-- Direct Top-Up Fields --}}
@@ -280,9 +404,22 @@
                 </span>
             </div>
 
+            {{-- Stock Row (voucher only) --}}
+            <template x-if="selectedProduct && selectedProduct.product_type === 'voucher'">
+                <div class="modal-stock-row"
+                     :class="selectedProduct.in_stock ? (selectedProduct.stock <= 3 ? 'low' : 'ok') : 'none'">
+                    <span class="modal-stock-label">STOCK</span>
+                    <span class="modal-stock-val"
+                          x-text="selectedProduct.in_stock ? (selectedProduct.stock + ' KEY' + (selectedProduct.stock !== 1 ? 'S' : '') + ' AVAILABLE') : 'OUT OF STOCK'">
+                    </span>
+                </div>
+            </template>
+
             {{-- Actions --}}
             <div class="modal-actions">
-                <button @click="addToCart()" class="modal-btn-secondary">
+                <button @click="selectedProduct?.in_stock && addToCart()"
+                        :disabled="!(selectedProduct?.in_stock)"
+                        :class="!(selectedProduct?.in_stock) ? 'modal-btn-disabled' : 'modal-btn-secondary'">
                     <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
                          fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="square">
                         <circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/>
@@ -290,8 +427,10 @@
                     </svg>
                     ADD TO CART
                 </button>
-                <button @click="buyNow()" class="modal-btn-primary">
-                    BUY NOW
+                <button @click="selectedProduct?.in_stock && buyNow()"
+                        :disabled="!(selectedProduct?.in_stock)"
+                        :class="!(selectedProduct?.in_stock) ? 'modal-btn-disabled' : 'modal-btn-primary'"
+                        x-text="selectedProduct?.in_stock ? 'BUY NOW' : 'SOLD OUT'">
                 </button>
                 </div>
 
@@ -312,7 +451,9 @@
 ═══════════════════════════════════════════════════════════════ --}}
 <script>
 
-
+/* Category whose items are one-off titles, NOT brand denominations.
+   These are never turned into brand tiles — they show as direct cards. */
+const RIDLY_GAMES_CATEGORY = 'Games';
 
 /* ── Alpine.js Products Controller ──────────────────────────── */
 function productsPage(initialProducts, initialFavorites, isAuthenticated, csrfToken) {
@@ -321,7 +462,7 @@ function productsPage(initialProducts, initialFavorites, isAuthenticated, csrfTo
         products:         initialProducts,
         search:           '',
         activeFilter:     'All',
-        expandedCategories: {},
+        selectedBrand:    null,
         favorites:        initialFavorites,
         isAuthenticated,
         csrfToken,
@@ -333,10 +474,6 @@ function productsPage(initialProducts, initialFavorites, isAuthenticated, csrfTo
 
         /* ─ Lifecycle ─────────────────────────────────────────── */
         init() {
-            this.uniqueCategories.forEach(cat => {
-                this.expandedCategories[cat] = true;
-            });
-
             // Auto-open buy modal if ?buy=PRODUCT_ID is in URL (from favorites page)
             const urlParams = new URLSearchParams(window.location.search);
             const buyId = urlParams.get('buy');
@@ -362,49 +499,106 @@ function productsPage(initialProducts, initialFavorites, isAuthenticated, csrfTo
             return ['All', ...this.uniqueCategories];
         },
 
+        // Categories visible in the grouped catalog (respects the active pill).
+        get visibleCategories() {
+            if (this.activeFilter !== 'All') {
+                return this.uniqueCategories.filter(c => c === this.activeFilter);
+            }
+            return this.uniqueCategories;
+        },
+
+        // Brand tiles = subcategories, EXCLUDING the Games category (one-off titles).
+        get brands() {
+            const map = {};
+            for (const p of this.products) {
+                if ((p.category || 'Other') === RIDLY_GAMES_CATEGORY) continue;
+                if (this.activeFilter !== 'All' && (p.category || 'Other') !== this.activeFilter) continue;
+                if (!this._matchesSearch(p)) continue;
+                const name = p.subcategory || 'Other';
+                if (!map[name]) {
+                    map[name] = { name, category: p.category || 'Other', image: p.image, count: 0 };
+                }
+                map[name].count++;
+            }
+            return Object.values(map);
+        },
+
+        // Groups rendered below the brand grid:
+        //  - a brand is selected  → one group of that brand's variants
+        //  - otherwise            → one group per visible category
+        get displayGroups() {
+            if (this.selectedBrand) {
+                return [{
+                    key: 'brand::' + this.selectedBrand,
+                    label: this.selectedBrand,
+                    emoji: '',
+                    isBrand: true,
+                    products: this.productsForBrand(this.selectedBrand),
+                }];
+            }
+            return this.visibleCategories
+                .map(cat => ({
+                    key: 'cat::' + cat,
+                    label: cat,
+                    emoji: this.categoryEmoji(cat),
+                    isBrand: false,
+                    products: this.productsForCategory(cat),
+                }))
+                .filter(g => g.products.length > 0);
+        },
+
         get hasResults() {
-            return this.uniqueCategories.some(cat => this.productsForCategory(cat).length > 0);
+            return this.brands.length > 0 || this.displayGroups.length > 0;
         },
 
         /* ─ Helpers ───────────────────────────────────────────── */
         categoryEmoji(cat) {
             const map = {
-                'Gaming':             '🎮',
-                'Entertainment':      '🎬',
-                'Mobile Top-Up':      '📱',
-                'Software & Utilities': '💻',
-                'Music':              '🎵',
-                'Education':          '📚',
-                'Other':              '✦',
+                'Games':            '🎮',
+                'Wallet Top-Ups':   '👛',
+                'In-Game Currency': '💎',
+                'Gift Cards':       '🎁',
+                'Subscriptions':    '📺',
+                'Other':            '✦',
             };
             return map[cat] || '✦';
         },
 
-        productsForCategory(cat) {
+        _matchesSearch(p) {
             const kw = this.search.trim().toLowerCase();
-            return this.products.filter(p => {
-                const inCat    = (p.category || 'Other') === cat;
-                const inSearch = !kw
-                    || p.name.toLowerCase().includes(kw)
-                    || (p.category || '').toLowerCase().includes(kw);
-                return inCat && inSearch;
-            });
+            if (!kw) return true;
+            return p.name.toLowerCase().includes(kw)
+                || (p.category || '').toLowerCase().includes(kw)
+                || (p.subcategory || '').toLowerCase().includes(kw);
+        },
+
+        productsForCategory(cat) {
+            return this.products.filter(p =>
+                (p.category || 'Other') === cat && this._matchesSearch(p)
+            );
+        },
+
+        productsForBrand(name) {
+            return this.products.filter(p =>
+                (p.subcategory || 'Other') === name
+                && (p.category || 'Other') !== RIDLY_GAMES_CATEGORY
+                && (this.activeFilter === 'All' || (p.category || 'Other') === this.activeFilter)
+                && this._matchesSearch(p)
+            );
         },
 
         /* ─ Actions ───────────────────────────────────────────── */
         setFilter(cat) {
             this.activeFilter = cat;
-            if (cat === 'All') {
-                this.uniqueCategories.forEach(c => this.expandedCategories[c] = true);
-            } else {
-                this.uniqueCategories.forEach(c => {
-                    this.expandedCategories[c] = (c === cat);
-                });
-            }
+            this.selectedBrand = null;
         },
 
-        toggleCategory(cat) {
-            this.expandedCategories[cat] = !this.expandedCategories[cat];
+        selectBrand(name) {
+            this.selectedBrand = (this.selectedBrand === name) ? null : name;
+        },
+
+        clearBrand() {
+            this.selectedBrand = null;
         },
 
         openBuyModal(product) {

@@ -1,12 +1,54 @@
 {
   "resources/css/app.css": {
-    "file": "assets/app-CIe2HqRA.css",
+    "file": "assets/app-LbstM6rV.css",
     "name": "app",
     "names": [
       "app.css"
     ],
     "src": "resources/css/app.css",
-    "isEntry": true
+    "isEntry": true,
+    "assets": [
+      "assets/top-l-BmDmujNf.png",
+      "assets/top-r-B2sa6dra.png",
+      "assets/bot-l-0Jg4skc0.png",
+      "assets/bot-r-DoYCHtqq.png",
+      "assets/edge-t-C-vlrv-j.png",
+      "assets/edge-b-BCnFkYIS.png",
+      "assets/edge-l-BEfz49RH.png",
+      "assets/edge-r-BgRjKYTn.png"
+    ]
+  },
+  "resources/images/frame/bot-l.png": {
+    "file": "assets/bot-l-0Jg4skc0.png",
+    "src": "resources/images/frame/bot-l.png"
+  },
+  "resources/images/frame/bot-r.png": {
+    "file": "assets/bot-r-DoYCHtqq.png",
+    "src": "resources/images/frame/bot-r.png"
+  },
+  "resources/images/frame/edge-b.png": {
+    "file": "assets/edge-b-BCnFkYIS.png",
+    "src": "resources/images/frame/edge-b.png"
+  },
+  "resources/images/frame/edge-l.png": {
+    "file": "assets/edge-l-BEfz49RH.png",
+    "src": "resources/images/frame/edge-l.png"
+  },
+  "resources/images/frame/edge-r.png": {
+    "file": "assets/edge-r-BgRjKYTn.png",
+    "src": "resources/images/frame/edge-r.png"
+  },
+  "resources/images/frame/edge-t.png": {
+    "file": "assets/edge-t-C-vlrv-j.png",
+    "src": "resources/images/frame/edge-t.png"
+  },
+  "resources/images/frame/top-l.png": {
+    "file": "assets/top-l-BmDmujNf.png",
+    "src": "resources/images/frame/top-l.png"
+  },
+  "resources/images/frame/top-r.png": {
+    "file": "assets/top-r-B2sa6dra.png",
+    "src": "resources/images/frame/top-r.png"
   },
   "resources/js/app.js": {
     "file": "assets/app-MvBNrVg4.js",

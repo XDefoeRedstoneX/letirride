@@ -15,7 +15,10 @@ class StoreController extends Controller
             ->all();
 
         $products = Product::query()
-            ->with('category')
+            ->with(['category', 'subcategory'])
+            ->withCount(['productKeys as available_keys_count' => function ($query) {
+                $query->where('status', 'available');
+            }])
             ->where('is_active', true)
             ->get()
             ->map(function (Product $product) use ($availableProductImages) {
@@ -25,12 +28,20 @@ class StoreController extends Controller
                     $fileName = 'steam-wallet.png';
                 }
 
+                $type = $product->type ?? 'voucher';
+                $stock = (int) ($product->available_keys_count ?? 0);
+                // direct_topup products don't consume keys, so they're always in stock
+                $inStock = $type === 'direct_topup' ? true : $stock > 0;
+
                 return [
                     'id' => $product->id,
                     'name' => $product->name,
                     'price' => (float) $product->price,
                     'category' => $product->category?->name ?? 'Other',
-                    'product_type' => $product->type ?? 'voucher',
+                    'subcategory' => $product->subcategory?->name ?? 'Other',
+                    'product_type' => $type,
+                    'stock' => $stock,
+                    'in_stock' => $inStock,
                     'image' => '/products/'.ltrim($fileName, '/'),
                 ];
             })
