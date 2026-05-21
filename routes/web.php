@@ -19,7 +19,6 @@ use App\Http\Middleware\EnsureUserIsAdmin;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [StoreController::class, 'showStore'])->name('home');
-Route::get('/all-products', [StoreController::class, 'showAllProducts'])->name('all-products');
 Route::post('/login', [AuthController::class, 'logAuth'])->name('logAuth');
 Route::post('/register', [AuthController::class, 'regAuth'])->name('regAuth');
 
