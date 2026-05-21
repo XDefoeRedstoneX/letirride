@@ -16,14 +16,17 @@
         pointer-events: none;
     }
     .stockout-text {
-        padding: 6px 14px;
-        font-size: 11px;
-        font-weight: 900;
-        letter-spacing: 0.18em;
+        padding: 8px 16px;
+        font-family: var(--px, 'Press Start 2P', monospace);
+        font-size: 8px;
+        letter-spacing: 0.2em;
         color: #fff;
-        background: #dc2626;
-        border: 2px solid #fff;
-        transform: rotate(-6deg);
+        background: rgba(220, 38, 38, 0.9);
+        border: 2px solid #ff4444;
+        box-shadow: 0 0 15px rgba(220, 38, 38, 0.8), inset 0 0 10px rgba(220, 38, 38, 0.5);
+        transform: rotate(-10deg) scale(1.1);
+        text-shadow: 2px 2px 0px #000;
+        backdrop-filter: blur(4px);
     }
 
     /* Inline stock indicator on card */
@@ -236,8 +239,9 @@
 
                 {{-- Product grid --}}
                 <div class="product-grid">
-                    <template x-for="product in group.products" :key="product.id">
-                        <div class="product-card px-border-card"
+                    <template x-for="(product, index) in group.products" :key="product.id">
+                        <div class="product-card animate-card-enter"
+                             :style="`--enter-delay: ${index * 0.1}s`"
                              :class="!product.in_stock ? 'is-out-of-stock' : ''"
                              @click="product.in_stock && openBuyModal(product)">
 
