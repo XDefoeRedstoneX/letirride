@@ -8,27 +8,7 @@ use Illuminate\Support\Facades\Auth;
 
 class StoreController extends Controller
 {
-    /**
-     * Browse hub — products grouped by type (top-ups, vouchers, subscriptions, game keys).
-     */
     public function showStore()
-    {
-        return view('pages.products', $this->storeData());
-    }
-
-    /**
-     * Full catalog listing. Supports ?brand= and ?buy= deep links.
-     */
-    public function showAllProducts()
-    {
-        return view('pages.all-products', $this->storeData());
-    }
-
-    /**
-     * Shared payload: every active product (shaped for the front-end) plus the
-     * current user's favorite ids.
-     */
-    private function storeData(): array
     {
         $availableProductImages = collect(glob(public_path('products/*.png')))
             ->map(fn (string $path) => basename($path))
@@ -74,9 +54,9 @@ class StoreController extends Controller
                 ->values()
             : collect();
 
-        return [
+        return view('pages.products', [
             'products' => $products,
             'favoriteIds' => $favoriteIds,
-        ];
+        ]);
     }
 }

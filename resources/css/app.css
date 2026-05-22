@@ -500,7 +500,7 @@ button,
 .hero-section {
   position: relative;
   width: 100%;
-  max-width: 1120px;
+  max-width: 900px;
   margin: 0 auto;
   padding: 16px 16px 0;
 }
@@ -537,7 +537,7 @@ button,
   inset: 0;
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
   display: block;
 }
 
@@ -1028,224 +1028,6 @@ button,
   transform: translate(-1px, -1px);
 }
 
-/* ── Popular Products (hub hero strip) ────────────────────────── */
-.popular-section {
-  margin: 8px 0 44px;
-}
-
-.popular-head {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  margin-bottom: 22px;
-}
-
-/* READABLE — system sans, oversized to "pop" */
-.popular-title {
-  display: inline-flex;
-  align-items: center;
-  gap: 12px;
-  margin: 0;
-  font-family: var(--font-sans);
-  font-size: clamp(26px, 5vw, 42px);
-  font-weight: 800;
-  letter-spacing: -0.02em;
-  color: #e8f0ff;
-  line-height: 1.1;
-}
-
-.popular-title .pop {
-  background: linear-gradient(90deg, var(--gold) 0%, #ffd700 45%, var(--cyan) 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-  color: transparent;
-}
-
-/* Decorative — pixel font intentional */
-.popular-badge {
-  font-family: var(--px);
-  font-size: 8px;
-  letter-spacing: 0.12em;
-  color: var(--dark-bg);
-  background: var(--gold);
-  padding: 6px 10px;
-  border: 2px solid var(--gold-dim);
-  box-shadow: 3px 3px 0 var(--gold-dim);
-  white-space: nowrap;
-}
-
-.popular-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
-  gap: 16px;
-}
-
-.popular-card {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  background: var(--dark-card);
-  border: 3px solid var(--gold);
-  box-shadow: 0 0 0 1px var(--gold-glow), 5px 5px 0 var(--gold-dim);
-  text-decoration: none;
-  color: inherit;
-  overflow: hidden;
-  transition: transform 0.15s, box-shadow 0.15s;
-}
-
-.popular-card:hover {
-  transform: translate(-3px, -3px);
-  box-shadow: 0 0 18px var(--gold-glow), 8px 8px 0 var(--gold-dim);
-}
-
-.popular-card .pc-img {
-  aspect-ratio: 1 / 1;
-  background: #06111f;
-  overflow: hidden;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.popular-card .pc-img img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  image-rendering: pixelated;
-  transition: transform 0.3s;
-}
-
-.popular-card:hover .pc-img img {
-  transform: scale(1.08);
-}
-
-/* Decorative — pixel font intentional */
-.pc-tag {
-  position: absolute;
-  top: 10px;
-  left: 10px;
-  font-family: var(--px);
-  font-size: 7px;
-  letter-spacing: 0.1em;
-  color: var(--dark-bg);
-  background: var(--gold);
-  padding: 4px 8px;
-  border: 2px solid var(--gold-dim);
-}
-
-.pc-body {
-  padding: 12px 14px;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  border-top: 2px solid var(--dark-line);
-}
-
-/* READABLE — system sans */
-.pc-name {
-  font-family: var(--font-sans);
-  font-size: 13px;
-  font-weight: 600;
-  color: #d8e8ff;
-  line-height: 1.35;
-  min-height: 36px;
-}
-
-/* READABLE — system sans */
-.pc-price {
-  font-family: var(--font-sans);
-  font-size: 16px;
-  font-weight: 700;
-  color: var(--gold);
-}
-
-/* ── Section "VIEW ALL" button (replaces brand count meta) ────── */
-.section-viewall {
-  font-family: var(--px);
-  font-size: 7px;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--gold);
-  background: transparent;
-  border: 2px solid var(--gold);
-  padding: 6px 12px;
-  text-decoration: none;
-  white-space: nowrap;
-  cursor: pointer;
-  transition: background 0.15s, color 0.15s, transform 0.1s;
-}
-
-.section-viewall:hover {
-  background: var(--gold);
-  color: var(--dark-bg);
-  transform: translate(-1px, -1px);
-}
-
-/* ── Browse Hub: split row + "view all" CTA ───────────────────── */
-.hub-split {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 24px;
-  margin-bottom: 44px;
-}
-
-@media (max-width: 720px) {
-  .hub-split {
-    grid-template-columns: 1fr;
-    gap: 32px;
-  }
-}
-
-.hub-pane {
-  min-width: 0;
-}
-
-/* Prominent "view full catalog" button on the hub */
-.all-products-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 28px;
-  padding: 14px 22px;
-  background: var(--gold);
-  color: var(--dark-bg);
-  font-family: var(--px);
-  font-size: 8px;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  text-decoration: none;
-  border: 3px solid var(--gold-dim);
-  box-shadow: 4px 4px 0 var(--gold-dim);
-  transition: transform 0.1s, box-shadow 0.1s;
-}
-
-.all-products-btn:hover {
-  transform: translate(-2px, -2px);
-  box-shadow: 6px 6px 0 var(--gold-dim);
-}
-
-.all-products-btn:active {
-  transform: translate(2px, 2px);
-  box-shadow: 1px 1px 0 var(--gold-dim);
-}
-
-/* Back link on the catalog header */
-.catalog-back {
-  display: inline-block;
-  margin-bottom: 12px;
-  font-family: var(--px);
-  font-size: 7px;
-  letter-spacing: 0.12em;
-  color: var(--text-dim);
-  text-decoration: none;
-  transition: color 0.15s;
-}
-
-.catalog-back:hover {
-  color: var(--gold);
-}
-
 /* ── Brand Grid + Tiles ───────────────────────────────────────── */
 .brand-section {
   margin-bottom: 44px;
@@ -1268,8 +1050,6 @@ button,
   box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.5);
   cursor: pointer;
   font-family: inherit;
-  text-decoration: none;
-  color: inherit;
   transition: border-color 0.15s, box-shadow 0.15s, transform 0.15s;
 }
 
@@ -1282,21 +1062,6 @@ button,
 .brand-tile.active {
   border-color: var(--gold);
   box-shadow: 0 0 0 3px var(--gold-glow), 4px 4px 0 var(--gold-dim);
-}
-
-/* When a brand is selected, the rest dim down to simpler tiles */
-.brand-tile.faded {
-  opacity: 0.5;
-  border-color: var(--dark-line);
-  box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.35);
-}
-
-.brand-tile.faded .brand-name {
-  color: var(--text-dim);
-}
-
-.brand-tile.faded:hover {
-  opacity: 1;
 }
 
 .brand-img-wrap {
@@ -1348,99 +1113,6 @@ button,
 /* ── Products Section (grouped catalog) ───────────────────────── */
 .products-section {
   margin-bottom: 36px;
-}
-
-/* ── Product card stock states (catalog page) ─────────────────── */
-.product-card.is-out-of-stock {
-  cursor: not-allowed;
-  opacity: 0.78;
-}
-
-.product-card.is-out-of-stock .card-img {
-  filter: grayscale(0.85);
-}
-
-.stockout-overlay {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(0, 0, 0, 0.55);
-  pointer-events: none;
-}
-
-.stockout-text {
-  padding: 6px 14px;
-  font-size: 11px;
-  font-weight: 900;
-  letter-spacing: 0.18em;
-  color: #fff;
-  background: #dc2626;
-  border: 2px solid #fff;
-  transform: rotate(-6deg);
-}
-
-.stock-line {
-  display: block;
-  margin-top: 4px;
-  font-size: 9px;
-  font-weight: 800;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-}
-
-.stock-line.ok   { color: #16a34a; }
-.stock-line.low  { color: #f59e0b; }
-.stock-line.none { color: #dc2626; }
-
-.buy-btn-disabled {
-  padding: 6px 14px;
-  font-size: 10px;
-  font-weight: 900;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: hsl(var(--muted-foreground));
-  background: hsl(var(--foreground) / 0.08);
-  border: 1px solid hsl(var(--border));
-  border-radius: 6px;
-  cursor: not-allowed;
-}
-
-/* ── Buy modal stock + disabled states ────────────────────────── */
-.modal-stock-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 8px 12px;
-  border-radius: 8px;
-  font-size: 10px;
-  font-weight: 800;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-}
-
-.modal-stock-row.ok   { background: rgb(22 163 74 / 0.10); color: #16a34a; }
-.modal-stock-row.low  { background: rgb(245 158 11 / 0.10); color: #f59e0b; }
-.modal-stock-row.none { background: rgb(220 38 38 / 0.10); color: #dc2626; }
-.modal-stock-label { opacity: 0.8; }
-.modal-stock-val   { font-weight: 900; }
-
-.modal-btn-disabled {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  padding: 10px 16px;
-  font-size: 11px;
-  font-weight: 900;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: hsl(var(--muted-foreground));
-  background: hsl(var(--foreground) / 0.08);
-  border: 1px solid hsl(var(--border));
-  border-radius: 8px;
-  cursor: not-allowed;
 }
 
 /* ── Empty State ──────────────────────────────────────────────── */
