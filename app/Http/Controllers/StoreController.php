@@ -9,19 +9,12 @@ use Illuminate\Support\Facades\Auth;
 class StoreController extends Controller
 {
     /**
-     * Browse hub — products grouped by type (top-ups, vouchers, subscriptions, game keys).
+     * Storefront — browse hub plus the full catalog on a single page.
+     * Supports ?group=, ?brand=, ?search= and ?buy= deep links.
      */
     public function showStore()
     {
         return view('pages.products', $this->storeData());
-    }
-
-    /**
-     * Full catalog listing. Supports ?brand= and ?buy= deep links.
-     */
-    public function showAllProducts()
-    {
-        return view('pages.all-products', $this->storeData());
     }
 
     /**

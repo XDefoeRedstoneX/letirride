@@ -19,7 +19,8 @@ use App\Http\Middleware\EnsureUserIsAdmin;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [StoreController::class, 'showStore'])->name('home');
-Route::get('/all-products', [StoreController::class, 'showAllProducts'])->name('all-products');
+// Catalog merged into the home page; keep the route as a redirect for old links.
+Route::redirect('/all-products', '/')->name('all-products');
 Route::post('/login', [AuthController::class, 'logAuth'])->name('logAuth');
 Route::post('/register', [AuthController::class, 'regAuth'])->name('regAuth');
 

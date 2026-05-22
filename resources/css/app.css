@@ -702,6 +702,73 @@ button,
   color: var(--gold);
 }
 
+/* ── Merged Catalog: spacing + section heading ────────────────── */
+.catalog-merged {
+  margin-top: 56px;
+  scroll-margin-top: 24px;
+}
+
+.catalog-heading {
+  margin: 28px 0 24px;
+}
+
+/* ── Two-column catalog: left filter rail, right results ──────── */
+.catalog-layout {
+  display: grid;
+  grid-template-columns: 200px 1fr;
+  gap: 28px;
+  align-items: start;
+}
+
+@media (max-width: 880px) {
+  .catalog-layout {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+}
+
+/* Left rail — vertical grid of category buttons */
+.filter-rail {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+  position: sticky;
+  top: 24px;
+}
+
+@media (max-width: 880px) {
+  .filter-rail {
+    position: static;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  }
+}
+
+/* Decorative — pixel font intentional */
+.filter-rail-label {
+  font-family: var(--px);
+  font-size: 7px;
+  letter-spacing: 0.14em;
+  color: var(--text-dim);
+  margin-bottom: 2px;
+}
+
+@media (max-width: 880px) {
+  .filter-rail-label {
+    grid-column: 1 / -1;
+  }
+}
+
+/* Override the horizontal-tab sizing for the vertical rail */
+.filter-rail-btn {
+  width: 100%;
+  text-align: left;
+  white-space: normal;
+}
+
+.catalog-main {
+  min-width: 0;
+}
+
 /* ── Category Section ─────────────────────────────────────────── */
 .cat-section {
   margin-bottom: 40px;
@@ -1031,6 +1098,11 @@ button,
 /* ── Popular Products (hub hero strip) ────────────────────────── */
 .popular-section {
   margin: 8px 0 44px;
+}
+
+/* Reserved-but-empty popular section — present in the DOM, no footprint yet */
+.popular-placeholder {
+  margin: 0;
 }
 
 .popular-head {
