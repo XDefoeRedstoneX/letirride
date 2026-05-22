@@ -20,7 +20,7 @@
                             <p style="font-family:var(--font-sans);font-size:16px;font-weight:800;color:var(--gold);" x-text="formatRp(product.price)"></p>
                         </div>
                         <div style="display:flex;gap:6px;margin-top:auto;">
-                            <a :href="'/?buy=' + product.id" class="px-btn-gold" style="flex:1;text-align:center;padding:10px;font-size:6px;text-decoration:none;">BUY</a>
+                            <a :href="'/all-products?buy=' + product.id" class="px-btn-gold" style="flex:1;text-align:center;padding:10px;font-size:6px;text-decoration:none;">BUY</a>
                             <button @click="removeFavorite(product.id)" :disabled="removing === product.id" class="px-btn-danger" style="padding:10px;font-size:6px;">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="square"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
                             </button>
