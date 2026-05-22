@@ -11,6 +11,7 @@ use App\Http\Controllers\CartController;
 use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\FavoriteController;
 use App\Http\Controllers\GachaController;
+use App\Http\Controllers\GachaPaymentController;
 use App\Http\Controllers\InventoryController;
 use App\Http\Controllers\PointController;
 use App\Http\Controllers\StoreController;
@@ -27,8 +28,9 @@ Route::get('/point-shop', [PointController::class, 'index'])->name('point-shop')
 Route::get('/gacha', [GachaController::class, 'showGacha'])->name('gacha');
 Route::get('/favorites', [FavoriteController::class, 'showFavorites'])->name('favorites');
 
-// Midtrans webhook
+// Midtrans webhooks (no auth — Midtrans calls these server-to-server)
 Route::post('/midtrans/callback', [CheckoutController::class, 'callback'])->name('midtrans.callback');
+Route::post('/gacha/pay/callback', [GachaPaymentController::class, 'callback'])->name('gacha.pay.callback');
 
 Route::middleware('auth')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
@@ -36,6 +38,8 @@ Route::middleware('auth')->group(function () {
     // Point Shop & Gacha (POST actions require auth)
     Route::post('/point-shop/redeem/{item}', [PointController::class, 'redeem'])->name('point-shop.redeem');
     Route::post('/gacha/roll', [GachaController::class, 'roll'])->name('gacha.roll');
+    Route::post('/gacha/pay', [GachaPaymentController::class, 'store'])->name('gacha.pay');
+    Route::post('/gacha/pay/verify/{payment}', [GachaPaymentController::class, 'verify'])->name('gacha.pay.verify');
 
     // Favorites (POST actions require auth)
     Route::post('/favorites/{productId}', [FavoriteController::class, 'store'])->name('favorites.store');

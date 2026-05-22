@@ -4,25 +4,24 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
-class GachaHistory extends Model
+class GachaPayment extends Model
 {
     public const UPDATED_AT = null;
 
-    /**
-     * @var array<int, string>
-     */
     protected $fillable = [
         'user_id',
-        'gacha_pool_id',
-        'points_spent',
-        'gacha_payment_id',
+        'amount',
+        'status',
+        'snap_token',
+        'midtrans_order_id',
     ];
 
     protected function casts(): array
     {
         return [
-            'points_spent' => 'integer',
+            'amount' => 'decimal:2',
             'created_at' => 'datetime',
         ];
     }
@@ -32,13 +31,8 @@ class GachaHistory extends Model
         return $this->belongsTo(User::class);
     }
 
-    public function gachaPool(): BelongsTo
+    public function history(): HasOne
     {
-        return $this->belongsTo(GachaPool::class);
-    }
-
-    public function gachaPayment(): BelongsTo
-    {
-        return $this->belongsTo(GachaPayment::class);
+        return $this->hasOne(GachaHistory::class);
     }
 }
