@@ -2,9 +2,9 @@
 
 @section('content')
 <div class="space-y-8">
-    <div class="flex items-center justify-between">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-            <h1 class="text-3xl font-black tracking-tighter uppercase">Dashboard</h1>
+            <h1 class="text-2xl sm:text-3xl font-black tracking-tighter uppercase">Dashboard</h1>
             <p class="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mt-1">Overview of your store</p>
         </div>
         <div class="flex items-center gap-3">
@@ -36,7 +36,7 @@
         @endphp
         @foreach($statCards as $card)
             <div class="bg-card border border-border rounded-2xl p-5 space-y-3">
-                <div class="flex items-center justify-between">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <p class="text-[9px] font-black text-muted-foreground uppercase tracking-widest">{{ $card['label'] }}</p>
                     <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="opacity-40"><path d="{{ $card['icon'] }}"/></svg>
                 </div>
