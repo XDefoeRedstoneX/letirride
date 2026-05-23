@@ -3,60 +3,31 @@
 @section('title', 'Gacha Pool — Admin')
 
 @section('content')
-<div class="space-y-8">
-    <div class="flex items-center justify-between">
+<div class="space-y-8" x-data="{
+    showAddModal: false,
+    showEditModal: false,
+    showDeleteModal: false,
+    pool: {},
+    openAdd() {
+        this.showAddModal = true;
+    },
+    openEdit(p) {
+        this.pool = JSON.parse(JSON.stringify(p));
+        this.showEditModal = true;
+    },
+    openDelete(p) {
+        this.pool = p;
+        this.showDeleteModal = true;
+    }
+}">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-            <h1 class="text-3xl font-black tracking-tighter uppercase">Gacha <span class="text-primary">Pool</span></h1>
+            <h1 class="text-2xl sm:text-3xl font-black tracking-tighter uppercase">Gacha <span class="text-primary">Pool</span></h1>
             <p class="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mt-1">Manage prizes, rarities & drop rates</p>
         </div>
-        <button onclick="document.getElementById('addPrizeForm').classList.toggle('hidden')" class="px-5 py-2.5 bg-primary text-primary-foreground rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2">
-            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" x2="12" y1="5" y2="19"/><line x1="5" x2="19" y1="12" y2="12"/></svg>
-            Add Prize
+        <button @click="openAdd()" class="px-5 py-2.5 bg-primary text-primary-foreground rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2 hover:bg-primary/90 transition-colors">
+            + ADD PRIZE
         </button>
-    </div>
-
-    <!-- Add Prize Form -->
-    <div id="addPrizeForm" class="hidden bg-card border border-border rounded-2xl p-6 space-y-5">
-        <div class="flex items-center justify-between">
-            <h3 class="text-sm font-black uppercase tracking-widest">New Prize</h3>
-            <button onclick="document.getElementById('addPrizeForm').classList.add('hidden')" class="p-1 hover:bg-foreground/5 rounded-lg">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" x2="6" y1="6" y2="18"/><line x1="6" x2="18" y1="6" y2="18"/></svg>
-            </button>
-        </div>
-        <form method="POST" action="{{ route('admin.gacha.store') }}" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            @csrf
-            <div class="space-y-1.5">
-                <label class="text-[9px] font-black text-muted-foreground uppercase tracking-widest">Prize Name <span class="text-red-500">*</span></label>
-                <input type="text" name="prize_name" required class="w-full px-4 py-2.5 bg-foreground/5 border border-border rounded-xl text-xs font-bold outline-none focus:ring-2 focus:ring-primary/30">
-            </div>
-            <div class="space-y-1.5">
-                <label class="text-[9px] font-black text-muted-foreground uppercase tracking-widest">Discount Type <span class="text-red-500">*</span></label>
-                <select name="discount_type_id" required class="w-full px-4 py-2.5 bg-foreground/5 border border-border rounded-xl text-xs font-bold outline-none focus:ring-2 focus:ring-primary/30">
-                    <option value="">Select discount</option>
-                    @foreach(\App\Models\DiscountType::all() as $dt)
-                        <option value="{{ $dt->id }}">{{ $dt->name }} ({{ $dt->type }}: {{ $dt->value }}{{ $dt->type === 'percent' ? '%' : '' }})</option>
-                    @endforeach
-                </select>
-            </div>
-            <div class="space-y-1.5">
-                <label class="text-[9px] font-black text-muted-foreground uppercase tracking-widest">Rarity <span class="text-red-500">*</span></label>
-                <select name="rarity_item" required class="w-full px-4 py-2.5 bg-foreground/5 border border-border rounded-xl text-xs font-bold outline-none focus:ring-2 focus:ring-primary/30">
-                    <option value="common">Common</option>
-                    <option value="uncommon">Uncommon</option>
-                    <option value="rare">Rare</option>
-                    <option value="epic">Epic</option>
-                    <option value="legendary">Legendary</option>
-                    <option value="grand_prize">Grand Prize</option>
-                </select>
-            </div>
-            <div class="space-y-1.5">
-                <label class="text-[9px] font-black text-muted-foreground uppercase tracking-widest">Win Chance (%) <span class="text-red-500">*</span></label>
-                <input type="number" name="base_win_chance" required min="0" max="100" step="0.01" class="w-full px-4 py-2.5 bg-foreground/5 border border-border rounded-xl text-xs font-bold outline-none focus:ring-2 focus:ring-primary/30">
-            </div>
-            <div class="md:col-span-2 lg:col-span-4 flex justify-end">
-                <button type="submit" class="px-8 py-2.5 bg-primary text-primary-foreground rounded-xl text-[10px] font-black uppercase tracking-widest">Add Prize</button>
-            </div>
-        </form>
     </div>
 
     <!-- Pool Prizes Table -->
@@ -97,61 +68,161 @@
                             'grand_prize' => 'bg-rose-500/10 text-rose-400',
                         ];
                     @endphp
-                    @foreach($pools as $pool)
+                    @foreach($pools as $p)
                     <tr class="hover:bg-foreground/5">
-                        <td class="px-5 py-3 text-xs font-mono font-bold text-muted-foreground">#{{ $pool->id }}</td>
-                        <td class="px-5 py-3 text-xs font-bold">{{ $pool->prize_name }}</td>
-                        <td class="px-5 py-3 text-xs text-muted-foreground">{{ $pool->discountType?->name ?? '-' }}</td>
+                        <td class="px-5 py-3 text-xs font-mono font-bold text-muted-foreground">#{{ $p->id }}</td>
+                        <td class="px-5 py-3 text-xs font-bold">{{ $p->prize_name }}</td>
+                        <td class="px-5 py-3 text-xs text-muted-foreground">{{ $p->discountType?->name ?? '-' }}</td>
                         <td class="px-5 py-3">
-                            <span class="px-2 py-1 rounded-lg text-[8px] font-black uppercase tracking-widest {{ $rarityStyles[$pool->rarity_item] ?? 'bg-foreground/5 text-muted-foreground' }}">{{ str_replace('_', ' ', $pool->rarity_item) }}</span>
+                            <span class="px-2 py-1 rounded-lg text-[8px] font-black uppercase tracking-widest {{ $rarityStyles[$p->rarity_item] ?? 'bg-foreground/5 text-muted-foreground' }}">{{ str_replace('_', ' ', $p->rarity_item) }}</span>
                         </td>
-                        <td class="px-5 py-3 text-xs font-bold">{{ $pool->base_win_chance }}%</td>
+                        <td class="px-5 py-3 text-xs font-bold">{{ $p->base_win_chance }}%</td>
                         <td class="px-5 py-3">
                             <div class="flex items-center gap-1">
-                                <button onclick="document.getElementById('editPrize{{ $pool->id }}').classList.toggle('hidden')" class="px-2.5 py-1.5 bg-foreground/5 rounded-lg text-[9px] font-black uppercase tracking-widest hover:bg-primary/10 hover:text-primary transition-colors">Edit</button>
-                                <form method="POST" action="{{ route('admin.gacha.destroy', $pool) }}" onsubmit="return confirm('Delete {{ $pool->prize_name }}?')">
-                                    @csrf @method('DELETE')
-                                    <button type="submit" class="px-2.5 py-1.5 bg-red-500/10 text-red-500 rounded-lg text-[9px] font-black uppercase tracking-widest hover:bg-red-500/20 transition-colors">Delete</button>
-                                </form>
-                            </div>
-                            <div id="editPrize{{ $pool->id }}" class="hidden mt-3 p-4 bg-foreground/5 rounded-xl border border-border">
-                                <form method="POST" action="{{ route('admin.gacha.update', $pool) }}" class="grid grid-cols-2 lg:grid-cols-4 gap-3">
-                                    @csrf @method('PATCH')
-                                    <div class="space-y-1">
-                                        <label class="text-[8px] font-black text-muted-foreground uppercase">Name</label>
-                                        <input type="text" name="prize_name" value="{{ $pool->prize_name }}" class="w-full px-3 py-2 bg-background border border-border rounded-lg text-xs font-bold outline-none">
-                                    </div>
-                                    <div class="space-y-1">
-                                        <label class="text-[8px] font-black text-muted-foreground uppercase">Discount</label>
-                                        <select name="discount_type_id" class="w-full px-3 py-2 bg-background border border-border rounded-lg text-xs font-bold outline-none">
-                                            @foreach(\App\Models\DiscountType::all() as $dt)
-                                                <option value="{{ $dt->id }}" {{ $pool->discount_type_id == $dt->id ? 'selected' : '' }}>{{ $dt->name }}</option>
-                                            @endforeach
-                                        </select>
-                                    </div>
-                                    <div class="space-y-1">
-                                        <label class="text-[8px] font-black text-muted-foreground uppercase">Rarity</label>
-                                        <select name="rarity_item" class="w-full px-3 py-2 bg-background border border-border rounded-lg text-xs font-bold outline-none">
-                                            @foreach(['common','uncommon','rare','epic','legendary','grand_prize'] as $r)
-                                                <option value="{{ $r }}" {{ $pool->rarity_item === $r ? 'selected' : '' }}>{{ ucfirst(str_replace('_', ' ', $r)) }}</option>
-                                            @endforeach
-                                        </select>
-                                    </div>
-                                    <div class="space-y-1">
-                                        <label class="text-[8px] font-black text-muted-foreground uppercase">Chance %</label>
-                                        <input type="number" name="base_win_chance" value="{{ $pool->base_win_chance }}" step="0.01" class="w-full px-3 py-2 bg-background border border-border rounded-lg text-xs font-bold outline-none">
-                                    </div>
-                                    <div class="col-span-full">
-                                        <button type="submit" class="px-5 py-2 bg-primary text-primary-foreground rounded-lg text-[9px] font-black uppercase tracking-widest">Save Changes</button>
-                                        <button type="button" onclick="document.getElementById('editPrize{{ $pool->id }}').classList.add('hidden')" class="ml-2 px-5 py-2 bg-foreground/5 rounded-lg text-[9px] font-black uppercase tracking-widest">Cancel</button>
-                                    </div>
-                                </form>
+                                <button @click="openEdit({{ json_encode($p) }})" class="px-2.5 py-1.5 bg-foreground/5 rounded-lg text-[9px] font-black uppercase tracking-widest hover:bg-primary/10 hover:text-primary transition-colors">Edit</button>
+                                <button @click="openDelete({{ json_encode($p) }})" class="px-2.5 py-1.5 bg-red-500/10 text-red-500 rounded-lg text-[9px] font-black uppercase tracking-widest hover:bg-red-500/20 transition-colors">Delete</button>
                             </div>
                         </td>
                     </tr>
                     @endforeach
                 </tbody>
             </table>
+        </div>
+    </div>
+
+    <!-- Add Prize Modal -->
+    <div x-show="showAddModal" @click="showAddModal = false" class="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/20 backdrop-blur-md" style="display: none;">
+        <div @click.away="showAddModal = false = false = false" class="bg-white dark:bg-[#0f172a] border border-border rounded-3xl shadow-2xl w-full max-w-2xl">
+            
+            
+            <div class="p-6 sm:p-8" style=" display: flex; flex-direction: column; gap: 12px;">
+                <div class="modal-header">
+                    <div>
+                        <h2 class="text-xl font-black uppercase tracking-tighter text-foreground">NEW PRIZE</h2>
+                        <p class="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mt-1">ADD TO POOL</p>
+                    </div>
+                    <button @click="showAddModal = false" class="p-2 hover:bg-foreground/5 rounded-xl text-muted-foreground hover:text-foreground transition-colors"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="square"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>
+                </div>
+                <form method="POST" action="{{ route('admin.gacha.store') }}" class="flex flex-col gap-4">
+                    @csrf
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="text-[10px] font-black uppercase tracking-widest text-foreground/70 dark:text-muted-foreground mb-2 block">PRIZE NAME <span class="req">*</span></label>
+                            <input type="text" name="prize_name" required class="w-full px-4 py-3 bg-foreground/5 border-2 border-border/50 rounded-xl text-xs font-bold text-foreground outline-none focus:border-primary focus:ring-4 focus:ring-primary/20 placeholder:text-muted-foreground/50 transition-all" placeholder="e.g. 10% Discount">
+                        </div>
+                        <div>
+                            <label class="text-[10px] font-black uppercase tracking-widest text-foreground/70 dark:text-muted-foreground mb-2 block">DISCOUNT TYPE <span class="req">*</span></label>
+                            <select name="discount_type_id" required class="w-full px-4 py-3 bg-foreground/5 border-2 border-border/50 rounded-xl text-xs font-bold text-foreground outline-none focus:border-primary focus:ring-4 focus:ring-primary/20 placeholder:text-muted-foreground/50 transition-all">
+                                <option value="">Select discount</option>
+                                @foreach(\App\Models\DiscountType::all() as $dt)
+                                    <option value="{{ $dt->id }}">{{ $dt->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div>
+                            <label class="text-[10px] font-black uppercase tracking-widest text-foreground/70 dark:text-muted-foreground mb-2 block">RARITY <span class="req">*</span></label>
+                            <select name="rarity_item" required class="w-full px-4 py-3 bg-foreground/5 border-2 border-border/50 rounded-xl text-xs font-bold text-foreground outline-none focus:border-primary focus:ring-4 focus:ring-primary/20 placeholder:text-muted-foreground/50 transition-all">
+                                <option value="common">Common</option>
+                                <option value="uncommon">Uncommon</option>
+                                <option value="rare">Rare</option>
+                                <option value="epic">Epic</option>
+                                <option value="legendary">Legendary</option>
+                                <option value="grand_prize">Grand Prize</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="text-[10px] font-black uppercase tracking-widest text-foreground/70 dark:text-muted-foreground mb-2 block">WIN CHANCE (%) <span class="req">*</span></label>
+                            <input type="number" name="base_win_chance" required min="0" max="100" step="0.01" class="w-full px-4 py-3 bg-foreground/5 border-2 border-border/50 rounded-xl text-xs font-bold text-foreground outline-none focus:border-primary focus:ring-4 focus:ring-primary/20 placeholder:text-muted-foreground/50 transition-all">
+                        </div>
+                    </div>
+                    <div class="flex justify-end gap-3 mt-6 pt-5 border-t border-border/50">
+                        <button type="button" @click="showAddModal = false" class="px-6 py-2.5 bg-slate-200 dark:bg-slate-800 rounded-xl text-[10px] font-black uppercase tracking-widest text-slate-800 dark:text-slate-200 hover:bg-slate-300 dark:hover:bg-slate-700 transition-colors">CANCEL</button>
+                        <button type="submit" class="px-6 py-2.5 bg-primary text-primary-foreground rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-primary/90 transition-colors">SAVE PRIZE</button>
+                    </div>
+                </form>
+            </div>
+            
+            
+        </div>
+    </div>
+
+    <!-- Edit Prize Modal -->
+    <div x-show="showEditModal" @click="showEditModal = false" class="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/20 backdrop-blur-md" style="display: none;">
+        <div @click.away="showEditModal = false = false = false" class="bg-white dark:bg-[#0f172a] border border-border rounded-3xl shadow-2xl w-full max-w-2xl">
+            
+            
+            <div class="p-6 sm:p-8" style=" display: flex; flex-direction: column; gap: 12px;">
+                <div class="modal-header">
+                    <div>
+                        <h2 class="text-xl font-black uppercase tracking-tighter text-foreground">EDIT PRIZE</h2>
+                        <p class="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mt-1" x-text="'ID: #' + pool.id"></p>
+                    </div>
+                    <button @click="showEditModal = false" class="p-2 hover:bg-foreground/5 rounded-xl text-muted-foreground hover:text-foreground transition-colors"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="square"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>
+                </div>
+                <form method="POST" :action="'{{ route('admin.gacha') }}/' + pool.id" class="flex flex-col gap-4">
+                    @csrf @method('PATCH')
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="text-[10px] font-black uppercase tracking-widest text-foreground/70 dark:text-muted-foreground mb-2 block">PRIZE NAME <span class="req">*</span></label>
+                            <input type="text" name="prize_name" x-model="pool.prize_name" required class="w-full px-4 py-3 bg-foreground/5 border-2 border-border/50 rounded-xl text-xs font-bold text-foreground outline-none focus:border-primary focus:ring-4 focus:ring-primary/20 placeholder:text-muted-foreground/50 transition-all">
+                        </div>
+                        <div>
+                            <label class="text-[10px] font-black uppercase tracking-widest text-foreground/70 dark:text-muted-foreground mb-2 block">DISCOUNT TYPE <span class="req">*</span></label>
+                            <select name="discount_type_id" x-model="pool.discount_type_id" required class="w-full px-4 py-3 bg-foreground/5 border-2 border-border/50 rounded-xl text-xs font-bold text-foreground outline-none focus:border-primary focus:ring-4 focus:ring-primary/20 placeholder:text-muted-foreground/50 transition-all">
+                                @foreach(\App\Models\DiscountType::all() as $dt)
+                                    <option value="{{ $dt->id }}">{{ $dt->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div>
+                            <label class="text-[10px] font-black uppercase tracking-widest text-foreground/70 dark:text-muted-foreground mb-2 block">RARITY <span class="req">*</span></label>
+                            <select name="rarity_item" x-model="pool.rarity_item" required class="w-full px-4 py-3 bg-foreground/5 border-2 border-border/50 rounded-xl text-xs font-bold text-foreground outline-none focus:border-primary focus:ring-4 focus:ring-primary/20 placeholder:text-muted-foreground/50 transition-all">
+                                <option value="common">Common</option>
+                                <option value="uncommon">Uncommon</option>
+                                <option value="rare">Rare</option>
+                                <option value="epic">Epic</option>
+                                <option value="legendary">Legendary</option>
+                                <option value="grand_prize">Grand Prize</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="text-[10px] font-black uppercase tracking-widest text-foreground/70 dark:text-muted-foreground mb-2 block">WIN CHANCE (%) <span class="req">*</span></label>
+                            <input type="number" name="base_win_chance" x-model="pool.base_win_chance" required min="0" max="100" step="0.01" class="w-full px-4 py-3 bg-foreground/5 border-2 border-border/50 rounded-xl text-xs font-bold text-foreground outline-none focus:border-primary focus:ring-4 focus:ring-primary/20 placeholder:text-muted-foreground/50 transition-all">
+                        </div>
+                    </div>
+                    <div class="flex justify-end gap-3 mt-6 pt-5 border-t border-border/50">
+                        <button type="button" @click="showEditModal = false" class="px-6 py-2.5 bg-slate-200 dark:bg-slate-800 rounded-xl text-[10px] font-black uppercase tracking-widest text-slate-800 dark:text-slate-200 hover:bg-slate-300 dark:hover:bg-slate-700 transition-colors">CANCEL</button>
+                        <button type="submit" class="px-6 py-2.5 bg-primary text-primary-foreground rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-primary/90 transition-colors">UPDATE PRIZE</button>
+                    </div>
+                </form>
+            </div>
+            
+            
+        </div>
+    </div>
+
+    <!-- Delete Prize Modal -->
+    <div x-show="showDeleteModal" @click="showDeleteModal = false" class="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/20 backdrop-blur-md" style="display: none;">
+        <div @click.away="showDeleteModal = false = false = false" class="bg-white dark:bg-[#0f172a] border border-border rounded-3xl shadow-2xl w-full max-w-2xl">
+            
+            
+            <div class="p-6 sm:p-8" style=" display: flex; flex-direction: column; gap: 12px;">
+                <div class="modal-header">
+                    <div>
+                        <h2 class="text-xl font-black uppercase tracking-tighter text-red-500">CONFIRM DELETE</h2>
+                        <p class="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mt-1">DANGER ZONE</p>
+                    </div>
+                    <button @click="showDeleteModal = false" class="p-2 hover:bg-foreground/5 rounded-xl text-muted-foreground hover:text-foreground transition-colors"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="square"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>
+                </div>
+                <p class="text-sm font-sans text-foreground/70 dark:text-muted-foreground">Are you sure you want to delete <strong class="text-foreground" x-text="pool.prize_name"></strong>? This action cannot be undone.</p>
+                <form method="POST" :action="'{{ route('admin.gacha') }}/' + pool.id" class="flex justify-end gap-3 mt-6 pt-5 border-t border-border/50">
+                    @csrf @method('DELETE')
+                    <button type="button" @click="showDeleteModal = false" class="px-6 py-2.5 bg-slate-200 dark:bg-slate-800 rounded-xl text-[10px] font-black uppercase tracking-widest text-slate-800 dark:text-slate-200 hover:bg-slate-300 dark:hover:bg-slate-700 transition-colors">CANCEL</button>
+                    <button type="submit" class="px-6 py-2.5 bg-primary text-primary-foreground rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-primary/90 transition-colors" class="px-6 py-2.5 bg-red-500 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-red-600 transition-colors">DELETE</button>
+                </form>
+            </div>
+            
+            
         </div>
     </div>
 </div>

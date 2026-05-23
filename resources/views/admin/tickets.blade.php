@@ -2,9 +2,9 @@
 
 @section('content')
 <div class="space-y-8">
-    <div class="flex items-center justify-between">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-            <h1 class="text-3xl font-black tracking-tighter uppercase">Support <span class="text-primary">Tickets</span></h1>
+            <h1 class="text-2xl sm:text-3xl font-black tracking-tighter uppercase">Support <span class="text-primary">Tickets</span></h1>
             <p class="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mt-1">Manage customer support requests</p>
         </div>
         <div class="flex gap-1.5">
