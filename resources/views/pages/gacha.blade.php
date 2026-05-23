@@ -108,7 +108,7 @@
             .gacha-decelerating { transform: translateX(var(--gacha-stop-position)); }
         </style>
     @else
-        <div class="px-page">
+        <div class="px-page" x-data="{}">
             <div class="px-empty-state" style="min-height:70vh;">
                 <div style="width:80px;height:80px;background:rgba(245,158,11,0.15);border:3px solid rgba(245,158,11,0.3);display:flex;align-items:center;justify-content:center;color:var(--gold);">
                     <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="square"><rect width="20" height="12" x="2" y="6" rx="2"/><circle cx="12" cy="12" r="2"/><path d="M6 12h.01"/><path d="M18 12h.01"/></svg>
