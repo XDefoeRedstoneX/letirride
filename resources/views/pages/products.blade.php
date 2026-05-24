@@ -138,84 +138,48 @@
     </div>
 </section>
 
-{{-- ── Main Products Page ──────────────────────────────────────── --}}
+{{-- ── Store (hub + full catalog, one Alpine component) ─────────── --}}
 <div class="ridly-products"
-     x-data="productsPage({{ \Illuminate\Support\Js::from($products) }}, {{ \Illuminate\Support\Js::from($favoriteIds ?? []) }}, {{ Auth::check() ? 'true' : 'false' }}, '{{ csrf_token() }}')"
+     x-data="ridlyStore({{ \Illuminate\Support\Js::from($products) }}, {{ \Illuminate\Support\Js::from($favoriteIds ?? []) }}, {{ Auth::check() ? 'true' : 'false' }}, '{{ csrf_token() }}')"
      x-cloak>
 
     <div class="page-inner">
 
-        {{-- ── Page Header ──────────────────────────────────────── --}}
-        <div class="page-header">
-            @auth
-                <h1 class="page-title">
-                    WELCOME, <span class="gold">{{ Auth::user()->name }}</span>
-                </h1>
-                <p class="page-sub">WHAT ARE YOU LOOKING FOR TODAY?</p>
-            @else
-                <h1 class="page-title">
-                    DIGITAL <span class="gold">PRODUCTS</span>
-                </h1>
-                <p class="page-sub">BROWSE OUR COLLECTION OF PREMIUM DIGITAL ITEMS AND LICENSES</p>
-            @endauth
-        </div>
+        {{-- ── Popular (placeholder — content TBD) ───────────────────
+             Section intentionally kept in place but empty for now.    --}}
+        <section class="popular-section popular-placeholder">
+            {{-- Reserved for the "Popular" feature. --}}
+        </section>
 
-        <div class="px-divider">
-            <div class="px-divider-dot"></div>
-            <div class="px-divider-line"></div>
-            <div class="px-divider-dot"></div>
-        </div>
-
-        {{-- ── Search Bar ──────────────────────────────────────── --}}
-        <div class="search-wrap">
-            <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16"
-                 viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
-                 stroke-linecap="square" stroke-linejoin="miter">
-                <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
-            </svg>
-            <input type="text"
-                   x-model="search"
-                   placeholder="SEARCH PRODUCTS..."
-                   class="px-search">
-        </div>
-
-        {{-- ── Category Filter Tabs ────────────────────────────── --}}
-        <div class="filter-tabs">
-            <template x-for="cat in categories" :key="cat">
-                <button @click="setFilter(cat)"
-                        :class="activeFilter === cat ? 'px-tab-active' : 'px-tab-inactive'"
-                        class="px-tab"
-                        x-text="cat">
-                </button>
+        {{-- ── Split Row: Game Top-Ups | Vouchers & Gift Cards ───── --}}
+        <div class="hub-split">
+            <template x-for="group in splitGroups" :key="group.key">
+                <section class="hub-pane">
+                    <div class="section-bar">
+                        <span class="section-title">
+                            <span class="cat-emoji" x-text="group.emoji"></span>
+                            <span x-text="group.label"></span>
+                        </span>
+                        <div class="section-right">
+                            <button class="section-viewall" type="button"
+                                    @click="viewGroup(group.key)">VIEW ALL →</button>
+                        </div>
+                    </div>
+                    <div class="brand-grid">
+                        <template x-for="tile in tilesFor(group)" :key="tile.key">
+                            <button class="brand-tile" type="button"
+                                    @click="onTileClick(tile)">
+                                <div class="brand-img-wrap">
+                                    <img :src="tile.image" alt="steam-wallet.png" class="brand-img">
+                                </div>
+                                <span class="brand-name" x-text="tile.name"></span>
+                                <span class="brand-count" x-show="tile.meta" x-text="tile.meta"></span>
+                            </button>
+                        </template>
+                    </div>
+                </section>
             </template>
         </div>
-
-        {{-- ── Browse By Brand ─────────────────────────────────── --}}
-        <section class="brand-section" x-show="brands.length > 0">
-            <div class="section-bar">
-                <span class="section-title">▣ BROWSE BY BRAND</span>
-                <div class="section-right">
-                    <span class="section-meta"
-                          x-text="brands.length + ' BRAND' + (brands.length !== 1 ? 'S' : '')"></span>
-                </div>
-            </div>
-
-            <div class="brand-grid">
-                <template x-for="brand in brands" :key="brand.name">
-                    <button class="brand-tile"
-                            :class="selectedBrand === brand.name ? 'active' : ''"
-                            @click="selectBrand(brand.name)"
-                            type="button">
-                        <div class="brand-img-wrap">
-                            <img :src="brand.image" alt="steam-wallet.png" class="brand-img">
-                        </div>
-                        <span class="brand-name" x-text="brand.name"></span>
-                        <span class="brand-count"
-                              x-text="brand.count + ' ITEM' + (brand.count !== 1 ? 'S' : '')"></span>
-                    </button>
-                </template>
-            </div>
-        </section>
 
         {{-- ── Product Groups (catalog OR selected brand variants) ─ --}}
         <template x-for="group in displayGroups" :key="group.key">
@@ -228,95 +192,200 @@
                         <span x-text="(group.isBrand ? '▣ ' : '') + group.label"></span>
                     </span>
                     <div class="section-right">
-                        <span class="section-meta"
-                              x-text="group.products.length + ' ITEM' + (group.products.length !== 1 ? 'S' : '')"></span>
-                        <button x-show="group.isBrand"
-                                class="clear-brand-btn"
-                                @click="clearBrand()"
-                                type="button">✕ CLEAR</button>
+                        <button class="section-viewall" type="button"
+                                @click="viewGroup(group.key)">VIEW ALL →</button>
                     </div>
                 </div>
-
-                {{-- Product grid --}}
-                <div class="product-grid">
-                    <template x-for="(product, index) in group.products" :key="product.id">
-                        <div class="product-card animate-card-enter"
-                             :style="`--enter-delay: ${index * 0.1}s`"
-                             :class="!product.in_stock ? 'is-out-of-stock' : ''"
-                             @click="product.in_stock && openBuyModal(product)">
-
-                            {{-- Image --}}
-                            <div class="card-img-wrap">
-                                <img :src="product.image"
-                                     alt="steam-wallet.png"
-                                     class="card-img">
-                                <div class="card-badges">
-                                    <span class="badge-cat" x-text="product.category"></span>
-                                    <span class="badge-topup"
-                                          x-show="product.product_type === 'direct_topup'">
-                                        ⚡ TOP-UP
-                                    </span>
-                                </div>
-
-                                {{-- Stockout Overlay --}}
-                                <template x-if="!product.in_stock">
-                                    <div class="stockout-overlay">
-                                        <span class="stockout-text">OUT OF STOCK</span>
-                                    </div>
-                                </template>
+                <div class="brand-grid">
+                    <template x-for="tile in tilesFor(group)" :key="tile.key">
+                        <button class="brand-tile" type="button"
+                                @click="onTileClick(tile)">
+                            <div class="brand-img-wrap">
+                                <img :src="tile.image" alt="steam-wallet.png" class="brand-img">
                             </div>
-
-                            {{-- Body --}}
-                            <div class="card-body">
-                                <h3 class="card-title" x-text="product.name"></h3>
-                                <div class="card-footer">
-                                    <div>
-                                        <span class="price-label">PRICE</span>
-                                        <span class="price-value"
-                                              x-text="'Rp ' + new Intl.NumberFormat('id-ID').format(product.price)">
-                                        </span>
-                                        <template x-if="product.product_type === 'voucher'">
-                                            <span class="stock-line"
-                                                  :class="product.in_stock ? (product.stock <= 3 ? 'low' : 'ok') : 'none'"
-                                                  x-text="product.in_stock ? (product.stock + ' IN STOCK') : 'OUT OF STOCK'">
-                                            </span>
-                                        </template>
-                                    </div>
-                                    <div class="card-actions" @click.stop>
-                                        <button @click="toggleFavorite(product.id)"
-                                                :class="favorites.includes(product.id) ? 'active' : ''"
-                                                class="fav-btn"
-                                                title="Favorite">
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
-                                                 viewBox="0 0 24 24"
-                                                 :fill="favorites.includes(product.id) ? 'currentColor' : 'none'"
-                                                 stroke="currentColor" stroke-width="2.5"
-                                                 stroke-linecap="square">
-                                                <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/>
-                                            </svg>
-                                        </button>
-                                        <button @click="product.in_stock && openBuyModal(product)"
-                                                :disabled="!product.in_stock"
-                                                :class="!product.in_stock ? 'buy-btn-disabled' : 'buy-btn'"
-                                                x-text="product.in_stock ? 'BUY' : 'SOLD OUT'">
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-
-                        </div>
+                            <span class="brand-name" x-text="tile.name"></span>
+                            <span class="brand-count" x-show="tile.meta" x-text="tile.meta"></span>
+                        </button>
                     </template>
                 </div>
 
             </section>
         </template>
 
-        {{-- ── Empty State ─────────────────────────────────────── --}}
-        <div x-show="!hasResults" class="empty-state" x-transition>
-            <div class="empty-icon-box">🔍</div>
-            <p class="empty-text">NO PRODUCTS FOUND</p>
-            <p class="empty-sub">TRY A DIFFERENT SEARCH TERM OR CATEGORY</p>
-        </div>
+        {{-- ════════════════════════════════════════════════════════
+             FULL CATALOG (merged from the old All Products page).
+             VIEW ALL / brand tiles above filter and scroll to here.
+        ════════════════════════════════════════════════════════ --}}
+        <div class="catalog-merged" x-ref="catalog">
+
+            <div class="px-divider">
+                <div class="px-divider-dot"></div>
+                <div class="px-divider-line"></div>
+                <div class="px-divider-dot"></div>
+            </div>
+
+            <div class="catalog-heading">
+                <h2 class="page-title">ALL <span class="gold">PRODUCTS</span></h2>
+                <p class="page-sub">SEARCH, FILTER, AND BUY THE FULL RIDLY CATALOG</p>
+            </div>
+
+            {{-- ── Search Bar ──────────────────────────────────────── --}}
+            <div class="search-wrap">
+                <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+                     viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                     stroke-linecap="square" stroke-linejoin="miter">
+                    <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
+                </svg>
+                <input type="text"
+                       x-model="search"
+                       placeholder="SEARCH PRODUCTS..."
+                       class="px-search">
+            </div>
+
+            {{-- ── Two-column: filter rail (left) + results (right) ── --}}
+            <div class="catalog-layout">
+
+                {{-- Left: category filter buttons --}}
+                <aside class="filter-rail">
+                    <span class="filter-rail-label">CATEGORY</span>
+                    <template x-for="cat in categories" :key="cat">
+                        <button @click="setFilter(cat)"
+                                :class="activeFilter === cat ? 'px-tab-active' : 'px-tab-inactive'"
+                                class="px-tab filter-rail-btn"
+                                x-text="cat">
+                        </button>
+                    </template>
+                </aside>
+
+                {{-- Right: brand grid + product groups --}}
+                <div class="catalog-main">
+
+                    {{-- Browse By Brand --}}
+                    <section class="brand-section" x-show="brands.length > 0">
+                        <div class="section-bar">
+                            <span class="section-title">▣ BROWSE BY BRAND</span>
+                            <div class="section-right">
+                                <span class="section-meta"
+                                      x-text="brands.length + ' BRAND' + (brands.length !== 1 ? 'S' : '')"></span>
+                            </div>
+                        </div>
+
+                        <div class="brand-grid">
+                            <template x-for="brand in brands" :key="brand.name">
+                                <button class="brand-tile"
+                                        :class="selectedBrand === brand.name ? 'active' : (selectedBrand ? 'faded' : '')"
+                                        @click="selectBrand(brand.name)"
+                                        type="button">
+                                    <div class="brand-img-wrap">
+                                        <img :src="brand.image" alt="steam-wallet.png" class="brand-img">
+                                    </div>
+                                    <span class="brand-name" x-text="brand.name"></span>
+                                    <span class="brand-count"
+                                          x-show="!selectedBrand || selectedBrand === brand.name"
+                                          x-text="brand.count + ' ITEM' + (brand.count !== 1 ? 'S' : '')"></span>
+                                </button>
+                            </template>
+                        </div>
+                    </section>
+
+                    {{-- Product Groups (catalog OR selected brand variants) --}}
+                    <template x-for="group in displayGroups" :key="group.key">
+                        <section class="products-section">
+
+                            <div class="section-bar">
+                                <span class="section-title">
+                                    <span class="cat-emoji" x-show="group.emoji" x-text="group.emoji"></span>
+                                    <span x-text="(group.isBrand ? '▣ ' : '') + group.label"></span>
+                                </span>
+                                <div class="section-right">
+                                    <span class="section-meta"
+                                          x-text="group.products.length + ' ITEM' + (group.products.length !== 1 ? 'S' : '')"></span>
+                                    <button x-show="group.isBrand"
+                                            class="clear-brand-btn"
+                                            @click="clearBrand()"
+                                            type="button">✕ CLEAR</button>
+                                </div>
+                            </div>
+
+                            <div class="product-grid">
+                                <template x-for="product in group.products" :key="product.id">
+                                    <div class="product-card px-border-card"
+                                         :class="!product.in_stock ? 'is-out-of-stock' : ''"
+                                         @click="product.in_stock && openBuyModal(product)">
+
+                                        <div class="card-img-wrap">
+                                            <img :src="product.image"
+                                                 alt="steam-wallet.png"
+                                                 class="card-img">
+                                            <div class="card-badges">
+                                                <span class="badge-cat" x-text="product.category"></span>
+                                                <span class="badge-topup"
+                                                      x-show="product.product_type === 'direct_topup'">
+                                                    ⚡ TOP-UP
+                                                </span>
+                                            </div>
+
+                                            <template x-if="!product.in_stock">
+                                                <div class="stockout-overlay">
+                                                    <span class="stockout-text">OUT OF STOCK</span>
+                                                </div>
+                                            </template>
+                                        </div>
+
+                                        <div class="card-body">
+                                            <h3 class="card-title" x-text="product.name"></h3>
+                                            <div class="card-footer">
+                                                <div>
+                                                    <span class="price-label">PRICE</span>
+                                                    <span class="price-value"
+                                                          x-text="'Rp ' + new Intl.NumberFormat('id-ID').format(product.price)">
+                                                    </span>
+                                                    <template x-if="product.product_type === 'voucher'">
+                                                        <span class="stock-line"
+                                                              :class="product.in_stock ? (product.stock <= 3 ? 'low' : 'ok') : 'none'"
+                                                              x-text="product.in_stock ? (product.stock + ' IN STOCK') : 'OUT OF STOCK'">
+                                                        </span>
+                                                    </template>
+                                                </div>
+                                                <div class="card-actions" @click.stop>
+                                                    <button @click="toggleFavorite(product.id)"
+                                                            :class="favorites.includes(product.id) ? 'active' : ''"
+                                                            class="fav-btn"
+                                                            title="Favorite">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+                                                             viewBox="0 0 24 24"
+                                                             :fill="favorites.includes(product.id) ? 'currentColor' : 'none'"
+                                                             stroke="currentColor" stroke-width="2.5"
+                                                             stroke-linecap="square">
+                                                            <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/>
+                                                        </svg>
+                                                    </button>
+                                                    <button @click="product.in_stock && openBuyModal(product)"
+                                                            :disabled="!product.in_stock"
+                                                            :class="!product.in_stock ? 'buy-btn-disabled' : 'buy-btn'"
+                                                            x-text="product.in_stock ? 'BUY' : 'SOLD OUT'">
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                </template>
+                            </div>
+
+                        </section>
+                    </template>
+
+                    {{-- Empty State --}}
+                    <div x-show="!hasResults" class="empty-state" x-transition>
+                        <div class="empty-icon-box">🔍</div>
+                        <p class="empty-text">NO PRODUCTS FOUND</p>
+                        <p class="empty-sub">TRY A DIFFERENT SEARCH TERM OR CATEGORY</p>
+                    </div>
+
+                </div>{{-- /catalog-main --}}
+            </div>{{-- /catalog-layout --}}
+        </div>{{-- /catalog-merged --}}
 
     </div>{{-- /page-inner --}}
 
@@ -455,18 +524,38 @@
 ═══════════════════════════════════════════════════════════════ --}}
 <script>
 
-/* Category whose items are one-off titles, NOT brand denominations.
-   These are never turned into brand tiles — they show as direct cards. */
+/* Browse-hub type groups. Each maps one or more product categories to a tile
+   section. mode 'brand' → one tile per subcategory (a brand); mode 'product'
+   → one tile per product (game keys are one-off titles, not brands). */
+const RIDLY_HUB_GROUPS = [
+    { key: 'topups',   label: 'GAME TOP-UPS',          emoji: '💎', cats: ['In-Game Currency'],            mode: 'brand'   },
+    { key: 'vouchers', label: 'VOUCHERS & GIFT CARDS', emoji: '👛', cats: ['Wallet Top-Ups', 'Gift Cards'], mode: 'brand'  },
+    { key: 'subs',     label: 'SUBSCRIPTIONS',         emoji: '📺', cats: ['Subscriptions'],               mode: 'brand'   },
+    { key: 'games',    label: 'GAME KEYS',             emoji: '🎮', cats: ['Games'],                       mode: 'product' },
+];
+
+/* Category whose items are one-off titles, NOT brand denominations. */
 const RIDLY_GAMES_CATEGORY = 'Games';
 
-/* ── Alpine.js Products Controller ──────────────────────────── */
-function productsPage(initialProducts, initialFavorites, isAuthenticated, csrfToken) {
+/* Hub group key → the categories it covers. VIEW ALL scopes the catalog
+   below to these categories. */
+const RIDLY_GROUP_CATS = {
+    topups:   ['In-Game Currency'],
+    vouchers: ['Wallet Top-Ups', 'Gift Cards'],
+    subs:     ['Subscriptions'],
+    games:    ['Games'],
+};
+
+/* ── Alpine.js Store (hub + catalog) ────────────────────────── */
+function ridlyStore(initialProducts, initialFavorites, isAuthenticated, csrfToken) {
     return {
         /* ─ State ─────────────────────────────────────────────── */
         products:         initialProducts,
+        groups:           RIDLY_HUB_GROUPS,
         search:           '',
         activeFilter:     'All',
         selectedBrand:    null,
+        groupCats:        null,
         favorites:        initialFavorites,
         isAuthenticated,
         csrfToken,
@@ -478,8 +567,19 @@ function productsPage(initialProducts, initialFavorites, isAuthenticated, csrfTo
 
         /* ─ Lifecycle ─────────────────────────────────────────── */
         init() {
-            // Auto-open buy modal if ?buy=PRODUCT_ID is in URL (from favorites page)
             const urlParams = new URLSearchParams(window.location.search);
+
+            const search = urlParams.get('search');
+            if (search) this.search = search;
+
+            const group = urlParams.get('group');
+            if (group && RIDLY_GROUP_CATS[group]) this.groupCats = RIDLY_GROUP_CATS[group];
+
+            const brand = urlParams.get('brand');
+            if (brand && this.products.some(p => (p.subcategory || 'Other') === brand)) {
+                this.selectedBrand = brand;
+            }
+
             const buyId = urlParams.get('buy');
             if (buyId) {
                 const product = this.products.find(p => p.id == buyId);
@@ -489,12 +589,91 @@ function productsPage(initialProducts, initialFavorites, isAuthenticated, csrfTo
                         this.showCartModal = true;
                     });
                 }
-                // Clean up URL without reload
+            }
+
+            // A deep link that scopes the catalog should land there.
+            if ((group || brand || search) && !buyId) {
+                this.$nextTick(() => this.scrollToCatalog());
+            }
+
+            if (search || group || brand || buyId) {
                 window.history.replaceState({}, '', window.location.pathname);
             }
         },
 
-        /* ─ Computed ──────────────────────────────────────────── */
+        /* ════ HUB (top of page) ══════════════════════════════ */
+
+        // Top row shares one split grid; the rest are full-width rows.
+        get splitGroups() { return [this.groups[0], this.groups[1]]; },
+        get fullGroups()  { return [this.groups[2], this.groups[3]]; },
+
+        _productsIn(group) {
+            return this.products.filter(p => group.cats.includes(p.category || 'Other'));
+        },
+
+        // Tiles for a hub group — brand tiles, or one tile per game key.
+        tilesFor(group) {
+            const items = this._productsIn(group);
+
+            if (group.mode === 'product') {
+                return items.map(p => ({
+                    key:     'p' + p.id,
+                    name:    p.name,
+                    image:   p.image,
+                    meta:    null,
+                    product: p,
+                }));
+            }
+
+            const map = {};
+            for (const p of this.products) {
+                if ((p.category || 'Other') === RIDLY_GAMES_CATEGORY) continue;
+                if (this.activeFilter !== 'All' && (p.category || 'Other') !== this.activeFilter) continue;
+                if (!this._matchesSearch(p)) continue;
+                const name = p.subcategory || 'Other';
+                if (!map[name]) map[name] = { name, image: p.image, count: 0 };
+                map[name].count++;
+            }
+            return Object.values(map).map(b => ({
+                key:     'b:' + b.name,
+                name:    b.name,
+                image:   b.image,
+                meta:    b.count + ' ITEM' + (b.count !== 1 ? 'S' : ''),
+                product: null,
+            }));
+        },
+
+        // Click a hub tile: game key → buy modal; brand → filter + scroll.
+        onTileClick(tile) {
+            if (tile.product) {
+                if (tile.product.in_stock) this.openBuyModal(tile.product);
+                return;
+            }
+            this.goToBrand(tile.name);
+        },
+
+        // VIEW ALL: scope the catalog to a group's categories, then scroll.
+        viewGroup(key) {
+            this.activeFilter  = 'All';
+            this.selectedBrand = null;
+            this.groupCats     = RIDLY_GROUP_CATS[key] || null;
+            this.$nextTick(() => this.scrollToCatalog());
+        },
+
+        // Pre-select a brand in the catalog, then scroll.
+        goToBrand(name) {
+            this.activeFilter  = 'All';
+            this.groupCats     = null;
+            this.selectedBrand = name;
+            this.$nextTick(() => this.scrollToCatalog());
+        },
+
+        scrollToCatalog() {
+            this.$refs.catalog?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        },
+
+        /* ════ CATALOG (bottom of page) ═══════════════════════ */
+
         get uniqueCategories() {
             return [...new Set(this.products.map(p => p.category || 'Other'))];
         },
@@ -503,20 +682,16 @@ function productsPage(initialProducts, initialFavorites, isAuthenticated, csrfTo
             return ['All', ...this.uniqueCategories];
         },
 
-        // Categories visible in the grouped catalog (respects the active pill).
         get visibleCategories() {
-            if (this.activeFilter !== 'All') {
-                return this.uniqueCategories.filter(c => c === this.activeFilter);
-            }
-            return this.uniqueCategories;
+            return this.uniqueCategories.filter(c => this._inScope(c));
         },
 
-        // Brand tiles = subcategories, EXCLUDING the Games category (one-off titles).
+        // Brand tiles = subcategories, EXCLUDING the Games category.
         get brands() {
             const map = {};
             for (const p of this.products) {
                 if ((p.category || 'Other') === RIDLY_GAMES_CATEGORY) continue;
-                if (this.activeFilter !== 'All' && (p.category || 'Other') !== this.activeFilter) continue;
+                if (!this._inScope(p.category || 'Other')) continue;
                 if (!this._matchesSearch(p)) continue;
                 const name = p.subcategory || 'Other';
                 if (!map[name]) {
@@ -527,9 +702,6 @@ function productsPage(initialProducts, initialFavorites, isAuthenticated, csrfTo
             return Object.values(map);
         },
 
-        // Groups rendered below the brand grid:
-        //  - a brand is selected  → one group of that brand's variants
-        //  - otherwise            → one group per visible category
         get displayGroups() {
             if (this.selectedBrand) {
                 return [{
@@ -576,6 +748,12 @@ function productsPage(initialProducts, initialFavorites, isAuthenticated, csrfTo
                 || (p.subcategory || '').toLowerCase().includes(kw);
         },
 
+        _inScope(cat) {
+            if (this.activeFilter !== 'All' && cat !== this.activeFilter) return false;
+            if (this.groupCats && !this.groupCats.includes(cat)) return false;
+            return true;
+        },
+
         productsForCategory(cat) {
             return this.products.filter(p =>
                 (p.category || 'Other') === cat && this._matchesSearch(p)
@@ -586,7 +764,7 @@ function productsPage(initialProducts, initialFavorites, isAuthenticated, csrfTo
             return this.products.filter(p =>
                 (p.subcategory || 'Other') === name
                 && (p.category || 'Other') !== RIDLY_GAMES_CATEGORY
-                && (this.activeFilter === 'All' || (p.category || 'Other') === this.activeFilter)
+                && this._inScope(p.category || 'Other')
                 && this._matchesSearch(p)
             );
         },
@@ -595,10 +773,12 @@ function productsPage(initialProducts, initialFavorites, isAuthenticated, csrfTo
         setFilter(cat) {
             this.activeFilter = cat;
             this.selectedBrand = null;
+            this.groupCats = null;
         },
 
         selectBrand(name) {
             this.selectedBrand = (this.selectedBrand === name) ? null : name;
+            if (this.selectedBrand) this.$nextTick(() => this.scrollToCatalog());
         },
 
         clearBrand() {

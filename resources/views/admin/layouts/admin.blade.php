@@ -6,18 +6,47 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'Admin') — Ridly Admin</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    <!-- Apply saved theme on load to prevent flickering -->
+    <script>
+      (function() {
+        var stored = localStorage.theme;
+        var isDark = stored === 'dark' || (!stored && window.matchMedia('(prefers-color-scheme: dark)').matches);
+        var html = document.documentElement;
+        if (isDark) html.classList.add('dark');
+        else html.classList.remove('dark');
+      })();
+    </script>
     <style>
-        .admin-sidebar { background: hsl(var(--card)); border-right: 1px solid hsl(var(--border)); }
-        .admin-nav-link { display: flex; align-items: center; gap: 0.75rem; padding: 0.6rem 0.9rem; border-radius: 0.75rem; font-size: 0.7rem; font-weight: 900; text-transform: uppercase; letter-spacing: 0.1em; color: hsl(var(--muted-foreground)); }
-        .admin-nav-link:hover, .admin-nav-link.active { background: hsl(var(--primary) / 0.1); color: hsl(var(--primary)); }
-        .admin-section-title { font-size: 0.6rem; font-weight: 900; text-transform: uppercase; letter-spacing: 0.15em; color: hsl(var(--muted-foreground) / 0.5); padding: 0 0.9rem; margin-top: 1rem; margin-bottom: 0.25rem; }
+        .admin-sidebar { border-right: 1px solid var(--border); background-color: var(--card); }
+        .admin-nav-link { display: flex; align-items: center; gap: 0.75rem; padding: 0.6rem 0.9rem; border-radius: 0.75rem; font-size: 0.7rem; font-weight: 900; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted-foreground); transition: all 0.1s; }
+        .admin-nav-link:hover, .admin-nav-link.active { background: rgba(245, 158, 11, 0.15); color: var(--primary); }
+        .admin-section-title { font-size: 0.6rem; font-weight: 900; text-transform: uppercase; letter-spacing: 0.15em; color: var(--muted-foreground); opacity: 0.6; padding: 0 0.9rem; margin-top: 1rem; margin-bottom: 0.25rem; }
     </style>
 </head>
-<body class="bg-background text-foreground min-h-screen flex">
-    <aside class="admin-sidebar w-64 min-h-screen p-5 flex flex-col gap-1 shrink-0 sticky top-0 h-screen overflow-y-auto">
-        <div class="space-y-1 px-1 mb-2">
-            <a href="{{ route('admin.dashboard') }}" class="text-xl font-black tracking-tighter uppercase">Ridly <span class="text-primary">Admin</span></a>
-            <p class="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">Management Panel</p>
+<body class="bg-background text-foreground min-h-screen flex flex-col md:flex-row" x-data="{ mobileMenuOpen: false }">
+
+    <!-- Mobile Top Bar -->
+    <div class="md:hidden flex items-center justify-between p-4 border-b border-border bg-card sticky top-0 z-40">
+        <div>
+            <a href="{{ route('admin.dashboard') }}" class="text-lg font-black tracking-tighter uppercase">Ridly <span class="text-primary">Admin</span></a>
+        </div>
+        <button @click="mobileMenuOpen = !mobileMenuOpen" class="p-2 bg-foreground/5 rounded-lg text-foreground hover:bg-foreground/10 transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></svg>
+        </button>
+    </div>
+
+    <!-- Mobile Sidebar Backdrop -->
+    <div x-show="mobileMenuOpen" class="fixed inset-0 z-40 bg-black/60 md:hidden" @click="mobileMenuOpen = false" x-transition.opacity style="display: none;"></div>
+    <aside class="admin-sidebar w-64 p-5 flex flex-col gap-1 shrink-0 fixed md:sticky top-0 left-0 h-screen overflow-y-auto z-50 bg-card shadow-[4px_0_24px_rgba(0,0,0,0.5)] transition-transform duration-300 md:translate-x-0"
+       :class="mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'">
+        <div class="flex items-center justify-between px-1 mb-2">
+            <div class="space-y-1">
+                <a href="{{ route('admin.dashboard') }}" class="text-xl font-black tracking-tighter uppercase">Ridly <span class="text-primary">Admin</span></a>
+                <p class="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">Management Panel</p>
+            </div>
+            <button @click="mobileMenuOpen = false" class="md:hidden p-2 text-muted-foreground hover:text-foreground hover:bg-foreground/5 rounded-lg transition-colors">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+            </button>
         </div>
 
         <div class="admin-section-title">Overview</div>
@@ -102,7 +131,7 @@
         </div>
     </aside>
 
-    <main class="flex-1 p-8 min-h-screen">
+    <main class="flex-1 p-4 sm:p-6 md:p-8 min-h-screen w-full max-w-full overflow-x-hidden">
         @if(session('success'))
             <div class="mb-6 px-5 py-3 bg-green-500/10 border border-green-500/20 rounded-xl text-green-500 text-xs font-bold uppercase tracking-widest flex items-center gap-2">
                 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>

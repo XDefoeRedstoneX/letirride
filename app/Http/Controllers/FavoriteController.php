@@ -48,6 +48,10 @@ class FavoriteController extends Controller
 
     public function showFavorites()
     {
+        if (! Auth::check()) {
+            return view('pages.favorites', ['favorites' => collect()]);
+        }
+
         $favorites = Favorite::with(['product.category'])
             ->where('user_id', Auth::id())
             ->whereHas('product', fn ($query) => $query->where('is_active', true))
