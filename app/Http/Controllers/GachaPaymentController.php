@@ -4,8 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\GachaHistory;
 use App\Models\GachaPayment;
-use App\Models\GachaPool;
-use App\Models\UserDiscount;
+use App\Models\User;
+use App\Services\GachaRollService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -20,7 +20,7 @@ class GachaPaymentController extends Controller
 {
     public const SPIN_PRICE = 15000;
 
-    public function __construct()
+    public function __construct(private readonly GachaRollService $roller)
     {
         Config::$serverKey = config('midtrans.server_key');
         Config::$isProduction = config('midtrans.is_production');
@@ -67,7 +67,7 @@ class GachaPaymentController extends Controller
                 ]],
                 'customer_details' => [
                     'first_name' => $user->name,
-                    'email' => $user->email,
+                    'email' => $this->midtransSafeEmail($user),
                 ],
             ];
 
@@ -163,7 +163,10 @@ class GachaPaymentController extends Controller
                     'id' => $history->gachaPool->id,
                     'name' => $history->gachaPool->prize_name,
                     'rarity' => $history->gachaPool->rarity_item,
-                    'image' => $this->imageForRarity($history->gachaPool->rarity_item),
+                    'reward_type' => $history->gachaPool->reward_type,
+                    'points_amount' => $history->gachaPool->points_amount,
+                    'image' => GachaController::resolveImageFor($history->gachaPool),
+                    'discount_name' => $history->gachaPool->discountType?->name ?? '',
                 ];
             }
         }
@@ -175,59 +178,58 @@ class GachaPaymentController extends Controller
     }
 
     /**
-     * Mark payment paid, run weighted RNG spin, issue voucher.
+     * Midtrans rejects emails whose TLD is shorter than 2 chars (e.g. a@a.a from the
+     * dev seeder). Swap in a deterministic placeholder when the user's stored email
+     * would fail Midtrans validation so the spin can still proceed end-to-end.
      */
-    private function fulfill(GachaPayment $payment): void
+    private function midtransSafeEmail(User $user): string
     {
-        $payment->update(['status' => 'paid']);
+        if (is_string($user->email) && preg_match('/@[^@\s]+\.[a-zA-Z]{2,}$/', $user->email)) {
+            return $user->email;
+        }
 
-        $prizes = GachaPool::all();
+        return 'user-'.$user->id.'@noreply.ridly.example';
+    }
 
-        if ($prizes->isEmpty()) {
+    /**
+     * Mark payment paid, run a roll through GachaRollService (pity + boosters apply),
+     * dispatch the reward, and link the resulting history to this payment.
+     *
+     * Idempotent: if this payment already has a linked history row, skip.
+     */
+    public function fulfill(GachaPayment $payment): void
+    {
+        if (GachaHistory::where('gacha_payment_id', $payment->id)->exists()) {
+            $payment->update(['status' => 'paid']);
+
             return;
         }
 
-        $totalWeight = $prizes->sum('base_win_chance');
-        $random = mt_rand(0, (int) ($totalWeight * 100)) / 100;
-        $cumulative = 0;
-        $wonPrize = null;
+        $user = User::find($payment->user_id);
+        if (! $user) {
+            $payment->update(['status' => 'failed']);
 
-        foreach ($prizes as $prize) {
-            $cumulative += $prize->base_win_chance;
-            if ($random <= $cumulative) {
-                $wonPrize = $prize;
-                break;
-            }
+            return;
         }
 
-        if (! $wonPrize) {
-            $wonPrize = $prizes->last();
-        }
+        DB::transaction(function () use ($payment, $user) {
+            $payment->update(['status' => 'paid']);
 
-        GachaHistory::create([
-            'user_id' => $payment->user_id,
-            'gacha_pool_id' => $wonPrize->id,
-            'points_spent' => 0,
-            'gacha_payment_id' => $payment->id,
-        ]);
+            $outcome = $this->roller->roll($user);
+            $prize = $outcome['prize'];
 
-        if ($wonPrize->discount_type_id) {
-            UserDiscount::create([
-                'user_id' => $payment->user_id,
-                'discount_type_id' => $wonPrize->discount_type_id,
-                'is_used' => false,
-                'obtained_from' => 'gacha',
-                'expires_at' => now()->addDays(14),
+            $this->roller->dispatchReward($user, $prize);
+
+            GachaHistory::create([
+                'user_id' => $user->id,
+                'gacha_pool_id' => $prize->id,
+                'points_spent' => 0,
+                'gacha_payment_id' => $payment->id,
+                'cost_type' => 'money',
+                'pity_triggered' => $outcome['pity_triggered'],
+                'reward_type' => $prize->reward_type,
+                'image_path' => GachaController::resolveImageFor($prize),
             ]);
-        }
-    }
-
-    private function imageForRarity(string $rarity): string
-    {
-        return match ($rarity) {
-            'legendary', 'grand_prize' => '/gacha-assets/jackpot.png',
-            'epic', 'rare' => '/gacha-assets/voucher.png',
-            default => '/gacha-assets/points.png',
-        };
+        });
     }
 }

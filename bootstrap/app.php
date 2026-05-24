@@ -20,6 +20,10 @@ return Application::configure(basePath: dirname(__DIR__))
         });
         $middleware->redirectUsersTo(fn (Request $request) => route('home'));
 
+        $middleware->validateCsrfTokens(except: [
+            'midtrans/callback',
+            'gacha/pay/callback',
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

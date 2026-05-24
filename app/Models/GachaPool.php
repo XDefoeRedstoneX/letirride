@@ -16,6 +16,9 @@ class GachaPool extends Model
         'prize_name',
         'discount_type_id',
         'rarity_item',
+        'reward_type',
+        'points_amount',
+        'image_path',
         'base_win_chance',
     ];
 
@@ -23,6 +26,7 @@ class GachaPool extends Model
     {
         return [
             'base_win_chance' => 'decimal:2',
+            'points_amount' => 'integer',
         ];
     }
 

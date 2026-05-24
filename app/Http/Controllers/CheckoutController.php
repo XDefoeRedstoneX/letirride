@@ -8,6 +8,7 @@ use App\Models\OrderDetail;
 use App\Models\Product;
 use App\Models\ProductKey;
 use App\Models\TopupCredential;
+use App\Models\User;
 use App\Models\UserDiscount;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -185,7 +186,7 @@ class CheckoutController extends Controller
                 'item_details' => $itemDetails,
                 'customer_details' => [
                     'first_name' => $user->name,
-                    'email' => $user->email,
+                    'email' => $this->midtransSafeEmail($user),
                 ],
                 'callbacks' => [
                     'finish' => $finishUrl,
@@ -297,6 +298,20 @@ class CheckoutController extends Controller
         ]);
     }
 
+    /**
+     * Midtrans rejects emails whose TLD is shorter than 2 chars (e.g. a@a.a from the
+     * dev seeder). Swap in a deterministic placeholder when the user's stored email
+     * would fail Midtrans validation so checkout can still proceed end-to-end.
+     */
+    private function midtransSafeEmail(User $user): string
+    {
+        if (is_string($user->email) && preg_match('/@[^@\s]+\.[a-zA-Z]{2,}$/', $user->email)) {
+            return $user->email;
+        }
+
+        return 'user-'.$user->id.'@noreply.ridly.example';
+    }
+
     private function fulfillOrder(Order $order): void
     {
         $order->update(['status' => 'paid']);
@@ -406,7 +421,7 @@ class CheckoutController extends Controller
                 ],
                 'customer_details' => [
                     'first_name' => $order->user->name,
-                    'email' => $order->user->email,
+                    'email' => $this->midtransSafeEmail($order->user),
                 ],
                 'callbacks' => [
                     'finish' => url('/transactions'),

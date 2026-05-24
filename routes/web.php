@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
+use App\Http\Controllers\Admin\GachaBoosterController as AdminGachaBoosterController;
 use App\Http\Controllers\Admin\GachaController as AdminGachaController;
 use App\Http\Controllers\Admin\OrderController as AdminOrderController;
 use App\Http\Controllers\Admin\ProductController as AdminProductController;
@@ -10,6 +11,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\FavoriteController;
+use App\Http\Controllers\GachaBoosterController;
 use App\Http\Controllers\GachaController;
 use App\Http\Controllers\GachaPaymentController;
 use App\Http\Controllers\InventoryController;
@@ -39,9 +41,19 @@ Route::middleware('auth')->group(function () {
 
     // Point Shop & Gacha (POST actions require auth)
     Route::post('/point-shop/redeem/{item}', [PointController::class, 'redeem'])->name('point-shop.redeem');
-    Route::post('/gacha/roll', [GachaController::class, 'roll'])->name('gacha.roll');
-    Route::post('/gacha/pay', [GachaPaymentController::class, 'store'])->name('gacha.pay');
-    Route::post('/gacha/pay/verify/{payment}', [GachaPaymentController::class, 'verify'])->name('gacha.pay.verify');
+    Route::post('/gacha/roll', [GachaController::class, 'roll'])
+        ->middleware('throttle:10,1')
+        ->name('gacha.roll');
+    Route::post('/gacha/pay', [GachaPaymentController::class, 'store'])
+        ->middleware('throttle:10,1')
+        ->name('gacha.pay');
+    Route::post('/gacha/pay/verify/{payment}', [GachaPaymentController::class, 'verify'])
+        ->middleware('throttle:60,1')
+        ->name('gacha.pay.verify');
+    Route::post('/gacha/boosters/{booster}/activate', [GachaBoosterController::class, 'activate'])
+        ->middleware('throttle:20,1')
+        ->name('gacha.boosters.activate');
+    Route::get('/gacha/history', [GachaController::class, 'history'])->name('gacha.history');
 
     // Favorites (POST actions require auth)
     Route::post('/favorites/{productId}', [FavoriteController::class, 'store'])->name('favorites.store');
@@ -98,6 +110,11 @@ Route::prefix('admin')
         Route::post('/gacha', [AdminGachaController::class, 'store'])->name('admin.gacha.store');
         Route::patch('/gacha/{pool}', [AdminGachaController::class, 'update'])->name('admin.gacha.update');
         Route::delete('/gacha/{pool}', [AdminGachaController::class, 'destroy'])->name('admin.gacha.destroy');
+
+        Route::get('/gacha-boosters', [AdminGachaBoosterController::class, 'index'])->name('admin.gacha-boosters');
+        Route::post('/gacha-boosters', [AdminGachaBoosterController::class, 'store'])->name('admin.gacha-boosters.store');
+        Route::patch('/gacha-boosters/{booster}', [AdminGachaBoosterController::class, 'update'])->name('admin.gacha-boosters.update');
+        Route::delete('/gacha-boosters/{booster}', [AdminGachaBoosterController::class, 'destroy'])->name('admin.gacha-boosters.destroy');
 
         Route::get('/tickets', [AdminTicketController::class, 'index'])->name('admin.tickets');
         Route::patch('/tickets/{ticket}/status', [AdminTicketController::class, 'updateStatus'])->name('admin.tickets.status');

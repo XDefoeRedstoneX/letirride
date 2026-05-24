@@ -17,6 +17,10 @@ class GachaHistory extends Model
         'gacha_pool_id',
         'points_spent',
         'gacha_payment_id',
+        'cost_type',
+        'pity_triggered',
+        'reward_type',
+        'image_path',
     ];
 
     protected function casts(): array

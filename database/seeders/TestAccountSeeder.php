@@ -28,8 +28,8 @@ class TestAccountSeeder extends Seeder
             [
                 'name' => 'Test Master',
                 'password' => Hash::make('a'),
-                'role' => 'admin',
-                'points_balance' => 50000,
+                'role' => 'customer',
+                'points_balance' => 9999999,
                 'referral_code' => 'isdnfainf',
             ]
         );

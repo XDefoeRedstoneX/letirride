@@ -64,6 +64,16 @@ class User extends Authenticatable
         return $this->hasMany(Favorite::class);
     }
 
+    public function gachaState(): HasOne
+    {
+        return $this->hasOne(UserGachaState::class);
+    }
+
+    public function activeBoosters(): HasMany
+    {
+        return $this->hasMany(UserActiveBooster::class)->where('expires_at', '>', now());
+    }
+
     /**
      * Check if the user has an admin role.
      */

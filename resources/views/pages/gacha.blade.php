@@ -2,7 +2,7 @@
     @auth
         <div class="px-page">
             <div class="px-page-inner space-y-10"
-                 x-data="gachaPage(@json($prizes, JSON_HEX_QUOT), {{ $spinCost }})">
+                 x-data='gachaPage(@json($prizes), {{ $spinCost }}, @json($boosters ?? []), @json($pity["active_boosters"] ?? []))'>
 
                 {{-- Header --}}
                 <div style="text-align:center;">
@@ -53,6 +53,25 @@
                     </button>
                 </div>
 
+                {{-- Pity Chip + History Link --}}
+                @if($pity)
+                    <div style="display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:10px;max-width:900px;margin:0 auto;">
+                        <span style="display:inline-flex;align-items:center;gap:6px;padding:6px 12px;background:rgba(245,158,11,0.1);border:2px solid rgba(245,158,11,0.25);font-family:var(--px);font-size:7px;letter-spacing:0.1em;color:var(--gold);">
+                            PITY {{ $pity['pity_counter'] }}/{{ $hardPityThreshold }}
+                            <span style="opacity:0.5;">·</span>
+                            MINI {{ $pity['mini_pity_counter'] }}/{{ $miniPityThreshold }}
+                        </span>
+                        @if($pity['free_spins'] > 0)
+                            <span style="display:inline-flex;align-items:center;gap:6px;padding:6px 12px;background:rgba(34,197,94,0.12);border:2px solid rgba(34,197,94,0.3);font-family:var(--px);font-size:7px;letter-spacing:0.1em;color:#22c55e;">
+                                {{ $pity['free_spins'] }} FREE SPIN{{ $pity['free_spins'] > 1 ? 'S' : '' }}
+                            </span>
+                        @endif
+                        <a href="{{ route('gacha.history') }}" style="display:inline-flex;align-items:center;gap:6px;padding:6px 12px;background:rgba(255,255,255,0.04);border:2px solid var(--dark-line);font-family:var(--px);font-size:7px;letter-spacing:0.1em;color:var(--text-dim);text-decoration:none;transition:color 0.15s;" onmouseover="this.style.color='var(--gold)'" onmouseout="this.style.color='var(--text-dim)'">
+                            HISTORY &rarr;
+                        </a>
+                    </div>
+                @endif
+
                 {{-- Drop Rates & Boosters --}}
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6" style="max-width:900px;margin:0 auto;">
                     {{-- Drop Rates --}}
@@ -75,14 +94,21 @@
                     <div class="px-card-static" style="padding:24px;">
                         <div class="px-section-header"><div class="section-icon"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="square"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8Z"/></svg></div><span class="section-title">LUCK BOOSTERS</span></div>
                         <div style="display:flex;flex-direction:column;gap:10px;">
-                            <div style="background:var(--dark-card2);border:2px solid var(--dark-line);padding:14px;display:flex;align-items:center;justify-content:space-between;">
-                                <div><h4 style="font-family:var(--font-sans);font-size:12px;font-weight:800;color:#e8f0ff;">Lucky Charm</h4><p style="font-family:var(--font-sans);font-size:10px;color:var(--text-dim);margin-top:2px;">+5% Rare+ for 30 min</p></div>
-                                <button class="px-btn-gold" style="padding:6px 12px;font-size:6px;">500 PTS</button>
-                            </div>
-                            <div style="background:var(--dark-card2);border:2px solid var(--dark-line);padding:14px;display:flex;align-items:center;justify-content:space-between;">
-                                <div><h4 style="font-family:var(--font-sans);font-size:12px;font-weight:800;color:#e8f0ff;">Golden Touch</h4><p style="font-family:var(--font-sans);font-size:10px;color:var(--text-dim);margin-top:2px;">+10% Epic+ for 15 min</p></div>
-                                <button class="px-btn-gold" style="padding:6px 12px;font-size:6px;">RP 25K</button>
-                            </div>
+                            <template x-for="b in boosters" :key="b.id">
+                                <div style="background:var(--dark-card2);border:2px solid var(--dark-line);padding:14px;display:flex;align-items:center;justify-content:space-between;gap:12px;">
+                                    <div style="flex:1;min-width:0;">
+                                        <h4 style="font-family:var(--font-sans);font-size:12px;font-weight:800;color:#e8f0ff;" x-text="b.name"></h4>
+                                        <p style="font-family:var(--font-sans);font-size:10px;color:var(--text-dim);margin-top:2px;" x-text="b.description || ('+' + b.bonus_percent + '% ' + b.rarity_floor + '+ for ' + b.duration_minutes + ' min')"></p>
+                                        <p x-show="activeBoosterFor(b.id)" style="font-family:var(--font-sans);font-size:9px;color:#22c55e;margin-top:4px;font-weight:800;" x-text="'ACTIVE — ' + activeCountdown(b.id)"></p>
+                                    </div>
+                                    <button @click="activateBooster(b)" :disabled="boosterBusy === b.id"
+                                            class="px-btn-gold" style="padding:6px 12px;font-size:6px;white-space:nowrap;">
+                                        <span x-show="boosterBusy !== b.id" x-text="b.point_cost + ' PTS'"></span>
+                                        <span x-show="boosterBusy === b.id">...</span>
+                                    </button>
+                                </div>
+                            </template>
+                            <p x-show="!boosters || boosters.length === 0" style="font-family:var(--font-sans);font-size:10px;color:var(--text-dim);text-align:center;padding:12px;">No boosters available right now.</p>
                         </div>
                     </div>
                 </div>
@@ -96,7 +122,7 @@
                         <p style="font-family:var(--px);font-size:7px;letter-spacing:0.12em;margin-top:16px;" :style="'color:' + (winner ? rarityColor(winner.rarity) : 'var(--gold)')" x-text="winner ? winner.rarity.toUpperCase() : ''"></p>
                         <h2 style="font-family:var(--font-sans);font-size:24px;font-weight:800;color:#e8f0ff;margin-top:6px;" x-text="winner ? winner.name : ''"></h2>
                         <p style="font-family:var(--font-sans);font-size:12px;color:var(--text-dim);margin-top:4px;" x-text="winner && winner.discount_name ? winner.discount_name : 'Congratulations on your prize!'"></p>
-                        <button @click="showResult = false" class="px-btn-gold" style="width:100%;padding:16px;margin-top:20px;font-size:8px;">CLAIM REWARD</button>
+                        <button @click="claimReward()" class="px-btn-gold" style="width:100%;padding:16px;margin-top:20px;font-size:8px;">CLAIM REWARD</button>
                     </div>
                 </div>
             </div>
@@ -128,7 +154,7 @@
             data-client-key="{{ $midtransClientKey }}"></script>
 
     <script>
-    function gachaPage(items, spinCost) {
+    function gachaPage(items, spinCost, boosters, activeBoosters) {
         return {
             spinning: false,
             showResult: false,
@@ -137,6 +163,67 @@
             dragOffset: 0,
             items,
             spinCost,
+            boosters,
+            activeBoosters,
+            boosterBusy: null,
+            now: Math.floor(Date.now() / 1000),
+
+            init() {
+                setInterval(() => { this.now = Math.floor(Date.now() / 1000); }, 1000);
+            },
+
+            activeBoosterFor(boosterId) {
+                return this.activeBoosters.find(ab => ab.booster_id === boosterId);
+            },
+
+            activeCountdown(boosterId) {
+                const ab = this.activeBoosterFor(boosterId);
+                if (!ab) return '';
+                const expiresAt = Math.floor(new Date(ab.expires_at).getTime() / 1000);
+                let remaining = expiresAt - this.now;
+                if (remaining <= 0) {
+                    this.activeBoosters = this.activeBoosters.filter(x => x.booster_id !== boosterId);
+                    return 'expired';
+                }
+                const mins = Math.floor(remaining / 60);
+                const secs = remaining % 60;
+                return `${mins}m ${secs.toString().padStart(2, '0')}s`;
+            },
+
+            async activateBooster(b) {
+                if (this.boosterBusy) return;
+                this.boosterBusy = b.id;
+                try {
+                    const res = await fetch(`{{ url('/gacha/boosters') }}/${b.id}/activate`, {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                            'Accept': 'application/json',
+                        },
+                    });
+                    const data = await res.json();
+                    if (!res.ok) {
+                        this.toastError(data.message || 'Could not activate booster.');
+                        return;
+                    }
+                    const incoming = data.active_booster;
+                    const existing = this.activeBoosters.findIndex(ab => ab.booster_id === incoming.booster_id);
+                    if (existing >= 0) {
+                        this.activeBoosters[existing] = incoming;
+                    } else {
+                        this.activeBoosters.push(incoming);
+                    }
+                    this.toastSuccess(data.message || 'Booster activated.');
+                } catch (e) {
+                    this.toastError('Network error. Please try again.');
+                } finally {
+                    this.boosterBusy = null;
+                }
+            },
+
+            toastSuccess(message) {
+                window.dispatchEvent(new CustomEvent('show-toast', { detail: { message, type: 'success' } }));
+            },
 
             rarityColor(rarity) {
                 const map = {
@@ -148,41 +235,51 @@
 
             async spin(costType) {
                 if (this.spinning) return;
+
+                // Midtrans path validates first; spin animation only starts once Snap returns success.
+                if (costType === 'midtrans') {
+                    await this.spinWithMidtrans();
+                    return;
+                }
+
+                this.beginSpinAnimation();
+                await this.spinWithPoints();
+            },
+
+            beginSpinAnimation() {
                 this.spinning = true;
                 this.showResult = false;
                 this.winner = null;
                 this.animationClass = 'gacha-spinning';
-
-                if (costType === 'midtrans') {
-                    await this.spinWithMidtrans();
-                } else {
-                    await this.spinWithPoints();
-                }
             },
 
             async spinWithPoints() {
-                const res = await fetch('{{ route("gacha.roll") }}', {
-                    method: 'POST',
-                    headers: {
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                        'Accept': 'application/json',
-                    },
-                });
-                const data = await res.json();
+                try {
+                    const res = await fetch('{{ route("gacha.roll") }}', {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                            'Accept': 'application/json',
+                        },
+                    });
+                    const data = await res.json();
 
-                if (!res.ok) {
-                    this.toastError(data.message || 'Spin failed.');
+                    if (!res.ok) {
+                        this.toastError(data.message || 'Spin failed.');
+                        this.resetSpin();
+                        return;
+                    }
+
+                    this.revealPrize(data.prize);
+                } catch (e) {
+                    this.toastError('Network error. Please try again.');
                     this.resetSpin();
-                    return;
                 }
-
-                this.revealPrize(data.prize);
             },
 
             async spinWithMidtrans() {
                 if (!window.snap || typeof window.snap.pay !== 'function') {
                     this.toastError('Payment system not ready. Please wait a moment and try again.');
-                    this.resetSpin();
                     return;
                 }
 
@@ -198,20 +295,18 @@
                     data = await res.json();
                     if (!res.ok) {
                         this.toastError(data.message || 'Payment failed. Please try again.');
-                        this.resetSpin();
                         return;
                     }
                 } catch (e) {
                     this.toastError('Network error. Please check your connection.');
-                    this.resetSpin();
                     return;
                 }
 
                 window.snap.pay(data.snap_token, {
-                    onSuccess: () => this.pollAndReveal(data.payment_id),
-                    onPending: () => this.pollAndReveal(data.payment_id),
-                    onError:   () => { this.toastError('Payment failed. Please try again.'); this.resetSpin(); },
-                    onClose:   () => this.resetSpin(),
+                    onSuccess: () => { this.beginSpinAnimation(); this.pollAndReveal(data.payment_id); },
+                    onPending: () => { this.beginSpinAnimation(); this.pollAndReveal(data.payment_id); },
+                    onError: () => this.toastError('Payment failed. Please try again.'),
+                    onClose: () => { /* User dismissed without paying — webhook will still fulfill if paid out-of-band. */ },
                 });
             },
 
@@ -246,11 +341,22 @@
 
             revealPrize(prize) {
                 const winIndex = this.items.findIndex(i => String(i.id) === String(prize.id));
-                const itemTotalWidth = 160 + 16;
-                const setWidth = this.items.length * itemTotalWidth;
-                const stopPosition = -(setWidth * 2 + (winIndex >= 0 ? winIndex : 0) * itemTotalWidth);
+                const targetIdx = winIndex >= 0 ? winIndex : 0;
+                // Card box: w-40 (160px) + gap-4 (16px) between cards. The 5-set layout means
+                // the stride from start of set N to start of set N+1 is items.length * 176
+                // (cards*width + gaps + one inter-set gap).
+                const cardWidth = 160;
+                const itemTotalWidth = cardWidth + 16;
+                const setStride = this.items.length * itemTotalWidth;
+                // Anchor the target card in the 3rd set (middle of 5) for a smooth deceleration.
+                const cardLeftFromCarouselOrigin = setStride * 2 + targetIdx * itemTotalWidth;
+                const cardCenter = cardLeftFromCarouselOrigin + cardWidth / 2;
 
                 setTimeout(() => {
+                    // Measure container width at animation time so responsive layouts work.
+                    const containerWidth = this.$refs.carousel.parentElement.clientWidth;
+                    const stopPosition = (containerWidth / 2) - cardCenter;
+
                     this.$refs.carousel.style.setProperty('--gacha-stop-position', `${stopPosition}px`);
                     this.animationClass = 'gacha-decelerating';
 
@@ -267,6 +373,13 @@
             resetSpin() {
                 this.spinning = false;
                 this.animationClass = '';
+            },
+
+            claimReward() {
+                // Full reload so navbar points, pity counter, and any newly-won discount/free-spin
+                // are reflected fresh in server-rendered chrome.
+                this.showResult = false;
+                window.location.reload();
             },
 
             toastError(message) {
