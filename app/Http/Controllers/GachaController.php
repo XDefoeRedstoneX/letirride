@@ -33,6 +33,9 @@ class GachaController extends Controller
         return view('pages.gacha', [
             'prizes' => $prizes,
             'spinCost' => self::SPIN_COST,
+            'midtransClientKey' => config('midtrans.client_key'),
+            'midtransIsProduction' => config('midtrans.is_production'),
+            'paidSpinPrice' => GachaPaymentController::SPIN_PRICE,
         ]);
     }
 

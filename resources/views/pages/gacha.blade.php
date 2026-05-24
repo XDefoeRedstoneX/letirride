@@ -46,10 +46,10 @@
                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="square"><circle cx="8" cy="8" r="6"/><path d="M18.09 10.37A6 6 0 1 1 10.34 18"/><path d="M7 6h1v4"/><path d="m16.71 13.88.7.71-2.82 2.82"/></svg>
                         SPIN ({{ $spinCost }} PTS)
                     </button>
-                    <button @click="spin('balance')" :disabled="spinning"
+                    <button @click="spin('midtrans')" :disabled="spinning"
                             class="px-btn-ghost" style="padding:18px 36px;font-size:9px;display:flex;align-items:center;gap:8px;">
                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="square"><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/></svg>
-                        SPIN (RP 15.000)
+                        SPIN (RP {{ number_format($paidSpinPrice, 0, ',', '.') }})
                     </button>
                 </div>
 
@@ -123,6 +123,10 @@
         </div>
     @endauth
 
+    <script defer
+            src="{{ $midtransIsProduction ? 'https://app.midtrans.com/snap/snap.js' : 'https://app.sandbox.midtrans.com/snap/snap.js' }}"
+            data-client-key="{{ $midtransClientKey }}"></script>
+
     <script>
     function gachaPage(items, spinCost) {
         return {
@@ -136,12 +140,8 @@
 
             rarityColor(rarity) {
                 const map = {
-                    'common': '#9ca3af',
-                    'uncommon': '#22c55e',
-                    'rare': '#3b82f6',
-                    'epic': '#a855f7',
-                    'legendary': '#f59e0b',
-                    'grand_prize': '#f43f5e',
+                    common: '#9ca3af', uncommon: '#22c55e', rare: '#3b82f6',
+                    epic: '#a855f7', legendary: '#f59e0b', grand_prize: '#f43f5e',
                 };
                 return map[rarity] || '#f59e0b';
             },
@@ -153,29 +153,100 @@
                 this.winner = null;
                 this.animationClass = 'gacha-spinning';
 
-                const response = await fetch('{{ route("gacha.roll") }}', {
+                if (costType === 'midtrans') {
+                    await this.spinWithMidtrans();
+                } else {
+                    await this.spinWithPoints();
+                }
+            },
+
+            async spinWithPoints() {
+                const res = await fetch('{{ route("gacha.roll") }}', {
                     method: 'POST',
                     headers: {
                         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
                         'Accept': 'application/json',
                     },
                 });
+                const data = await res.json();
 
-                const data = await response.json();
-
-                if (!response.ok) {
-                    window.dispatchEvent(new CustomEvent('show-toast', {
-                        detail: { message: data.message || 'Spin failed.', type: 'error' }
-                    }));
-                    this.spinning = false;
-                    this.animationClass = '';
+                if (!res.ok) {
+                    this.toastError(data.message || 'Spin failed.');
+                    this.resetSpin();
                     return;
                 }
 
-                const winIndex = this.items.findIndex(i => String(i.id) === String(data.prize.id));
-                const cardWidth = 160;
-                const gap = 16;
-                const itemTotalWidth = cardWidth + gap;
+                this.revealPrize(data.prize);
+            },
+
+            async spinWithMidtrans() {
+                if (!window.snap || typeof window.snap.pay !== 'function') {
+                    this.toastError('Payment system not ready. Please wait a moment and try again.');
+                    this.resetSpin();
+                    return;
+                }
+
+                let data;
+                try {
+                    const res = await fetch('{{ route("gacha.pay") }}', {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                            'Accept': 'application/json',
+                        },
+                    });
+                    data = await res.json();
+                    if (!res.ok) {
+                        this.toastError(data.message || 'Payment failed. Please try again.');
+                        this.resetSpin();
+                        return;
+                    }
+                } catch (e) {
+                    this.toastError('Network error. Please check your connection.');
+                    this.resetSpin();
+                    return;
+                }
+
+                window.snap.pay(data.snap_token, {
+                    onSuccess: () => this.pollAndReveal(data.payment_id),
+                    onPending: () => this.pollAndReveal(data.payment_id),
+                    onError:   () => { this.toastError('Payment failed. Please try again.'); this.resetSpin(); },
+                    onClose:   () => this.resetSpin(),
+                });
+            },
+
+            async pollAndReveal(paymentId) {
+                for (let i = 0; i < 10; i++) {
+                    const res = await fetch(`{{ url('/gacha/pay/verify') }}/${paymentId}`, {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                            'Accept': 'application/json',
+                        },
+                    });
+                    const data = await res.json();
+
+                    if (data.status === 'paid' && data.prize) {
+                        this.revealPrize(data.prize);
+                        return;
+                    }
+
+                    if (data.status === 'failed') {
+                        this.toastError('Payment was not completed.');
+                        this.resetSpin();
+                        return;
+                    }
+
+                    await new Promise(r => setTimeout(r, 2000));
+                }
+
+                this.toastError('Payment status unknown. Check your inventory.');
+                this.resetSpin();
+            },
+
+            revealPrize(prize) {
+                const winIndex = this.items.findIndex(i => String(i.id) === String(prize.id));
+                const itemTotalWidth = 160 + 16;
                 const setWidth = this.items.length * itemTotalWidth;
                 const stopPosition = -(setWidth * 2 + (winIndex >= 0 ? winIndex : 0) * itemTotalWidth);
 
@@ -184,14 +255,25 @@
                     this.animationClass = 'gacha-decelerating';
 
                     setTimeout(() => {
-                        this.winner = data.prize;
+                        this.winner = prize;
                         this.showResult = true;
                         this.spinning = false;
                         this.animationClass = '';
                         this.$refs.carousel.style.transform = 'translateX(0px)';
                     }, 4000);
                 }, 2000);
-            }
+            },
+
+            resetSpin() {
+                this.spinning = false;
+                this.animationClass = '';
+            },
+
+            toastError(message) {
+                window.dispatchEvent(new CustomEvent('show-toast', {
+                    detail: { message, type: 'error' }
+                }));
+            },
         };
     }
     </script>
