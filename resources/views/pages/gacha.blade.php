@@ -13,6 +13,16 @@
 
                 {{-- Gacha Carousel --}}
                 <div style="position:relative;max-width:900px;margin:0 auto;overflow:hidden;height:240px;display:flex;align-items:center;">
+                    {{-- Skip Button --}}
+                    <div x-show="showSkip" x-transition.opacity
+                         style="position:absolute;bottom:10px;right:12px;z-index:20;">
+                        <button @click="skipAnimation()"
+                                style="font-family:var(--px);font-size:7px;letter-spacing:0.1em;padding:6px 14px;background:rgba(0,0,0,0.6);border:2px solid var(--dark-line);color:var(--text-dim);cursor:pointer;transition:color 0.15s,border-color 0.15s;"
+                                onmouseover="this.style.color='var(--gold)';this.style.borderColor='var(--gold)'"
+                                onmouseout="this.style.color='var(--text-dim)';this.style.borderColor='var(--dark-line)'">
+                            SKIP &#9654;&#9654;
+                        </button>
+                    </div>
                     {{-- Center Pointer --}}
                     <div style="position:absolute;left:50%;top:0;bottom:0;width:3px;background:var(--gold);transform:translateX(-50%);z-index:10;box-shadow:0 0 15px rgba(245,158,11,0.5);">
                         <div style="position:absolute;top:-1px;left:50%;transform:translateX(-50%) rotate(45deg);width:12px;height:12px;background:var(--gold);border:2px solid var(--dark-bg);"></div>
@@ -159,6 +169,9 @@
             spinning: false,
             showResult: false,
             winner: null,
+            pendingPrize: null,
+            revealTimers: [],
+            showSkip: false,
             animationClass: '',
             dragOffset: 0,
             items,
@@ -236,13 +249,11 @@
             async spin(costType) {
                 if (this.spinning) return;
 
-                // Midtrans path validates first; spin animation only starts once Snap returns success.
                 if (costType === 'midtrans') {
                     await this.spinWithMidtrans();
                     return;
                 }
 
-                this.beginSpinAnimation();
                 await this.spinWithPoints();
             },
 
@@ -250,10 +261,12 @@
                 this.spinning = true;
                 this.showResult = false;
                 this.winner = null;
+                this.showSkip = true;
                 this.animationClass = 'gacha-spinning';
             },
 
             async spinWithPoints() {
+                // Fetch first — animation only starts on success so errors never move the carousel.
                 try {
                     const res = await fetch('{{ route("gacha.roll") }}', {
                         method: 'POST',
@@ -266,14 +279,13 @@
 
                     if (!res.ok) {
                         this.toastError(data.message || 'Spin failed.');
-                        this.resetSpin();
                         return;
                     }
 
+                    this.beginSpinAnimation();
                     this.revealPrize(data.prize);
                 } catch (e) {
                     this.toastError('Network error. Please try again.');
-                    this.resetSpin();
                 }
             },
 
@@ -322,7 +334,7 @@
                     const data = await res.json();
 
                     if (data.status === 'paid' && data.prize) {
-                        this.revealPrize(data.prize);
+                        this.revealPrize(data.prize, true);
                         return;
                     }
 
@@ -339,39 +351,58 @@
                 this.resetSpin();
             },
 
-            revealPrize(prize) {
+            revealPrize(prize, skipSpinDelay = false) {
+                this.pendingPrize = prize;
+
                 const winIndex = this.items.findIndex(i => String(i.id) === String(prize.id));
                 const targetIdx = winIndex >= 0 ? winIndex : 0;
-                // Card box: w-40 (160px) + gap-4 (16px) between cards. The 5-set layout means
-                // the stride from start of set N to start of set N+1 is items.length * 176
-                // (cards*width + gaps + one inter-set gap).
                 const cardWidth = 160;
                 const itemTotalWidth = cardWidth + 16;
                 const setStride = this.items.length * itemTotalWidth;
-                // Anchor the target card in the 3rd set (middle of 5) for a smooth deceleration.
                 const cardLeftFromCarouselOrigin = setStride * 2 + targetIdx * itemTotalWidth;
                 const cardCenter = cardLeftFromCarouselOrigin + cardWidth / 2;
 
-                setTimeout(() => {
-                    // Measure container width at animation time so responsive layouts work.
+                // For Midtrans, we've already been spinning during the poll — skip the extra wait.
+                const spinDelay = skipSpinDelay ? 0 : 2000;
+
+                const t1 = setTimeout(() => {
                     const containerWidth = this.$refs.carousel.parentElement.clientWidth;
                     const stopPosition = (containerWidth / 2) - cardCenter;
 
                     this.$refs.carousel.style.setProperty('--gacha-stop-position', `${stopPosition}px`);
                     this.animationClass = 'gacha-decelerating';
 
-                    setTimeout(() => {
-                        this.winner = prize;
-                        this.showResult = true;
-                        this.spinning = false;
-                        this.animationClass = '';
-                        this.$refs.carousel.style.transform = 'translateX(0px)';
+                    const t2 = setTimeout(() => {
+                        this.showWinner();
                     }, 4000);
-                }, 2000);
+                    this.revealTimers.push(t2);
+                }, spinDelay);
+                this.revealTimers.push(t1);
+            },
+
+            showWinner() {
+                this.revealTimers.forEach(t => clearTimeout(t));
+                this.revealTimers = [];
+                this.winner = this.pendingPrize;
+                this.pendingPrize = null;
+                this.showResult = true;
+                this.spinning = false;
+                this.showSkip = false;
+                this.animationClass = '';
+                this.$refs.carousel.style.transform = 'translateX(0px)';
+            },
+
+            skipAnimation() {
+                if (!this.pendingPrize) return;
+                this.showWinner();
             },
 
             resetSpin() {
+                this.revealTimers.forEach(t => clearTimeout(t));
+                this.revealTimers = [];
+                this.pendingPrize = null;
                 this.spinning = false;
+                this.showSkip = false;
                 this.animationClass = '';
             },
 
