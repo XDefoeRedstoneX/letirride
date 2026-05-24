@@ -495,6 +495,19 @@ class CheckoutController extends Controller
             if ($finalPoints > 0) {
                 $locked->user()->increment('points_balance', $finalPoints);
             }
+
+            // Kick off the fake-bot delay: flip topup credentials to 'processing'
+            // and stamp fulfilled_at. InventoryController sweeps them to 'sent'
+            // once enough seconds have elapsed (see TopupCredential::SETTLEMENT_SECONDS).
+            TopupCredential::whereIn(
+                'order_detail_id',
+                OrderDetail::where('order_id', $locked->id)->pluck('id')
+            )
+                ->where('topup_status', 'pending')
+                ->update([
+                    'topup_status' => 'processing',
+                    'fulfilled_at' => now(),
+                ]);
         });
 
         try {

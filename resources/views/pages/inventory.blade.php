@@ -51,7 +51,7 @@
                             </template>
                             <template x-if="item.item_type === 'direct_topup'">
                                 <div style="display:flex;align-items:center;gap:8px;">
-                                    <span class="px-badge" :class="item.topup_status === 'sent' ? 'px-badge-green' : (item.topup_status === 'processing' ? 'px-badge-blue' : 'px-badge-amber')" x-text="item.topup_status === 'sent' ? '✓ SENT' : (item.topup_status === 'processing' ? '⟳ PROCESSING' : '⏳ PENDING')"></span>
+                                    <span class="px-badge" :class="item.topup_status === 'sent' ? 'px-badge-green' : (item.topup_status === 'processing' ? 'px-badge-blue' : 'px-badge-amber')" x-text="item.topup_status === 'sent' ? '✓ SENT' : (item.topup_status === 'processing' ? '⟳ DELIVERING' : '⏳ QUEUED')"></span>
                                     <span style="font-family:var(--px);font-size:5px;color:var(--text-dim);">TAP FOR DETAILS</span>
                                 </div>
                             </template>
@@ -115,8 +115,8 @@
                     <template x-if="selectedItem && selectedItem.item_type === 'direct_topup'">
                         <div style="display:flex;flex-direction:column;gap:14px;">
                             <div style="padding:16px;text-align:center;border:2px solid;" :style="'border-color:' + (selectedItem.topup_status === 'sent' ? '#22c55e' : selectedItem.topup_status === 'processing' ? '#3b82f6' : '#f59e0b') + ';background:' + (selectedItem.topup_status === 'sent' ? 'rgba(34,197,94,0.1)' : selectedItem.topup_status === 'processing' ? 'rgba(59,130,246,0.1)' : 'rgba(245,158,11,0.1)')">
-                                <p style="font-family:var(--px);font-size:8px;letter-spacing:0.1em;margin-bottom:4px;" :style="'color:' + (selectedItem.topup_status === 'sent' ? '#22c55e' : selectedItem.topup_status === 'processing' ? '#3b82f6' : '#f59e0b')" x-text="selectedItem.topup_status === 'sent' ? '✓ DELIVERED' : (selectedItem.topup_status === 'processing' ? '⟳ PROCESSING' : '⏳ PENDING')"></p>
-                                <p style="font-family:var(--font-sans);font-size:12px;color:var(--text-dim);" x-text="selectedItem.topup_status === 'sent' ? 'Top-up has been sent to your account.' : (selectedItem.topup_status === 'processing' ? 'Admin is processing your top-up.' : 'Awaiting admin to process.')"></p>
+                                <p style="font-family:var(--px);font-size:8px;letter-spacing:0.1em;margin-bottom:4px;" :style="'color:' + (selectedItem.topup_status === 'sent' ? '#22c55e' : selectedItem.topup_status === 'processing' ? '#3b82f6' : '#f59e0b')" x-text="selectedItem.topup_status === 'sent' ? '✓ DELIVERED' : (selectedItem.topup_status === 'processing' ? '⟳ DELIVERING' : '⏳ QUEUED')"></p>
+                                <p style="font-family:var(--font-sans);font-size:12px;color:var(--text-dim);" x-text="selectedItem.topup_status === 'sent' ? 'Top-up has been sent to your account.' : (selectedItem.topup_status === 'processing' ? 'Our delivery bot is processing your top-up. This usually takes under a minute.' : 'Awaiting payment confirmation.')"></p>
                             </div>
                             <div style="background:var(--dark-card2);border:2px solid var(--dark-line);padding:14px;display:flex;flex-direction:column;gap:8px;">
                                 <p style="font-family:var(--px);font-size:6px;letter-spacing:0.12em;color:var(--text-dim);">YOUR SUBMITTED CREDENTIALS</p>
@@ -141,6 +141,15 @@
             items: initialItems,
             copiedIndex: null,
             selectedItem: null,
+            deliveryPoll: null,
+
+            init() {
+                // Poll while any top-up is still being delivered so the user sees
+                // the SENT badge appear automatically after the fake-bot delay.
+                if (this.items.some(i => i.item_type === 'direct_topup' && i.topup_status === 'processing')) {
+                    this.deliveryPoll = setInterval(() => window.location.reload(), 5000);
+                }
+            },
 
             get filteredItems() {
                 return this.items.filter(item => {

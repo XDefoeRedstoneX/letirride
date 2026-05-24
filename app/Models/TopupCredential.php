@@ -10,6 +10,13 @@ class TopupCredential extends Model
     public const UPDATED_AT = null;
 
     /**
+     * Fake-bot delay: how long a topup sits in 'processing' after payment
+     * before InventoryController flips it to 'sent'. Class-project stand-in
+     * for a real fulfillment integration.
+     */
+    public const SETTLEMENT_SECONDS = 30;
+
+    /**
      * @var array<int, string>
      */
     protected $fillable = [
