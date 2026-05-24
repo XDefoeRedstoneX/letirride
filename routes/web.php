@@ -94,6 +94,7 @@ Route::prefix('admin')
     ->middleware(['auth', EnsureUserIsAdmin::class])
     ->group(function () {
         Route::get('/', [AdminDashboardController::class, 'index'])->name('admin.dashboard');
+        Route::get('/export', [AdminDashboardController::class, 'export'])->name('admin.dashboard.export');
         Route::get('/products', [AdminProductController::class, 'index'])->name('admin.products');
         Route::post('/products', [AdminProductController::class, 'store'])->name('admin.products.store');
         Route::patch('/products/{product}', [AdminProductController::class, 'update'])->name('admin.products.update');

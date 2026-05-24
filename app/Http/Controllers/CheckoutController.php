@@ -16,6 +16,8 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
+use App\Mail\OrderConfirmation;
+use Illuminate\Support\Facades\Mail;
 use Midtrans\Config;
 use Midtrans\Notification;
 use Midtrans\Snap;
@@ -358,6 +360,13 @@ class CheckoutController extends Controller
         // Credit points to user
         if ($finalPoints > 0) {
             $order->user()->increment('points_balance', $finalPoints);
+        }
+
+        // Send order confirmation email
+        try {
+            Mail::to($order->user->email)->send(new OrderConfirmation($order));
+        } catch (\Exception $e) {
+            Log::error('Order confirmation email failed: ' . $e->getMessage(), ['order_id' => $order->id]);
         }
     }
 
