@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\CartItem;
-use App\Models\Order;
 use App\Models\Product;
 use App\Models\ProductKey;
 use Illuminate\Http\JsonResponse;
@@ -60,17 +59,9 @@ class CartController extends Controller
                 'expires_at' => $ud->expires_at?->toIso8601String(),
             ]);
 
-        // Pending order guard — surface the most recent pending order so the cart
-        // can block a second concurrent checkout (and direct the user to finish it).
-        $pendingOrder = Order::where('user_id', $user->id)
-            ->where('status', 'pending')
-            ->orderByDesc('created_at')
-            ->first();
-
         return view('pages.cart', [
             'cartItems' => $cartItems,
             'userDiscounts' => $userDiscounts,
-            'pendingOrder' => $pendingOrder ? ['id' => $pendingOrder->id, 'noinv' => $pendingOrder->display_noinv] : null,
             'midtransClientKey' => config('midtrans.client_key'),
         ]);
     }

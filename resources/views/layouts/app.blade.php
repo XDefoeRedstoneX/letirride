@@ -57,6 +57,7 @@
     </footer>
 
     <x-auth-modal />
+    <x-confirm-modal />
 
 <style>
     .page-enter {

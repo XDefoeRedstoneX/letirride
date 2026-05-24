@@ -10,8 +10,17 @@ use Illuminate\Support\Facades\DB;
 
 class TransactionController extends Controller
 {
+    /**
+     * Matches the Midtrans Snap expiry window set in CheckoutController::pay().
+     * Pending orders older than this with no Midtrans callback are treated as
+     * expired and reconciled the next time the user lands on this page.
+     */
+    private const EXPIRY_HOURS = 24;
+
     public function index()
     {
+        $this->expireStalePendingOrders(Auth::id());
+
         $orders = Order::with(['orderDetails.product'])
             ->where('user_id', Auth::id())
             ->orderByDesc('created_at')
@@ -25,11 +34,16 @@ class TransactionController extends Controller
                     $productName .= ' +'.($order->orderDetails->count() - 1).' more';
                 }
 
+                $displayStatus = strtoupper($order->status);
+                if ($order->status === 'failed' && $order->created_at && $order->created_at->lt(now()->subHours(self::EXPIRY_HOURS))) {
+                    $displayStatus = 'EXPIRED';
+                }
+
                 return [
                     'id'       => $order->display_noinv,
                     'name'     => $productName,
                     'amount'   => $order->total_price_after_discount,
-                    'status'   => strtoupper($order->status),
+                    'status'   => $displayStatus,
                     'date'     => $order->created_at?->format('M d, Y') ?? '-',
                     'image'    => '/products/'.ltrim($firstDetail?->product?->image ?: 'soundcloud.png', '/'),
                     'order_id' => $order->id,
@@ -44,6 +58,36 @@ class TransactionController extends Controller
         return view('pages.transactions', [
             'orders' => $orders,
         ]);
+    }
+
+    /**
+     * Reconcile any of this user's pending orders past the Midtrans expiry
+     * window: mark them failed and free reserved keys back to the pool. Mirrors
+     * CheckoutController::failOrder() — duplicated intentionally to keep this
+     * bug fix surgical (see also CheckoutController::pay/finish).
+     */
+    private function expireStalePendingOrders(int $userId): void
+    {
+        $cutoff = now()->subHours(self::EXPIRY_HOURS);
+
+        $staleIds = Order::where('user_id', $userId)
+            ->where('status', 'pending')
+            ->where('created_at', '<', $cutoff)
+            ->pluck('id');
+
+        foreach ($staleIds as $id) {
+            DB::transaction(function () use ($id) {
+                $locked = Order::whereKey($id)->lockForUpdate()->first();
+                if (! $locked || $locked->status !== 'pending') {
+                    return;
+                }
+
+                $locked->update(['status' => 'failed']);
+
+                ProductKey::where('reserved_for_order_id', $locked->id)
+                    ->update(['reserved_for_order_id' => null]);
+            });
+        }
     }
 
     /**
