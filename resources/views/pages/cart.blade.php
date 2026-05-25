@@ -6,7 +6,6 @@
         <div class="px-page-inner space-y-8" x-data="cartPage({
             items: {{ Js::from($cartItems ?? []) }},
             discounts: {{ Js::from($userDiscounts ?? []) }},
-            pendingOrder: {{ Js::from($pendingOrder ?? null) }},
             csrfToken: '{{ csrf_token() }}',
             midtransClientKey: '{{ $midtransClientKey ?? '' }}'
         })" x-init="init()">
@@ -188,17 +187,9 @@
                             </div>
                         </div>
 
-                        <template x-if="pendingOrder">
-                            <div style="margin-top:16px;padding:14px;background:rgba(245,158,11,0.08);border:2px solid rgba(245,158,11,0.2);">
-                                <div style="display:flex;align-items:center;gap:6px;color:var(--gold);"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="square"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg><span style="font-family:var(--px);font-size:6px;letter-spacing:0.1em;">PENDING ORDER</span></div>
-                                <p style="font-family:var(--font-sans);font-size:12px;color:var(--gold);margin-top:6px;">Complete or cancel your pending order first.</p>
-                                <a :href="'/checkout/finish/' + pendingOrder.id" class="px-btn-gold" style="display:inline-block;margin-top:10px;padding:8px 14px;font-size:6px;">VIEW PENDING ORDER</a>
-                            </div>
-                        </template>
-
-                        <button @click="pay()" :disabled="items.length === 0 || paying || pendingOrder" class="px-btn-gold" style="width:100%;padding:18px;margin-top:20px;font-size:8px;display:flex;align-items:center;justify-content:center;gap:8px;">
+                        <button @click="pay()" :disabled="items.length === 0 || paying" class="px-btn-gold" style="width:100%;padding:18px;margin-top:20px;font-size:8px;display:flex;align-items:center;justify-content:center;gap:8px;">
                             <template x-if="paying"><svg class="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg></template>
-                            <span x-text="paying ? 'PROCESSING...' : (pendingOrder ? 'COMPLETE PENDING ORDER' : 'PAY NOW')"></span>
+                            <span x-text="paying ? 'PROCESSING...' : 'PAY NOW'"></span>
                         </button>
                         <p style="font-family:var(--px);font-size:6px;text-align:center;color:var(--text-dim);letter-spacing:0.1em;margin-top:12px;">SECURE ENCRYPTED CHECKOUT VIA MIDTRANS</p>
                     </div>
@@ -338,7 +329,6 @@
             return {
                 items: opts.items,
                 discounts: opts.discounts,
-                pendingOrder: opts.pendingOrder,
                 csrfToken: opts.csrfToken,
                 midtransClientKey: opts.midtransClientKey,
                 selectedDiscount: null,

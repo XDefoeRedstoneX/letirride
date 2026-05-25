@@ -25,7 +25,15 @@
             },
             onSnapFinish() { this.resuming = false; },
             async cancelOrder() {
-                if (this.cancelling) return; if (!confirm('Are you sure you want to cancel this order?')) return; this.cancelling = true;
+                if (this.cancelling) return;
+                const ok = await window.openConfirmModal({
+                    title: 'Cancel This Order?',
+                    message: 'Your reserved items will be released back to stock. This cannot be undone.',
+                    confirmLabel: 'YES, CANCEL ORDER',
+                    cancelLabel: 'NO, KEEP IT',
+                });
+                if (!ok) return;
+                this.cancelling = true;
                 try {
                     const r = await fetch('/transactions/{{ $order->id }}/cancel', { method: 'POST', headers: { 'Accept': 'application/json', 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest', 'X-CSRF-TOKEN': this.csrfToken } });
                     const d = await r.json();

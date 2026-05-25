@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Order;
 use App\Models\OrderDetail;
 use App\Models\ProductKey;
+use App\Models\TopupCredential;
 use App\Models\UserDiscount;
 use Illuminate\Support\Facades\Auth;
 
@@ -15,6 +17,8 @@ class InventoryController extends Controller
     public function index()
     {
         $user = Auth::user();
+
+        $this->settleProcessingTopups($user->id);
 
         // Voucher code product keys from paid orders
         $productKeys = ProductKey::with(['product', 'order'])
@@ -113,5 +117,30 @@ class InventoryController extends Controller
         return view('pages.inventory', [
             'items' => $items,
         ]);
+    }
+
+    /**
+     * Fake-bot delivery: any 'processing' topup whose fulfilled_at is older
+     * than TopupCredential::SETTLEMENT_SECONDS gets flipped to 'sent'. Runs
+     * lazily on each inventory page load so no queue or cron is required.
+     */
+    private function settleProcessingTopups(int $userId): void
+    {
+        $cutoff = now()->subSeconds(TopupCredential::SETTLEMENT_SECONDS);
+
+        $settledIds = TopupCredential::where('topup_status', 'processing')
+            ->where('fulfilled_at', '<=', $cutoff)
+            ->whereIn(
+                'order_detail_id',
+                OrderDetail::whereIn(
+                    'order_id',
+                    Order::where('user_id', $userId)->where('status', 'paid')->pluck('id')
+                )->pluck('id')
+            )
+            ->pluck('id');
+
+        if ($settledIds->isNotEmpty()) {
+            TopupCredential::whereIn('id', $settledIds)->update(['topup_status' => 'sent']);
+        }
     }
 }

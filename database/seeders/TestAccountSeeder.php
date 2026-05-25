@@ -30,7 +30,7 @@ class TestAccountSeeder extends Seeder
                 'password' => Hash::make('a'),
                 'role' => 'customer',
                 'points_balance' => 9999999,
-                'referral_code' => 'isdnfainf',
+                'referral_code' => 'bruh',
             ]
         );
 }

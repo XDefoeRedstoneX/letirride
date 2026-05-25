@@ -25,6 +25,12 @@ use Midtrans\Transaction;
 
 class CheckoutController extends Controller
 {
+    /**
+     * Matches the Midtrans Snap expiry window set in pay(). Pending orders
+     * older than this are treated as expired without waiting on a callback.
+     */
+    private const EXPIRY_HOURS = 24;
+
     public function __construct()
     {
         Config::$serverKey = config('midtrans.server_key');
@@ -55,18 +61,6 @@ class CheckoutController extends Controller
 
         if ($cartItems->isEmpty()) {
             return response()->json(['message' => 'Your cart is empty.'], 422);
-        }
-
-        // Block stacking pending orders.
-        $existingPending = Order::where('user_id', $user->id)
-            ->where('status', 'pending')
-            ->first();
-
-        if ($existingPending) {
-            return response()->json([
-                'message' => 'You have a pending order. Complete or cancel it first.',
-                'order_id' => $existingPending->id,
-            ], 422);
         }
 
         $subtotal = $cartItems->sum(fn (CartItem $item) => $item->product->price * $item->quantity);
@@ -253,6 +247,11 @@ class CheckoutController extends Controller
             abort(403);
         }
 
+        if ($this->isExpired($order)) {
+            $this->failOrder($order);
+            $order->refresh();
+        }
+
         $order->load(['orderDetails.product', 'productKeys.product']);
 
         return view('pages.checkout-result', [
@@ -307,6 +306,12 @@ class CheckoutController extends Controller
 
         if ($order->status !== 'pending') {
             return response()->json(['message' => 'This order is no longer pending.'], 422);
+        }
+
+        if ($this->isExpired($order)) {
+            $this->failOrder($order);
+
+            return response()->json(['message' => 'This payment session has expired.'], 410);
         }
 
         try {
@@ -490,6 +495,19 @@ class CheckoutController extends Controller
             if ($finalPoints > 0) {
                 $locked->user()->increment('points_balance', $finalPoints);
             }
+
+            // Kick off the fake-bot delay: flip topup credentials to 'processing'
+            // and stamp fulfilled_at. InventoryController sweeps them to 'sent'
+            // once enough seconds have elapsed (see TopupCredential::SETTLEMENT_SECONDS).
+            TopupCredential::whereIn(
+                'order_detail_id',
+                OrderDetail::where('order_id', $locked->id)->pluck('id')
+            )
+                ->where('topup_status', 'pending')
+                ->update([
+                    'topup_status' => 'processing',
+                    'fulfilled_at' => now(),
+                ]);
         });
 
         try {
@@ -521,5 +539,12 @@ class CheckoutController extends Controller
     {
         ProductKey::where('reserved_for_order_id', $order->id)
             ->update(['reserved_for_order_id' => null]);
+    }
+
+    private function isExpired(Order $order): bool
+    {
+        return $order->status === 'pending'
+            && $order->created_at
+            && $order->created_at->lt(now()->subHours(self::EXPIRY_HOURS));
     }
 }
