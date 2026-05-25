@@ -103,14 +103,10 @@
         <div class="px-frame-l"></div>
 
         {{-- News slideshow inside the frame --}}
+        <script>window._ridlyNews = {!! json_encode(array_values($newsImages), JSON_HEX_TAG | JSON_HEX_AMP | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) !!};</script>
         <div class="hero-frame-content"
              x-data="{
-                 imgs: [
-                     '{{ asset('news/1.jpg') }}',
-                     '{{ asset('news/2.jpg') }}',
-                     '{{ asset('news/3.jpg') }}',
-                     '{{ asset('news/4.jpg') }}',
-                 ],
+                 imgs: window._ridlyNews || [],
                  i: 0,
                  init() {
                      if (this.imgs.length > 1)

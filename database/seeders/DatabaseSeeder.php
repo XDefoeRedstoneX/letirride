@@ -22,14 +22,31 @@ class DatabaseSeeder extends Seeder
         //   $this->seedOrders($now);
         //   $this->seedOrderDetails();
 
+        $this->call([
+            UserSeeder::class,
+            TestAccountSeeder::class,
+        ]);
+
         $this->seedCategories();
         $this->seedSubcategories();
         $this->seedProducts();
+        $this->seedProductKeys();
         $this->seedDiscountTypes();
+        $this->seedUserDiscounts();
         $this->seedPointShopItems();
+        $this->seedPointShopPurchases($now);
         $this->seedGachaPools();
         $this->seedGachaBoosters();
+        $this->seedNews();
         $this->seedFaqs();
+        $this->seedTickets($now);
+        $this->seedFavorites($now);
+        $this->seedCartItems($now);
+        $this->seedReferrals($now);
+
+        $this->call([
+            DemoDataSeeder::class,
+        ]);
     }
 
     private function seedUsers($now): void
@@ -240,8 +257,12 @@ class DatabaseSeeder extends Seeder
         DB::table('product_keys')->upsert($rows, ['id'], $updateColumns);
 
         if ($hasOrderId) {
-            DB::table('product_keys')->where('id', 2)->update(['order_id' => 1]);
-            DB::table('product_keys')->where('id', 4)->update(['order_id' => 3]);
+            if (DB::table('orders')->where('id', 1)->exists()) {
+                DB::table('product_keys')->where('id', 2)->update(['order_id' => 1]);
+            }
+            if (DB::table('orders')->where('id', 3)->exists()) {
+                DB::table('product_keys')->where('id', 4)->update(['order_id' => 3]);
+            }
         }
     }
 
@@ -513,6 +534,20 @@ class DatabaseSeeder extends Seeder
 
         $updateColumns = ['user_id', 'type', 'message', 'status'];
         DB::table('tickets')->upsert($rows, ['id'], $updateColumns);
+    }
+
+    private function seedNews(): void
+    {
+        if (! Schema::hasTable('news')) {
+            return;
+        }
+
+        DB::table('news')->upsert([
+            ['id' => 1, 'name' => 'News 1', 'image' => 'news/1.jpg', 'sort_order' => 1, 'is_active' => true],
+            ['id' => 2, 'name' => 'News 2', 'image' => 'news/2.jpg', 'sort_order' => 2, 'is_active' => true],
+            ['id' => 3, 'name' => 'News 3', 'image' => 'news/3.jpg', 'sort_order' => 3, 'is_active' => true],
+            ['id' => 4, 'name' => 'News 4', 'image' => 'news/4.jpg', 'sort_order' => 4, 'is_active' => true],
+        ], ['id'], ['name', 'image', 'sort_order', 'is_active']);
     }
 
     private function seedFaqs(): void

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Favorite;
+use App\Models\News;
 use App\Models\Product;
 use Illuminate\Support\Facades\Auth;
 
@@ -68,9 +69,24 @@ class StoreController extends Controller
                 ->values()
             : collect();
 
+        $newsImages = News::where('is_active', true)
+            ->orderBy('sort_order')
+            ->get()
+            ->map(fn (News $n) => asset($n->image))
+            ->values()
+            ->toArray();
+
+        if (empty($newsImages)) {
+            $newsImages = collect(glob(public_path('news/*.{jpg,jpeg,png,gif,webp}'), GLOB_BRACE))
+                ->map(fn (string $p) => asset('news/' . basename($p)))
+                ->values()
+                ->toArray();
+        }
+
         return [
-            'products' => $products,
+            'products'    => $products,
             'favoriteIds' => $favoriteIds,
+            'newsImages'  => $newsImages,
         ];
     }
 }

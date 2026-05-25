@@ -313,12 +313,12 @@
                     this.toastError('Network error. Please check your connection.');
                     return;
                 }
-
+                this.spinning = true; 
                 window.snap.pay(data.snap_token, {
                     onSuccess: () => { this.beginSpinAnimation(); this.pollAndReveal(data.payment_id); },
                     onPending: () => { this.beginSpinAnimation(); this.pollAndReveal(data.payment_id); },
-                    onError: () => this.toastError('Payment failed. Please try again.'),
-                    onClose: () => { /* User dismissed without paying — webhook will still fulfill if paid out-of-band. */ },
+                    onError: () => { this.resetSpin(); this.toastError('Payment failed. Please try again.'); },   
+                    onClose: () => { this.resetSpin(); /* User dismissed without paying — webhook will still fulfill if paid out-of-band. */ },
                 });
             },
 

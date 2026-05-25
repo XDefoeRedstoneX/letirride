@@ -3,6 +3,7 @@
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\GachaBoosterController as AdminGachaBoosterController;
 use App\Http\Controllers\Admin\GachaController as AdminGachaController;
+use App\Http\Controllers\Admin\NewsController as AdminNewsController;
 use App\Http\Controllers\Admin\OrderController as AdminOrderController;
 use App\Http\Controllers\Admin\ProductController as AdminProductController;
 use App\Http\Controllers\Admin\TicketController as AdminTicketController;
@@ -119,6 +120,10 @@ Route::prefix('admin')
 
         Route::get('/tickets', [AdminTicketController::class, 'index'])->name('admin.tickets');
         Route::patch('/tickets/{ticket}/status', [AdminTicketController::class, 'updateStatus'])->name('admin.tickets.status');
+
+        Route::get('/news', [AdminNewsController::class, 'index'])->name('admin.news');
+        Route::post('/news', [AdminNewsController::class, 'store'])->name('admin.news.store');
+        Route::patch('/news/{news}', [AdminNewsController::class, 'update'])->name('admin.news.update');
 
         // UI-only pages (static views with dummy data)
         Route::get('/point-shop', fn () => view('admin.point-shop'))->name('admin.point-shop');
