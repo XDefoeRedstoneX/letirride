@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\CartItem;
+use App\Models\Order;
 use App\Models\Product;
 use App\Models\ProductKey;
 use Illuminate\Http\JsonResponse;
@@ -16,8 +17,10 @@ class CartController extends Controller
      */
     public function index()
     {
-        $cartItems = CartItem::with(['product.category'])
-            ->where('user_id', Auth::id())
+        $user = Auth::user();
+
+        $cartItems = CartItem::with(['product.category', 'product.subcategory'])
+            ->where('user_id', $user->id)
             ->get()
             ->map(function (CartItem $item) {
                 return [
@@ -27,6 +30,8 @@ class CartController extends Controller
                     'price' => (float) $item->product->price,
                     'category' => $item->product->category?->name ?? 'Other',
                     'category_id' => $item->product->category_id,
+                    'subcategory' => $item->product->subcategory?->name,
+                    'subcategory_id' => $item->product->subcategory_id,
                     'product_type' => $item->product->type ?? 'voucher',
                     'image' => '/products/'.ltrim($item->product->image ?: 'soundcloud.png', '/'),
                     'quantity' => $item->quantity,
@@ -34,9 +39,9 @@ class CartController extends Controller
                 ];
             });
 
-        $userDiscounts = Auth::user()
+        $userDiscounts = $user
             ->userDiscounts()
-            ->with('discountType')
+            ->with(['discountType.targetCategory', 'discountType.targetSubcategory'])
             ->where('is_used', false)
             ->where(function ($query) {
                 $query->whereNull('expires_at')
@@ -50,11 +55,22 @@ class CartController extends Controller
                 'value' => (float) $ud->discountType->value,
                 'target_category_id' => $ud->discountType->target_category_id,
                 'target_category_name' => $ud->discountType->targetCategory?->name,
+                'target_subcategory_id' => $ud->discountType->target_subcategory_id,
+                'target_subcategory_name' => $ud->discountType->targetSubcategory?->name,
+                'expires_at' => $ud->expires_at?->toIso8601String(),
             ]);
+
+        // Pending order guard — surface the most recent pending order so the cart
+        // can block a second concurrent checkout (and direct the user to finish it).
+        $pendingOrder = Order::where('user_id', $user->id)
+            ->where('status', 'pending')
+            ->orderByDesc('created_at')
+            ->first();
 
         return view('pages.cart', [
             'cartItems' => $cartItems,
             'userDiscounts' => $userDiscounts,
+            'pendingOrder' => $pendingOrder ? ['id' => $pendingOrder->id, 'noinv' => $pendingOrder->display_noinv] : null,
             'midtransClientKey' => config('midtrans.client_key'),
         ]);
     }
@@ -67,7 +83,6 @@ class CartController extends Controller
 
         $type = $product->type ?? 'voucher';
 
-        // Bug 5: Validate topup_meta for direct_topup products
         if ($type === 'direct_topup') {
             $request->validate([
                 'player_id' => 'required|string|max:100',
@@ -80,11 +95,12 @@ class CartController extends Controller
             ->where('product_id', $product->id)
             ->first();
 
-        // Stockout check: voucher products require at least one available key.
+        // Stockout check: voucher products require an unreserved, available key.
         // direct_topup products have no inventory and are always purchasable.
         if ($type === 'voucher') {
             $availableKeys = ProductKey::where('product_id', $product->id)
                 ->where('status', 'available')
+                ->whereNull('reserved_for_order_id')
                 ->count();
 
             $alreadyInCart = $cartItem?->quantity ?? 0;
@@ -109,7 +125,6 @@ class CartController extends Controller
 
         if ($cartItem) {
             $cartItem->increment('quantity');
-            // Update topup_meta if provided (user may change UID)
             if ($topupMeta) {
                 $cartItem->update(['topup_meta' => $topupMeta]);
             }

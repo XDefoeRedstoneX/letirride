@@ -30,7 +30,8 @@ class StoreController extends Controller
         $products = Product::query()
             ->with(['category', 'subcategory'])
             ->withCount(['productKeys as available_keys_count' => function ($query) {
-                $query->where('status', 'available');
+                $query->where('status', 'available')
+                    ->whereNull('reserved_for_order_id');
             }])
             ->where('is_active', true)
             ->get()

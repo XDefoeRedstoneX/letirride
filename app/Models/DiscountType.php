@@ -18,6 +18,7 @@ class DiscountType extends Model
         'type',
         'value',
         'target_category_id',
+        'target_subcategory_id',
     ];
 
     protected function casts(): array
@@ -30,6 +31,11 @@ class DiscountType extends Model
     public function targetCategory(): BelongsTo
     {
         return $this->belongsTo(Category::class, 'target_category_id');
+    }
+
+    public function targetSubcategory(): BelongsTo
+    {
+        return $this->belongsTo(Subcategory::class, 'target_subcategory_id');
     }
 
     public function userDiscounts(): HasMany

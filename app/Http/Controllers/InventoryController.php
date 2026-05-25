@@ -83,7 +83,32 @@ class InventoryController extends Controller
                 'server_id' => null,
             ]);
 
-        $items = collect($productKeys)->merge($topupItems)->merge($vouchers)->values();
+        // Redeemed (consumed) vouchers — audit history of past usage.
+        $redeemedVouchers = UserDiscount::with(['discountType', 'order'])
+            ->where('user_id', $user->id)
+            ->where('is_used', true)
+            ->orderByDesc('used_at')
+            ->orderByDesc('id')
+            ->get()
+            ->map(fn (UserDiscount $ud) => [
+                'name' => $ud->discountType->name,
+                'code' => 'DISC-'.str_pad($ud->id, 4, '0', STR_PAD_LEFT),
+                'item_type' => 'discount_redeemed',
+                'type' => 'Voucher',
+                'date' => $ud->used_at?->format('Y-m-d') ?? '—',
+                'image' => '/gacha-assets/voucher.png',
+                'topup_status' => null,
+                'player_id' => null,
+                'zone_id' => null,
+                'server_id' => null,
+                'redeemed_order' => $ud->order?->display_noinv,
+            ]);
+
+        $items = collect($productKeys)
+            ->merge($topupItems)
+            ->merge($vouchers)
+            ->merge($redeemedVouchers)
+            ->values();
 
         return view('pages.inventory', [
             'items' => $items,

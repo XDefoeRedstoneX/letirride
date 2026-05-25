@@ -43,8 +43,9 @@
                         <th class="px-5 py-3">Product</th>
                         <th class="px-5 py-3">Type</th>
                         <th class="px-5 py-3">Category</th>
+                        <th class="px-5 py-3">Subcategory</th>
                         <th class="px-5 py-3">Price</th>
-                        <th class="px-5 py-3">Points</th>
+                        <th class="px-5 py-3">Pt. Mult.</th>
                         <th class="px-5 py-3">Keys</th>
                         <th class="px-5 py-3">Status</th>
                         <th class="px-5 py-3">Actions</th>
@@ -68,15 +69,16 @@
                             </div>
                         </td>
                         <td class="px-5 py-3">
-                            @if($p->product_type === 'direct_topup')
+                            @if(($p->type ?? 'voucher') === 'direct_topup')
                                 <span class="px-2 py-1 rounded-lg text-[8px] font-black uppercase tracking-widest bg-amber-500/10 text-amber-500">Top-Up</span>
                             @else
                                 <span class="px-2 py-1 rounded-lg text-[8px] font-black uppercase tracking-widest bg-blue-500/10 text-blue-500">Voucher</span>
                             @endif
                         </td>
                         <td class="px-5 py-3 text-xs text-muted-foreground font-bold">{{ $p->category?->name ?? '-' }}</td>
+                        <td class="px-5 py-3 text-xs text-muted-foreground font-bold">{{ $p->subcategory?->name ?? '-' }}</td>
                         <td class="px-5 py-3 text-xs font-bold">Rp {{ number_format($p->price, 0, ',', '.') }}</td>
-                        <td class="px-5 py-3 text-xs font-bold text-yellow-500">{{ $p->point_reward }}</td>
+                        <td class="px-5 py-3 text-xs font-bold text-yellow-500">{{ number_format((float) $p->point_multiplier, 2) }}×</td>
                         <td class="px-5 py-3">
                             <span class="text-xs font-bold">{{ $p->product_keys_count }}</span>
                             <button @click="openKeys({{ json_encode($p) }})" class="ml-1 text-[9px] text-primary font-black uppercase tracking-widest hover:underline">+ Add</button>
@@ -86,11 +88,12 @@
                                 @csrf @method('PATCH')
                                 <input type="hidden" name="name" value="{{ $p->name }}">
                                 <input type="hidden" name="category_id" value="{{ $p->category_id }}">
+                                <input type="hidden" name="subcategory_id" value="{{ $p->subcategory_id }}">
                                 <input type="hidden" name="price" value="{{ $p->price }}">
                                 <input type="hidden" name="description" value="{{ $p->description }}">
-                                <input type="hidden" name="point_reward" value="{{ $p->point_reward }}">
+                                <input type="hidden" name="point_multiplier" value="{{ $p->point_multiplier }}">
                                 <input type="hidden" name="image" value="{{ $p->image }}">
-                                <input type="hidden" name="product_type" value="{{ $p->product_type }}">
+                                <input type="hidden" name="type" value="{{ $p->type ?? 'voucher' }}">
                                 <button type="submit" name="is_active" value="{{ $p->is_active ? '0' : '1' }}"
                                     class="px-2 py-1 rounded-lg text-[8px] font-black uppercase tracking-widest transition-colors cursor-pointer
                                     {{ $p->is_active ? 'bg-green-500/10 text-green-500 hover:bg-red-500/10 hover:text-red-500' : 'bg-red-500/10 text-red-500 hover:bg-green-500/10 hover:text-green-500' }}">
@@ -124,7 +127,8 @@
                     </div>
                     <button @click="showAddModal = false" class="p-2 hover:bg-foreground/5 rounded-xl text-muted-foreground hover:text-foreground transition-colors"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="square"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>
                 </div>
-                <form method="POST" action="{{ route('admin.products.store') }}" class="flex flex-col gap-4">
+                <form method="POST" action="{{ route('admin.products.store') }}" class="flex flex-col gap-4"
+                      x-data="{ addCategory: '', addSub: '' }">
                     @csrf
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
@@ -133,16 +137,26 @@
                         </div>
                         <div>
                             <label class="text-[10px] font-black uppercase tracking-widest text-foreground/70 dark:text-muted-foreground mb-2 block">CATEGORY <span class="req">*</span></label>
-                            <select name="category_id" required class="w-full px-4 py-3 bg-foreground/5 border-2 border-border/50 rounded-xl text-xs font-bold text-foreground outline-none focus:border-primary focus:ring-4 focus:ring-primary/20 placeholder:text-muted-foreground/50 transition-all">
+                            <select name="category_id" x-model="addCategory" required class="w-full px-4 py-3 bg-foreground/5 border-2 border-border/50 rounded-xl text-xs font-bold text-foreground outline-none focus:border-primary focus:ring-4 focus:ring-primary/20 placeholder:text-muted-foreground/50 transition-all">
                                 <option value="">Select category</option>
-                                @foreach(\App\Models\Category::all() as $cat)
+                                @foreach($categories ?? \App\Models\Category::all() as $cat)
                                     <option value="{{ $cat->id }}">{{ $cat->name }}</option>
                                 @endforeach
                             </select>
                         </div>
                         <div>
+                            <label class="text-[10px] font-black uppercase tracking-widest text-foreground/70 dark:text-muted-foreground mb-2 block">SUBCATEGORY</label>
+                            <select name="subcategory_id" x-model="addSub" class="w-full px-4 py-3 bg-foreground/5 border-2 border-border/50 rounded-xl text-xs font-bold text-foreground outline-none focus:border-primary focus:ring-4 focus:ring-primary/20 placeholder:text-muted-foreground/50 transition-all">
+                                <option value="">— None —</option>
+                                @foreach($subcategories ?? \App\Models\Subcategory::all() as $sub)
+                                    <option value="{{ $sub->id }}" data-category="{{ $sub->category_id }}"
+                                            x-show="addCategory == '' || addCategory == '{{ $sub->category_id }}'">{{ $sub->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div>
                             <label class="text-[10px] font-black uppercase tracking-widest text-foreground/70 dark:text-muted-foreground mb-2 block">TYPE</label>
-                            <select name="product_type" class="w-full px-4 py-3 bg-foreground/5 border-2 border-border/50 rounded-xl text-xs font-bold text-foreground outline-none focus:border-primary focus:ring-4 focus:ring-primary/20 placeholder:text-muted-foreground/50 transition-all">
+                            <select name="type" class="w-full px-4 py-3 bg-foreground/5 border-2 border-border/50 rounded-xl text-xs font-bold text-foreground outline-none focus:border-primary focus:ring-4 focus:ring-primary/20 placeholder:text-muted-foreground/50 transition-all">
                                 <option value="voucher">Voucher / Code</option>
                                 <option value="direct_topup">Direct Top-Up</option>
                             </select>
@@ -152,8 +166,8 @@
                             <input type="number" name="price" required min="0" class="w-full px-4 py-3 bg-foreground/5 border-2 border-border/50 rounded-xl text-xs font-bold text-foreground outline-none focus:border-primary focus:ring-4 focus:ring-primary/20 placeholder:text-muted-foreground/50 transition-all" placeholder="0">
                         </div>
                         <div>
-                            <label class="text-[10px] font-black uppercase tracking-widest text-foreground/70 dark:text-muted-foreground mb-2 block">POINTS REWARD</label>
-                            <input type="number" name="point_reward" min="0" value="0" class="w-full px-4 py-3 bg-foreground/5 border-2 border-border/50 rounded-xl text-xs font-bold text-foreground outline-none focus:border-primary focus:ring-4 focus:ring-primary/20 placeholder:text-muted-foreground/50 transition-all">
+                            <label class="text-[10px] font-black uppercase tracking-widest text-foreground/70 dark:text-muted-foreground mb-2 block">POINT MULTIPLIER</label>
+                            <input type="number" step="0.01" name="point_multiplier" min="0" value="1.00" class="w-full px-4 py-3 bg-foreground/5 border-2 border-border/50 rounded-xl text-xs font-bold text-foreground outline-none focus:border-primary focus:ring-4 focus:ring-primary/20 placeholder:text-muted-foreground/50 transition-all">
                         </div>
                         <div>
                             <label class="text-[10px] font-black uppercase tracking-widest text-foreground/70 dark:text-muted-foreground mb-2 block">IMAGE FILENAME</label>
@@ -199,14 +213,24 @@
                         <div>
                             <label class="text-[10px] font-black uppercase tracking-widest text-foreground/70 dark:text-muted-foreground mb-2 block">CATEGORY <span class="req">*</span></label>
                             <select name="category_id" x-model="product.category_id" required class="w-full px-4 py-3 bg-foreground/5 border-2 border-border/50 rounded-xl text-xs font-bold text-foreground outline-none focus:border-primary focus:ring-4 focus:ring-primary/20 placeholder:text-muted-foreground/50 transition-all">
-                                @foreach(\App\Models\Category::all() as $cat)
+                                @foreach($categories ?? \App\Models\Category::all() as $cat)
                                     <option value="{{ $cat->id }}">{{ $cat->name }}</option>
                                 @endforeach
                             </select>
                         </div>
                         <div>
+                            <label class="text-[10px] font-black uppercase tracking-widest text-foreground/70 dark:text-muted-foreground mb-2 block">SUBCATEGORY</label>
+                            <select name="subcategory_id" x-model="product.subcategory_id" class="w-full px-4 py-3 bg-foreground/5 border-2 border-border/50 rounded-xl text-xs font-bold text-foreground outline-none focus:border-primary focus:ring-4 focus:ring-primary/20 placeholder:text-muted-foreground/50 transition-all">
+                                <option value="">— None —</option>
+                                @foreach($subcategories ?? \App\Models\Subcategory::all() as $sub)
+                                    <option value="{{ $sub->id }}"
+                                            x-show="!product.category_id || product.category_id == '{{ $sub->category_id }}'">{{ $sub->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div>
                             <label class="text-[10px] font-black uppercase tracking-widest text-foreground/70 dark:text-muted-foreground mb-2 block">TYPE</label>
-                            <select name="product_type" x-model="product.product_type" class="w-full px-4 py-3 bg-foreground/5 border-2 border-border/50 rounded-xl text-xs font-bold text-foreground outline-none focus:border-primary focus:ring-4 focus:ring-primary/20 placeholder:text-muted-foreground/50 transition-all">
+                            <select name="type" x-model="product.type" class="w-full px-4 py-3 bg-foreground/5 border-2 border-border/50 rounded-xl text-xs font-bold text-foreground outline-none focus:border-primary focus:ring-4 focus:ring-primary/20 placeholder:text-muted-foreground/50 transition-all">
                                 <option value="voucher">Voucher / Code</option>
                                 <option value="direct_topup">Direct Top-Up</option>
                             </select>
@@ -216,8 +240,8 @@
                             <input type="number" name="price" x-model="product.price" required min="0" class="w-full px-4 py-3 bg-foreground/5 border-2 border-border/50 rounded-xl text-xs font-bold text-foreground outline-none focus:border-primary focus:ring-4 focus:ring-primary/20 placeholder:text-muted-foreground/50 transition-all">
                         </div>
                         <div>
-                            <label class="text-[10px] font-black uppercase tracking-widest text-foreground/70 dark:text-muted-foreground mb-2 block">POINTS REWARD</label>
-                            <input type="number" name="point_reward" x-model="product.point_reward" min="0" class="w-full px-4 py-3 bg-foreground/5 border-2 border-border/50 rounded-xl text-xs font-bold text-foreground outline-none focus:border-primary focus:ring-4 focus:ring-primary/20 placeholder:text-muted-foreground/50 transition-all">
+                            <label class="text-[10px] font-black uppercase tracking-widest text-foreground/70 dark:text-muted-foreground mb-2 block">POINT MULTIPLIER</label>
+                            <input type="number" step="0.01" name="point_multiplier" x-model="product.point_multiplier" min="0" class="w-full px-4 py-3 bg-foreground/5 border-2 border-border/50 rounded-xl text-xs font-bold text-foreground outline-none focus:border-primary focus:ring-4 focus:ring-primary/20 placeholder:text-muted-foreground/50 transition-all">
                         </div>
                         <div>
                             <label class="text-[10px] font-black uppercase tracking-widest text-foreground/70 dark:text-muted-foreground mb-2 block">IMAGE FILENAME</label>

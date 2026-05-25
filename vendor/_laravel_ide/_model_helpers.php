@@ -681,6 +681,7 @@ namespace App\Models {
 	 * @property string $name
 	 * @property int $id
 	 * @property-read \App\Models\Category $targetCategory
+	 * @property-read \App\Models\Subcategory $targetSubcategory
 	 * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\UserDiscount> $userDiscounts
 	 * @property-read int|null $user_discounts_count
 	 * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\GachaPool> $gachaPools
@@ -1997,7 +1998,6 @@ namespace App\Models {
 	 * App\Models\GachaHistory
 	 *
 	 * @property \Illuminate\Support\Carbon $created_at
-	 * @property int|null $gacha_payment_id
 	 * @property integer $points_spent
 	 * @property int $gacha_pool_id
 	 * @property int $user_id
@@ -2009,7 +2009,6 @@ namespace App\Models {
 	 * @method static \Illuminate\Database\Eloquent\Builder<GachaHistory>|GachaHistory whereUserId($value)
 	 * @method static \Illuminate\Database\Eloquent\Builder<GachaHistory>|GachaHistory whereGachaPoolId($value)
 	 * @method static \Illuminate\Database\Eloquent\Builder<GachaHistory>|GachaHistory wherePointsSpent($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<GachaHistory>|GachaHistory whereGachaPaymentId($value)
 	 * @method static \Illuminate\Database\Eloquent\Builder<GachaHistory>|GachaHistory whereCreatedAt($value)
 	 * @method static \Illuminate\Database\Eloquent\Builder<GachaHistory>|GachaHistory newModelQuery()
 	 * @method static \Illuminate\Database\Eloquent\Builder<GachaHistory>|GachaHistory newQuery()
@@ -2333,22 +2332,8 @@ namespace App\Models {
 	/**
 	 * App\Models\GachaPayment
 	 *
-	 * @property \Illuminate\Support\Carbon $created_at
-	 * @property string|null $midtrans_order_id
-	 * @property string|null $snap_token
-	 * @property string $status
-	 * @property float $amount
-	 * @property int $user_id
-	 * @property int $id
 	 * @property-read \App\Models\User $user
 	 * @property-read \App\Models\GachaHistory $history
-	 * @method static \Illuminate\Database\Eloquent\Builder<GachaPayment>|GachaPayment whereId($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<GachaPayment>|GachaPayment whereUserId($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<GachaPayment>|GachaPayment whereAmount($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<GachaPayment>|GachaPayment whereStatus($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<GachaPayment>|GachaPayment whereSnapToken($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<GachaPayment>|GachaPayment whereMidtransOrderId($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<GachaPayment>|GachaPayment whereCreatedAt($value)
 	 * @method static \Illuminate\Database\Eloquent\Builder<GachaPayment>|GachaPayment newModelQuery()
 	 * @method static \Illuminate\Database\Eloquent\Builder<GachaPayment>|GachaPayment newQuery()
 	 * @method static \Illuminate\Database\Eloquent\Builder<GachaPayment>|GachaPayment query()
@@ -4726,6 +4711,7 @@ namespace App\Models {
 	 * @property int $id
 	 * @property-read \App\Models\Product $product
 	 * @property-read \App\Models\Order $order
+	 * @property-read \App\Models\Order $reservedForOrder
 	 * @method static \Illuminate\Database\Eloquent\Builder<ProductKey>|ProductKey whereId($value)
 	 * @method static \Illuminate\Database\Eloquent\Builder<ProductKey>|ProductKey whereProductId($value)
 	 * @method static \Illuminate\Database\Eloquent\Builder<ProductKey>|ProductKey whereKeyCode($value)

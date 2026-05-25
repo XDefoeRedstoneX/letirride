@@ -17,7 +17,7 @@
 
             {{-- Modern Tabs --}}
             <div class="flex gap-2 overflow-x-auto pb-2 scrollbar-hide w-full">
-                <template x-for="cat in ['All Items', 'Vouchers', 'Products']">
+                <template x-for="cat in ['All Items', 'Vouchers', 'Products', 'Redeemed']">
                     <button @click="category = cat"
                             :class="category === cat ? 'bg-primary text-primary-foreground shadow-sm' : 'bg-foreground/5 text-muted-foreground hover:bg-foreground/10'"
                             class="px-5 py-2.5 rounded-xl text-sm font-bold transition-all whitespace-nowrap"
@@ -38,6 +38,7 @@
                                     <span class="px-badge px-badge-gold" x-text="item.type"></span>
                                     <template x-if="item.item_type === 'direct_topup'"><span class="px-badge px-badge-amber">TOP-UP</span></template>
                                     <template x-if="item.item_type === 'voucher_key'"><span class="px-badge px-badge-blue">CODE</span></template>
+                                    <template x-if="item.item_type === 'discount_redeemed'"><span class="px-badge" style="background:rgba(148,163,184,0.12);color:#94a3b8;border-color:rgba(148,163,184,0.3);">REDEEMED</span></template>
                                 </div>
                                 <span style="font-family:var(--px);font-size:6px;color:var(--text-dim);letter-spacing:0.08em;" x-text="item.date"></span>
                             </div>
@@ -96,6 +97,21 @@
                             <p style="font-family:var(--px);font-size:6px;color:var(--text-dim);text-align:center;letter-spacing:0.1em;" x-text="selectedItem.item_type === 'discount' ? 'EXPIRES: ' + selectedItem.date : 'PURCHASED: ' + selectedItem.date"></p>
                         </div>
                     </template>
+                    <template x-if="selectedItem && selectedItem.item_type === 'discount_redeemed'">
+                        <div style="display:flex;flex-direction:column;gap:14px;">
+                            <div style="background:rgba(148,163,184,0.08);border:2px solid rgba(148,163,184,0.25);padding:16px;text-align:center;">
+                                <p style="font-family:var(--px);font-size:7px;letter-spacing:0.12em;color:#94a3b8;margin-bottom:4px;">VOUCHER REDEEMED</p>
+                                <p style="font-family:var(--font-sans);font-size:12px;color:var(--text-dim);">This voucher has been consumed and cannot be reused.</p>
+                            </div>
+                            <template x-if="selectedItem.redeemed_order">
+                                <div style="background:var(--dark-card2);border:2px solid var(--dark-line);padding:14px;display:flex;justify-content:space-between;align-items:center;">
+                                    <span style="font-family:var(--px);font-size:6px;color:var(--text-dim);letter-spacing:0.12em;">APPLIED TO ORDER</span>
+                                    <span style="font-family:var(--font-mono);font-size:12px;font-weight:800;color:var(--gold);" x-text="selectedItem.redeemed_order"></span>
+                                </div>
+                            </template>
+                            <p style="font-family:var(--px);font-size:6px;color:var(--text-dim);text-align:center;letter-spacing:0.1em;" x-text="'REDEEMED: ' + selectedItem.date"></p>
+                        </div>
+                    </template>
                     <template x-if="selectedItem && selectedItem.item_type === 'direct_topup'">
                         <div style="display:flex;flex-direction:column;gap:14px;">
                             <div style="padding:16px;text-align:center;border:2px solid;" :style="'border-color:' + (selectedItem.topup_status === 'sent' ? '#22c55e' : selectedItem.topup_status === 'processing' ? '#3b82f6' : '#f59e0b') + ';background:' + (selectedItem.topup_status === 'sent' ? 'rgba(34,197,94,0.1)' : selectedItem.topup_status === 'processing' ? 'rgba(59,130,246,0.1)' : 'rgba(245,158,11,0.1)')">
@@ -130,8 +146,17 @@
                 return this.items.filter(item => {
                     const matchesSearch = item.name.toLowerCase().includes(this.search.toLowerCase())
                         || (item.code && item.code.toLowerCase().includes(this.search.toLowerCase()));
-                    const matchesCategory = this.category === 'All Items'
-                        || item.type === this.category.slice(0, -1);
+
+                    let matchesCategory;
+                    if (this.category === 'All Items') {
+                        matchesCategory = item.item_type !== 'discount_redeemed';
+                    } else if (this.category === 'Redeemed') {
+                        matchesCategory = item.item_type === 'discount_redeemed';
+                    } else if (this.category === 'Vouchers') {
+                        matchesCategory = item.type === 'Voucher' && item.item_type !== 'discount_redeemed';
+                    } else { // 'Products'
+                        matchesCategory = item.type === 'Product';
+                    }
                     return matchesSearch && matchesCategory;
                 });
             },

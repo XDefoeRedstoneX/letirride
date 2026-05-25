@@ -4,7 +4,6 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class UserDiscount extends Model
 {
@@ -17,6 +16,8 @@ class UserDiscount extends Model
         'user_id',
         'discount_type_id',
         'is_used',
+        'used_at',
+        'order_id',
         'obtained_from',
         'expires_at',
     ];
@@ -26,6 +27,7 @@ class UserDiscount extends Model
         return [
             'is_used' => 'boolean',
             'expires_at' => 'datetime',
+            'used_at' => 'datetime',
         ];
     }
 
@@ -39,8 +41,11 @@ class UserDiscount extends Model
         return $this->belongsTo(DiscountType::class);
     }
 
-    public function order(): HasOne
+    /**
+     * The order this voucher was actually redeemed on (only set once fulfilled).
+     */
+    public function order(): BelongsTo
     {
-        return $this->hasOne(Order::class);
+        return $this->belongsTo(Order::class, 'order_id');
     }
 }

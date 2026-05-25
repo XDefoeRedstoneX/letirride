@@ -251,19 +251,38 @@ class DatabaseSeeder extends Seeder
             return;
         }
 
-        // UPDATED: target_category_id values now map only to 1 through 6
-        DB::table('discount_types')->upsert([
-            ['id' => 1, 'name' => '10% Off All', 'type' => 'percent', 'value' => 10.00, 'target_category_id' => null],
-            ['id' => 2, 'name' => '5% Off Steam', 'type' => 'percent', 'value' => 5.00, 'target_category_id' => 1],
-            ['id' => 3, 'name' => 'Rp30.000 Off Netflix', 'type' => 'fixed', 'value' => 30000.00, 'target_category_id' => 2],
-            ['id' => 4, 'name' => '20% Off PSN', 'type' => 'percent', 'value' => 20.00, 'target_category_id' => 1],
-            ['id' => 5, 'name' => 'Rp75.000 Welcome Bonus', 'type' => 'fixed', 'value' => 75000.00, 'target_category_id' => null],
-            ['id' => 6, 'name' => 'Half Price Discord', 'type' => 'percent', 'value' => 50.00, 'target_category_id' => 2],
-            ['id' => 7, 'name' => 'Rp15.000 Off Valorant', 'type' => 'fixed', 'value' => 15000.00, 'target_category_id' => 1],
-            ['id' => 8, 'name' => '15% Off Xbox', 'type' => 'percent', 'value' => 15.00, 'target_category_id' => 1],
-            ['id' => 9, 'name' => 'Whale Discount', 'type' => 'percent', 'value' => 25.00, 'target_category_id' => null],
-            ['id' => 10, 'name' => 'Free Welkin', 'type' => 'fixed', 'value' => 79000.00, 'target_category_id' => 1],
-        ], ['id'], ['name', 'type', 'value', 'target_category_id']);
+        $hasSubcategoryTarget = Schema::hasColumn('discount_types', 'target_subcategory_id');
+
+        // Brand-targeted vouchers pin to a subcategory (Steam, Netflix, PSN, …);
+        // category-only vouchers stay on target_category_id; storewide leaves both null.
+        $rows = [
+            ['id' => 1,  'name' => '10% Off All',            'type' => 'percent', 'value' => 10.00,    'target_category_id' => null, 'target_subcategory_id' => null],
+            ['id' => 2,  'name' => '5% Off Steam',           'type' => 'percent', 'value' => 5.00,     'target_category_id' => null, 'target_subcategory_id' => 2],   // Steam
+            ['id' => 3,  'name' => 'Rp30.000 Off Netflix',   'type' => 'fixed',   'value' => 30000.00, 'target_category_id' => null, 'target_subcategory_id' => 10],  // Netflix
+            ['id' => 4,  'name' => '20% Off PSN',            'type' => 'percent', 'value' => 20.00,    'target_category_id' => null, 'target_subcategory_id' => 3],   // PlayStation
+            ['id' => 5,  'name' => 'Rp75.000 Welcome Bonus', 'type' => 'fixed',   'value' => 75000.00, 'target_category_id' => null, 'target_subcategory_id' => null],
+            ['id' => 6,  'name' => 'Half Price Discord',     'type' => 'percent', 'value' => 50.00,    'target_category_id' => null, 'target_subcategory_id' => 12],  // Discord
+            ['id' => 7,  'name' => 'Rp15.000 Off Valorant',  'type' => 'fixed',   'value' => 15000.00, 'target_category_id' => null, 'target_subcategory_id' => 5],   // Valorant
+            ['id' => 8,  'name' => '15% Off Xbox',           'type' => 'percent', 'value' => 15.00,    'target_category_id' => null, 'target_subcategory_id' => 13],  // Xbox
+            ['id' => 9,  'name' => 'Whale Discount',         'type' => 'percent', 'value' => 25.00,    'target_category_id' => null, 'target_subcategory_id' => null],
+            ['id' => 10, 'name' => 'Free Welkin',            'type' => 'fixed',   'value' => 79000.00, 'target_category_id' => null, 'target_subcategory_id' => 9],   // Genshin
+            ['id' => 11, 'name' => '20% Off All Subscriptions', 'type' => 'percent', 'value' => 20.00, 'target_category_id' => 5,    'target_subcategory_id' => null], // category-level
+        ];
+
+        if (! $hasSubcategoryTarget) {
+            $rows = array_map(function (array $row) {
+                unset($row['target_subcategory_id']);
+
+                return $row;
+            }, $rows);
+        }
+
+        $updateColumns = ['name', 'type', 'value', 'target_category_id'];
+        if ($hasSubcategoryTarget) {
+            $updateColumns[] = 'target_subcategory_id';
+        }
+
+        DB::table('discount_types')->upsert($rows, ['id'], $updateColumns);
     }
 
     private function seedUserDiscounts(): void

@@ -17,6 +17,7 @@ class ProductKey extends Model
         'key_code',
         'status',
         'order_id',
+        'reserved_for_order_id',
     ];
 
     public function product(): BelongsTo
@@ -27,5 +28,10 @@ class ProductKey extends Model
     public function order(): BelongsTo
     {
         return $this->belongsTo(Order::class);
+    }
+
+    public function reservedForOrder(): BelongsTo
+    {
+        return $this->belongsTo(Order::class, 'reserved_for_order_id');
     }
 }

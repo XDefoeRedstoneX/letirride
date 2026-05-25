@@ -3,8 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\Order;
+use App\Models\ProductKey;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class TransactionController extends Controller
 {
@@ -45,7 +47,10 @@ class TransactionController extends Controller
     }
 
     /**
-     * Cancel a pending order. Releases the voucher if one was attached.
+     * Cancel a pending order: mark it cancelled, drop any key reservations back
+     * into the available pool. The user_discount_id reference is preserved so
+     * the order keeps its audit trail; the voucher remains unused because
+     * fulfillOrder() is the only path that flips is_used → true.
      */
     public function cancel(Order $order): JsonResponse
     {
@@ -57,14 +62,18 @@ class TransactionController extends Controller
             return response()->json(['message' => 'Only pending orders can be cancelled.'], 422);
         }
 
-        $order->update(['status' => 'cancelled']);
+        DB::transaction(function () use ($order) {
+            $locked = Order::whereKey($order->id)->lockForUpdate()->first();
+            if (! $locked || $locked->status !== 'pending') {
+                return;
+            }
 
-        if ($order->user_discount_id) {
-            $order->update(['user_discount_id' => null]);
-        }
+            $locked->update(['status' => 'cancelled']);
 
-        return response()->json([
-            'message' => 'Order cancelled successfully.',
-        ]);
+            ProductKey::where('reserved_for_order_id', $locked->id)
+                ->update(['reserved_for_order_id' => null]);
+        });
+
+        return response()->json(['message' => 'Order cancelled successfully.']);
     }
 }
