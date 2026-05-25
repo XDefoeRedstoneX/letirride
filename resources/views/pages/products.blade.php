@@ -83,15 +83,13 @@
             </template>
         </div>
 
-        {{-- ── Product Groups (catalog OR selected brand variants) ─ --}}
-        <template x-for="group in displayGroups" :key="group.key">
-            <section class="products-section">
-
-                {{-- Group header (non-collapsible) --}}
+        {{-- ── Full Rows: Subscriptions, then Game Keys ──────────── --}}
+        <template x-for="group in fullGroups" :key="group.key">
+            <section class="brand-section">
                 <div class="section-bar">
                     <span class="section-title">
-                        <span class="cat-emoji" x-show="group.emoji" x-text="group.emoji"></span>
-                        <span x-text="(group.isBrand ? '▣ ' : '') + group.label"></span>
+                        <span class="cat-emoji" x-text="group.emoji"></span>
+                        <span x-text="group.label"></span>
                     </span>
                     <div class="section-right">
                         <button class="section-viewall" type="button"
@@ -110,7 +108,6 @@
                         </button>
                     </template>
                 </div>
-
             </section>
         </template>
 
@@ -226,12 +223,13 @@
                                                     ⚡ TOP-UP
                                                 </span>
                                             </div>
-
                                             <template x-if="!product.in_stock">
                                                 <div class="stockout-overlay">
                                                     <span class="stockout-text">OUT OF STOCK</span>
                                                 </div>
                                             </template>
+
+                                            
                                         </div>
 
                                         <div class="card-body">
@@ -239,15 +237,12 @@
                                             <div class="card-footer">
                                                 <div>
                                                     <span class="price-label">PRICE</span>
-                                                    <span class="price-value"
+                                                    <span class="price-value" :class="!product.in_stock ? '!text-gray-500' : ''"
                                                           x-text="'Rp ' + new Intl.NumberFormat('id-ID').format(product.price)">
                                                     </span>
-                                                    <template x-if="product.product_type === 'voucher'">
-                                                        <span class="stock-line"
-                                                              :class="product.in_stock ? (product.stock <= 3 ? 'low' : 'ok') : 'none'"
-                                                              x-text="product.in_stock ? (product.stock + ' IN STOCK') : 'OUT OF STOCK'">
-                                                        </span>
-                                                    </template>
+                                                    <template x-if="product.product_type === 'voucher' && product.in_stock">
+            <span class="stock-line" :class="product.stock <= 3 ? 'low' : 'ok'" x-text="product.stock + ' IN STOCK'"></span>
+        </template>
                                                 </div>
                                                 <div class="card-actions" @click.stop>
                                                     <button @click="toggleFavorite(product.id)"
@@ -528,10 +523,7 @@ function ridlyStore(initialProducts, initialFavorites, isAuthenticated, csrfToke
             }
 
             const map = {};
-            for (const p of this.products) {
-                if ((p.category || 'Other') === RIDLY_GAMES_CATEGORY) continue;
-                if (this.activeFilter !== 'All' && (p.category || 'Other') !== this.activeFilter) continue;
-                if (!this._matchesSearch(p)) continue;
+            for (const p of items) {
                 const name = p.subcategory || 'Other';
                 if (!map[name]) map[name] = { name, image: p.image, count: 0 };
                 map[name].count++;
