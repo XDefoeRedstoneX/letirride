@@ -4,7 +4,12 @@
 <div class="space-y-8" x-data="{
     showEditModal: false,
     showHistoryModal: false,
+    showInsightsModal: false,
     user: {},
+    insights: null,
+    insightsLoading: false,
+    spendingChart: null,
+    orderCountChart: null,
     openEdit(u) {
         this.user = JSON.parse(JSON.stringify(u));
         this.showEditModal = true;
@@ -12,6 +17,117 @@
     openHistory(u) {
         this.user = u;
         this.showHistoryModal = true;
+    },
+    openInsights(u) {
+        this.user = u;
+        this.showInsightsModal = true;
+        this.insightsLoading = true;
+        this.insights = null;
+
+        // Reset charts if reopening
+        if (this.spendingChart) { this.spendingChart.destroy(); this.spendingChart = null; }
+        if (this.orderCountChart) { this.orderCountChart.destroy(); this.orderCountChart = null; }
+
+        const url = '{{ route('admin.users.insights', ['user' => '__USER__']) }}'.replace('__USER__', u.id);
+
+        fetch(url, {
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json'
+            }
+        })
+        .then(res => {
+            if (!res.ok) throw new Error('Request failed');
+            return res.json();
+        })
+        .then(data => {
+            this.insights = data;
+            this.insightsLoading = false;
+
+            this.$nextTick(() => {
+                const labels = data?.spendingAnalytics?.labels || [];
+
+                if (labels.length > 0) {
+                    const spendingEl = document.getElementById('insightsSpendingChart');
+                    if (spendingEl) {
+                        this.spendingChart = new Chart(spendingEl, {
+                            type: 'line',
+                            data: {
+                                labels: labels,
+                                datasets: [{
+                                    label: 'Monthly Spending',
+                                    data: data.spendingAnalytics.monthlySpending,
+                                    borderColor: 'rgb(59, 130, 246)',
+                                    backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                                    borderWidth: 3,
+                                    fill: true,
+                                    tension: 0.4,
+                                    pointRadius: 6,
+                                    pointBackgroundColor: 'rgb(59, 130, 246)',
+                                    pointBorderColor: '#fff',
+                                    pointBorderWidth: 2,
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: true,
+                                plugins: {
+                                    legend: { display: true, labels: { font: { weight: 'bold', size: 12 } } }
+                                },
+                                scales: {
+                                    y: {
+                                        beginAtZero: true,
+                                        ticks: {
+                                            color: 'rgb(var(--color-muted-foreground))',
+                                            callback: (v) => 'Rp ' + Number(v).toLocaleString('id-ID')
+                                        },
+                                        grid: { color: 'rgba(var(--color-border), 0.1)' }
+                                    },
+                                    x: { ticks: { color: 'rgb(var(--color-muted-foreground))' }, grid: { display: false } }
+                                }
+                            }
+                        });
+                    }
+
+                    const orderEl = document.getElementById('insightsOrderCountChart');
+                    if (orderEl) {
+                        this.orderCountChart = new Chart(orderEl, {
+                            type: 'bar',
+                            data: {
+                                labels: labels,
+                                datasets: [{
+                                    label: 'Orders per Month',
+                                    data: data.spendingAnalytics.monthlyOrderCounts,
+                                    backgroundColor: 'rgba(59, 130, 246, 0.5)',
+                                    borderColor: 'rgb(59, 130, 246)',
+                                    borderWidth: 2,
+                                    borderRadius: 6
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: true,
+                                plugins: {
+                                    legend: { display: true, labels: { font: { weight: 'bold', size: 12 } } }
+                                },
+                                scales: {
+                                    y: {
+                                        beginAtZero: true,
+                                        ticks: { color: 'rgb(var(--color-muted-foreground))', stepSize: 1 },
+                                        grid: { color: 'rgba(var(--color-border), 0.1)' }
+                                    },
+                                    x: { ticks: { color: 'rgb(var(--color-muted-foreground))' }, grid: { display: false } }
+                                }
+                            }
+                        });
+                    }
+                }
+            });
+        })
+        .catch(() => {
+            this.insightsLoading = false;
+            this.insights = null;
+        });
     }
 }">
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -75,7 +191,9 @@
                         <td class="px-5 py-3">
                             <div class="flex items-center gap-1">
                                 <button @click="openEdit({{ json_encode($u) }})" class="px-2.5 py-1.5 bg-foreground/5 rounded-lg text-[9px] font-black uppercase tracking-widest hover:bg-primary/10 hover:text-primary transition-colors">Edit</button>
+                                <button @click="openInsights({{ json_encode($u) }})" class="px-2.5 py-1.5 bg-primary/10 text-primary rounded-lg text-[9px] font-black uppercase tracking-widest hover:bg-primary/20 transition-colors">Insights</button>
                                 <button @click="openHistory({{ json_encode($u) }})" class="px-2.5 py-1.5 bg-blue-500/10 text-blue-500 rounded-lg text-[9px] font-black uppercase tracking-widest hover:bg-blue-500/20 transition-colors">History</button>
+
                             </div>
                         </td>
                     </tr>
@@ -121,10 +239,232 @@
         </div>
     </div>
 
+    <!-- Insights Modal -->
+    <div x-show="showInsightsModal" @click.self="showInsightsModal = false" class="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/20 backdrop-blur-md" style="display: none;"
+         x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
+         x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0">
+        <div class="bg-card border border-border rounded-3xl shadow-2xl w-full max-w-5xl overflow-y-auto max-h-[95vh]">
+            <div class="p-6 sm:p-8 flex flex-col gap-5">
+                <div class="flex items-start justify-between gap-4">
+                    <div>
+                        <h2 class="text-xl sm:text-2xl font-black uppercase tracking-tighter text-foreground">Customer Insights</h2>
+                        <p class="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mt-1" x-text="user.name ? (user.name + ' — Insights') : ''"></p>
+                    </div>
+                    <button type="button" @click="showInsightsModal = false" class="p-2 hover:bg-foreground/5 rounded-xl text-muted-foreground hover:text-foreground transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="square"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+                    </button>
+                </div>
+
+                <!-- Loading State -->
+                <div x-show="insightsLoading" class="border-2 border-border/50 rounded-2xl p-6 bg-foreground/5">
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-full border-2 border-primary/30 border-t-primary animate-spin"></div>
+                        <div>
+                            <p class="text-sm font-bold">Loading customer analytics…</p>
+                            <p class="text-[10px] text-muted-foreground">Please wait.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Content -->
+                <div x-show="!insightsLoading" class="space-y-6">
+                    <!-- Section 1: User Overview -->
+                    <div class="bg-foreground/5 border-2 border-border/50 rounded-2xl p-5">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div>
+                                <p class="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-2">Name</p>
+                                <p class="text-sm font-bold" x-text="insights?.user?.name || '—'"></p>
+                            </div>
+                            <div>
+                                <p class="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-2">Email</p>
+                                <p class="text-sm font-bold text-muted-foreground break-all" x-text="insights?.user?.email || '—'"></p>
+                            </div>
+                            <div>
+                                <p class="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-2">Role</p>
+                                <p class="text-sm font-bold" x-text="insights?.user?.role ? insights.user.role.toUpperCase() : '—'"></p>
+                            </div>
+
+                            <div>
+                                <p class="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-2">Registration date</p>
+                                <p class="text-sm font-bold" x-text="insights?.user?.registrationDate || '—'"></p>
+                            </div>
+                            <div>
+                                <p class="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-2">Referral code</p>
+                                <p class="text-sm font-mono font-bold text-primary" x-text="insights?.user?.referralCode || '—'"></p>
+                            </div>
+                            <div>
+                                <p class="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-2">Current points balance</p>
+                                <p class="text-2xl font-black text-yellow-500" x-text="insights?.user?.pointsBalance != null ? Number(insights.user.pointsBalance).toLocaleString('id-ID') : '—'"></p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Section 2: Purchase Metrics -->
+                    <div class="bg-foreground/5 border-2 border-border/50 rounded-2xl p-5">
+                        <h3 class="text-lg font-black uppercase tracking-tighter mb-4">Purchase Metrics</h3>
+
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                            <div class="bg-card border border-border rounded-2xl p-4">
+                                <p class="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-2">Total orders</p>
+                                <p class="text-2xl font-black text-foreground" x-text="insights?.overview?.totalOrders != null ? Number(insights.overview.totalOrders) : 0"></p>
+                            </div>
+                            <div class="bg-card border border-border rounded-2xl p-4">
+                                <p class="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-2">Lifetime spending</p>
+                                <p class="text-xl font-black text-green-500" x-text="insights?.overview?.totalSpent != null ? ('Rp ' + Number(insights.overview.totalSpent).toLocaleString('id-ID')) : 'Rp 0'"></p>
+                            </div>
+                            <div class="bg-card border border-border rounded-2xl p-4">
+                                <p class="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-2">Average order value</p>
+                                <p class="text-xl font-black text-primary" x-text="insights?.overview?.averageOrderValue != null ? ('Rp ' + Number(insights.overview.averageOrderValue).toLocaleString('id-ID')) : 'Rp 0'"></p>
+                            </div>
+                            <div class="bg-card border border-border rounded-2xl p-4">
+                                <p class="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-2">Last purchase date</p>
+                                <p class="text-sm font-bold" x-text="insights?.overview?.lastPurchaseDate || 'Never'"></p>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                            <div class="bg-card border border-border rounded-2xl p-4">
+                                <p class="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-2">Most purchased product</p>
+                                <template x-if="insights?.overview?.topProduct">
+                                    <div>
+                                        <p class="text-sm font-bold" x-text="insights.overview.topProduct.name"></p>
+                                        <p class="text-[10px] text-muted-foreground" x-text="insights.overview.topProduct.categoryName ? insights.overview.topProduct.categoryName : 'N/A'"></p>
+                                    </div>
+                                </template>
+                                <template x-if="!insights?.overview?.topProduct">
+                                    <p class="text-muted-foreground text-sm">—</p>
+                                </template>
+                            </div>
+                            <div class="bg-card border border-border rounded-2xl p-4">
+                                <p class="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-2">Most purchased category</p>
+                                <template x-if="insights?.overview?.topCategory">
+                                    <p class="text-sm font-bold" x-text="insights.overview.topCategory.name"></p>
+                                </template>
+                                <template x-if="!insights?.overview?.topCategory">
+                                    <p class="text-muted-foreground text-sm">—</p>
+                                </template>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Section 3: Charts -->
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div class="bg-card border border-border rounded-2xl p-5">
+                            <h3 class="text-lg font-black uppercase tracking-tighter mb-4">Monthly spending line</h3>
+                            <div class="w-full h-[320px]">
+                                <canvas id="insightsSpendingChart" class="w-full h-full"></canvas>
+                            </div>
+                            <template x-if="(insights?.spendingAnalytics?.labels || []).length === 0">
+                                <p class="text-muted-foreground text-sm mt-4 text-center">No paid purchases to chart.</p>
+                            </template>
+                        </div>
+
+                        <div class="bg-card border border-border rounded-2xl p-5">
+                            <h3 class="text-lg font-black uppercase tracking-tighter mb-4">Monthly order count</h3>
+                            <div class="w-full h-[320px]">
+                                <canvas id="insightsOrderCountChart" class="w-full h-full"></canvas>
+                            </div>
+                            <template x-if="(insights?.spendingAnalytics?.labels || []).length === 0">
+                                <p class="text-muted-foreground text-sm mt-4 text-center">No paid purchases to chart.</p>
+                            </template>
+                        </div>
+                    </div>
+
+                    <!-- Section 4: Top Purchases -->
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div class="bg-card border border-border rounded-2xl p-5">
+                            <h3 class="text-lg font-black uppercase tracking-tighter mb-4">Top 5 products purchased</h3>
+                            <template x-if="(insights?.topPurchases?.products || []).length > 0">
+                                <div class="space-y-3">
+                                    <template x-for="(p, idx) in insights.topPurchases.products" :key="p.id">
+                                        <div class="flex items-center justify-between p-3 bg-foreground/5 rounded-lg">
+                                            <div class="flex-1">
+                                                <p class="text-sm font-bold" x-text="p.name"></p>
+                                                <p class="text-[10px] text-muted-foreground" x-text="p.category?.name || 'N/A'"></p>
+                                            </div>
+                                            <p class="text-sm font-black text-primary shrink-0">#<span x-text="idx + 1"></span></p>
+                                        </div>
+                                    </template>
+                                </div>
+                            </template>
+                            <template x-if="(insights?.topPurchases?.products || []).length === 0">
+                                <p class="text-muted-foreground text-sm text-center py-8">No purchases.</p>
+                            </template>
+                        </div>
+
+                        <div class="bg-card border border-border rounded-2xl p-5">
+                            <h3 class="text-lg font-black uppercase tracking-tighter mb-4">Top 5 categories purchased</h3>
+                            <template x-if="(insights?.topPurchases?.categories || []).length > 0">
+                                <div class="space-y-3">
+                                    <template x-for="c in insights.topPurchases.categories" :key="c.id">
+                                        <div class="p-3 bg-foreground/5 rounded-lg">
+                                            <p class="text-sm font-bold" x-text="c.name"></p>
+                                        </div>
+                                    </template>
+                                </div>
+                            </template>
+                            <template x-if="(insights?.topPurchases?.categories || []).length === 0">
+                                <p class="text-muted-foreground text-sm text-center py-8">No purchases.</p>
+                            </template>
+                        </div>
+                    </div>
+
+                    <!-- Section 5: Recent Purchase History -->
+                    <div class="bg-card border border-border rounded-2xl overflow-hidden">
+                        <div class="p-5 border-b border-border">
+                            <h3 class="text-lg font-black uppercase tracking-tighter">Recent purchase history</h3>
+                            <p class="text-[10px] text-muted-foreground uppercase tracking-widest font-bold mt-1">Latest 10 paid orders</p>
+                        </div>
+
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left">
+                                <thead>
+                                    <tr class="bg-foreground/5 text-[9px] font-black uppercase tracking-widest text-muted-foreground border-b border-border">
+                                        <th class="px-5 py-3">Invoice</th>
+                                        <th class="px-5 py-3">Date</th>
+                                        <th class="px-5 py-3">Status</th>
+                                        <th class="px-5 py-3">Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-border">
+                                    <template x-if="(insights?.recentOrders || []).length > 0">
+                                        <template x-for="o in insights.recentOrders" :key="o.invoice">
+                                            <tr class="hover:bg-foreground/5">
+                                                <td class="px-5 py-3 text-xs font-mono font-bold text-primary" x-text="o.invoice"></td>
+                                                <td class="px-5 py-3 text-xs text-muted-foreground" x-text="o.date"></td>
+                                                <td class="px-5 py-3 text-xs">
+                                                    <span class="px-2 py-1 rounded-lg text-[8px] font-black uppercase tracking-widest bg-blue-500/10 text-blue-500" x-text="(o.status || '').toUpperCase()"></span>
+                                                </td>
+                                                <td class="px-5 py-3 text-xs font-bold text-green-500" x-text="'Rp ' + Number(o.total).toLocaleString('id-ID')"></td>
+                                            </tr>
+                                        </template>
+                                    </template>
+
+                                    <template x-if="(insights?.recentOrders || []).length === 0">
+                                        <tr>
+                                            <td colspan="4" class="px-5 py-12 text-center">
+                                                <p class="text-muted-foreground">No paid orders found.</p>
+                                            </td>
+                                        </tr>
+                                    </template>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex justify-end gap-3 pt-2 border-t border-border/50">
+                    <button type="button" @click="showInsightsModal = false" class="px-6 py-2.5 bg-slate-200 dark:bg-slate-800 rounded-xl text-[10px] font-black uppercase tracking-widest text-slate-800 dark:text-slate-200 hover:bg-slate-300 dark:hover:bg-slate-700 transition-colors">CLOSE</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Order History Modal -->
     <div x-show="showHistoryModal" @click.self="showHistoryModal = false" class="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/20 backdrop-blur-md" style="display: none;"
          x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
          x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0">
+
         <div class="bg-card border border-border rounded-3xl shadow-2xl w-full max-w-3xl overflow-y-auto max-h-[95vh]">
             <div class="p-6 sm:p-8 flex flex-col gap-3">
                 <div class="flex items-start justify-between">
@@ -168,4 +508,6 @@
         </div>
     </div>
 </div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
 @endsection

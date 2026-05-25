@@ -107,6 +107,8 @@ Route::prefix('admin')
 
         Route::get('/users', [AdminUserController::class, 'index'])->name('admin.users');
         Route::patch('/users/{user}', [AdminUserController::class, 'update'])->name('admin.users.update');
+        Route::get('/users/{user}/insights', [AdminUserController::class, 'insights'])->name('admin.users.insights');
+
 
         Route::get('/gacha', [AdminGachaController::class, 'index'])->name('admin.gacha');
         Route::post('/gacha', [AdminGachaController::class, 'store'])->name('admin.gacha.store');
