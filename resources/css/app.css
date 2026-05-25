@@ -119,6 +119,95 @@
   /* 61 / 100 */
 }
 
+    /* Stockout overlay on product card image */
+    .product-card { position: relative; }
+    .product-card.is-out-of-stock { cursor: not-allowed; opacity: 0.78; }
+    .product-card.is-out-of-stock .card-img { filter: grayscale(0.85); }
+    .stockout-overlay {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(0, 0, 0, 0.55);
+        pointer-events: none;
+    }
+    .stockout-text {
+        padding: 8px 16px;
+        font-family: var(--px, 'Press Start 2P', monospace);
+        font-size: 8px;
+        letter-spacing: 0.2em;
+        color: #fff;
+        background: rgba(220, 38, 38, 0.9);
+        border: 2px solid #ff4444;
+        box-shadow: 0 0 15px rgba(220, 38, 38, 0.8), inset 0 0 10px rgba(220, 38, 38, 0.5);
+        transform: rotate(-10deg) scale(1.1);
+        text-shadow: 2px 2px 0px #000;
+        backdrop-filter: blur(4px);
+    }
+
+    /* Inline stock indicator on card */
+    .stock-line {
+        display: block;
+        margin-top: 4px;
+        font-size: 9px;
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+    }
+    .stock-line.ok   { color: #16a34a; }
+    .stock-line.low  { color: #f59e0b; }
+    .stock-line.none { color: #dc2626; }
+
+    /* Disabled buy button (card) */
+    .buy-btn-disabled {
+        padding: 6px 14px;
+        font-size: 10px;
+        font-weight: 900;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: hsl(var(--muted-foreground));
+        background: hsl(var(--foreground) / 0.08);
+        border: 1px solid hsl(var(--border));
+        border-radius: 6px;
+        cursor: not-allowed;
+    }
+
+    /* Stock row in buy modal */
+    .modal-stock-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 8px 12px;
+        border-radius: 8px;
+        font-size: 10px;
+        font-weight: 800;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+    }
+    .modal-stock-row.ok   { background: rgb(22 163 74 / 0.10); color: #16a34a; }
+    .modal-stock-row.low  { background: rgb(245 158 11 / 0.10); color: #f59e0b; }
+    .modal-stock-row.none { background: rgb(220 38 38 / 0.10); color: #dc2626; }
+    .modal-stock-label { opacity: 0.8; }
+    .modal-stock-val   { font-weight: 900; }
+
+    /* Disabled modal button */
+    .modal-btn-disabled {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        padding: 10px 16px;
+        font-size: 11px;
+        font-weight: 900;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: hsl(var(--muted-foreground));
+        background: hsl(var(--foreground) / 0.08);
+        border: 1px solid hsl(var(--border));
+        border-radius: 8px;
+        cursor: not-allowed;
+    }
 .dark {
   /* Dark Mode: Night City (Professional Deep Slate/Amber) */
   --background: #020617;
@@ -1219,9 +1308,9 @@ button,
 .card-img-wrap::after {
   content: "";
   position: absolute;
-  top: 0; 
+  top: 0;
   left: -150%;
-  width: 50%; 
+  width: 50%;
   height: 100%;
   background: linear-gradient(to right, transparent, rgba(255,255,255,0.15), transparent);
   transform: skewX(-25deg);
