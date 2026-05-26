@@ -15,8 +15,8 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
             $table->foreignId('gacha_booster_id')->constrained()->cascadeOnDelete();
-            $table->timestamp('activated_at');
-            $table->timestamp('expires_at');
+            $table->dateTime('activated_at');
+            $table->dateTime('expires_at');
             $table->timestamps();
 
             $table->index(['user_id', 'expires_at']);

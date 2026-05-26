@@ -166,6 +166,8 @@
                             <div class="section-right">
                                 <span class="section-meta"
                                       x-text="brands.length + ' BRAND' + (brands.length !== 1 ? 'S' : '')"></span>
+                                <button class="section-viewall" type="button"
+                                        @click="scrollToProducts()">↓ PRODUCTS</button>
                             </div>
                         </div>
 
@@ -186,6 +188,9 @@
                             </template>
                         </div>
                     </section>
+
+                    {{-- Sentinel — selectBrand() and the ↓ button scroll here --}}
+                    <div id="product-list" style="scroll-margin-top: 80px;"></div>
 
                     {{-- Product Groups (catalog OR selected brand variants) --}}
                     <template x-for="group in displayGroups" :key="group.key">
@@ -488,9 +493,9 @@ function ridlyStore(initialProducts, initialFavorites, isAuthenticated, csrfToke
                 }
             }
 
-            // A deep link that scopes the catalog should land there.
+            // A deep link that scopes the catalog should land at the products.
             if ((group || brand || search) && !buyId) {
-                this.$nextTick(() => this.scrollToCatalog());
+                this.$nextTick(() => this.scrollToProducts());
             }
 
             if (search || group || brand || buyId) {
@@ -551,7 +556,7 @@ function ridlyStore(initialProducts, initialFavorites, isAuthenticated, csrfToke
             this.activeFilter  = 'All';
             this.selectedBrand = null;
             this.groupCats     = RIDLY_GROUP_CATS[key] || null;
-            this.$nextTick(() => this.scrollToCatalog());
+            this.$nextTick(() => this.scrollToProducts());
         },
 
         // Pre-select a brand in the catalog, then scroll.
@@ -564,6 +569,10 @@ function ridlyStore(initialProducts, initialFavorites, isAuthenticated, csrfToke
 
         scrollToCatalog() {
             this.$refs.catalog?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        },
+
+        scrollToProducts() {
+            document.getElementById('product-list')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
         },
 
         /* ════ CATALOG (bottom of page) ═══════════════════════ */
@@ -672,7 +681,7 @@ function ridlyStore(initialProducts, initialFavorites, isAuthenticated, csrfToke
 
         selectBrand(name) {
             this.selectedBrand = (this.selectedBrand === name) ? null : name;
-            if (this.selectedBrand) this.$nextTick(() => this.scrollToCatalog());
+            if (this.selectedBrand) this.$nextTick(() => this.scrollToProducts());
         },
 
         clearBrand() {
