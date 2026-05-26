@@ -15,22 +15,26 @@ class UserSeeder extends Seeder
      */
     public function run(): void
     {
-        User::create([
-            'name' => 'City Mayor',
-            'email' => 'admin@pxshop.com',
-            'password' => Hash::make('admin123'),
-            'google_id' => null,
-            'role' => 'admin',
-            'points_balance' => 999999,
-        ]);
+        User::updateOrCreate(
+            ['email' => 'admin@pxshop.com'],
+            [
+                'name' => 'City Mayor',
+                'password' => Hash::make('admin123'),
+                'google_id' => null,
+                'role' => 'admin',
+                'points_balance' => 999999,
+            ]
+        );
 
-        User::create([
-            'name' => 'Pixel Walker',
-            'email' => 'demo@pxshop.com',
-            'password' => Hash::make('demo123'),
-            'google_id' => null,
-            'role' => 'customer',
-            'points_balance' => 5000,
-        ]);
+        User::updateOrCreate(
+            ['email' => 'demo@pxshop.com'],
+            [
+                'name' => 'Pixel Walker',
+                'password' => Hash::make('demo123'),
+                'google_id' => null,
+                'role' => 'customer',
+                'points_balance' => 5000,
+            ]
+        );
     }
 }

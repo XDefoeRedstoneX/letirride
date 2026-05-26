@@ -314,6 +314,8 @@ class DatabaseSeeder extends Seeder
 
         $hasExpiresAt = Schema::hasColumn('user_discounts', 'expires_at');
 
+        $existingUserIds = DB::table('users')->pluck('id')->toArray();
+
         $rows = [
             ['id' => 1, 'user_id' => 1, 'discount_type_id' => 1, 'is_used' => false, 'obtained_from' => 'gacha'],
             ['id' => 2, 'user_id' => 2, 'discount_type_id' => 5, 'is_used' => true, 'obtained_from' => 'registration'],
@@ -326,6 +328,12 @@ class DatabaseSeeder extends Seeder
             ['id' => 9, 'user_id' => 9, 'discount_type_id' => 6, 'is_used' => true, 'obtained_from' => 'gacha'],
             ['id' => 10, 'user_id' => 10, 'discount_type_id' => 10, 'is_used' => false, 'obtained_from' => 'gacha'],
         ];
+
+        $rows = array_values(array_filter($rows, fn ($r) => in_array($r['user_id'], $existingUserIds)));
+
+        if (empty($rows)) {
+            return;
+        }
 
         if ($hasExpiresAt) {
             $rows = array_map(function (array $row) {
@@ -509,7 +517,8 @@ class DatabaseSeeder extends Seeder
             return;
         }
 
-        $hasCreatedAt = Schema::hasColumn('tickets', 'created_at');
+        $hasCreatedAt    = Schema::hasColumn('tickets', 'created_at');
+        $existingUserIds = DB::table('users')->pluck('id')->toArray();
 
         $rows = [
             ['id' => 1, 'user_id' => 2, 'type' => 'billing', 'message' => 'I was charged twice for Netflix!', 'status' => 'open'],
@@ -524,16 +533,20 @@ class DatabaseSeeder extends Seeder
             ['id' => 10, 'user_id' => 4, 'type' => 'admin', 'message' => 'Test ticket from admin account.', 'status' => 'resolved'],
         ];
 
-        if ($hasCreatedAt) {
-            $rows = array_map(function (array $row) use ($now) {
-                $row['created_at'] = $now;
+        $rows = array_values(array_filter($rows, fn ($r) => in_array($r['user_id'], $existingUserIds)));
 
-                return $row;
-            }, $rows);
+        if (! empty($rows)) {
+            if ($hasCreatedAt) {
+                $rows = array_map(function (array $row) use ($now) {
+                    $row['created_at'] = $now;
+
+                    return $row;
+                }, $rows);
+            }
+
+            $updateColumns = ['user_id', 'type', 'message', 'status'];
+            DB::table('tickets')->upsert($rows, ['id'], $updateColumns);
         }
-
-        $updateColumns = ['user_id', 'type', 'message', 'status'];
-        DB::table('tickets')->upsert($rows, ['id'], $updateColumns);
     }
 
     private function seedNews(): void
@@ -616,29 +629,17 @@ class DatabaseSeeder extends Seeder
             return;
         }
 
-        DB::table('point_shop_purchases')->upsert([
-            [
-                'id' => 1,
-                'user_id' => 2,
-                'point_shop_item_id' => 1,
-                'points_spent' => 500,
-                'created_at' => (clone $now)->subDays(1),
-            ],
-            [
-                'id' => 2,
-                'user_id' => 4,
-                'point_shop_item_id' => 2,
-                'points_spent' => 5000,
-                'created_at' => (clone $now)->subHours(5),
-            ],
-            [
-                'id' => 3,
-                'user_id' => 8,
-                'point_shop_item_id' => 3,
-                'points_spent' => 1000,
-                'created_at' => (clone $now)->subMinutes(30),
-            ],
-        ], ['id'], ['user_id', 'point_shop_item_id', 'points_spent', 'created_at']);
+        $existingUserIds = DB::table('users')->pluck('id')->toArray();
+
+        $rows = array_values(array_filter([
+            ['id' => 1, 'user_id' => 2, 'point_shop_item_id' => 1, 'points_spent' => 500,  'created_at' => (clone $now)->subDays(1)],
+            ['id' => 2, 'user_id' => 4, 'point_shop_item_id' => 2, 'points_spent' => 5000, 'created_at' => (clone $now)->subHours(5)],
+            ['id' => 3, 'user_id' => 8, 'point_shop_item_id' => 3, 'points_spent' => 1000, 'created_at' => (clone $now)->subMinutes(30)],
+        ], fn ($r) => in_array($r['user_id'], $existingUserIds)));
+
+        if (! empty($rows)) {
+            DB::table('point_shop_purchases')->upsert($rows, ['id'], ['user_id', 'point_shop_item_id', 'points_spent', 'created_at']);
+        }
     }
 
     private function seedFavorites($now): void
@@ -647,32 +648,18 @@ class DatabaseSeeder extends Seeder
             return;
         }
 
-        DB::table('favorites')->upsert([
-            [
-                'id' => 1,
-                'user_id' => 1,
-                'product_id' => 3,
-                'created_at' => (clone $now)->subDays(5),
-            ],
-            [
-                'id' => 2,
-                'user_id' => 1,
-                'product_id' => 9,
-                'created_at' => (clone $now)->subDays(2),
-            ],
-            [
-                'id' => 3,
-                'user_id' => 2,
-                'product_id' => 1,
-                'created_at' => (clone $now)->subHours(12),
-            ],
-            [
-                'id' => 4,
-                'user_id' => 8,
-                'product_id' => 8,
-                'created_at' => clone $now,
-            ],
-        ], ['id'], ['user_id', 'product_id', 'created_at']);
+        $existingUserIds = DB::table('users')->pluck('id')->toArray();
+
+        $rows = array_values(array_filter([
+            ['id' => 1, 'user_id' => 1, 'product_id' => 3, 'created_at' => (clone $now)->subDays(5)],
+            ['id' => 2, 'user_id' => 1, 'product_id' => 9, 'created_at' => (clone $now)->subDays(2)],
+            ['id' => 3, 'user_id' => 2, 'product_id' => 1, 'created_at' => (clone $now)->subHours(12)],
+            ['id' => 4, 'user_id' => 8, 'product_id' => 8, 'created_at' => clone $now],
+        ], fn ($r) => in_array($r['user_id'], $existingUserIds)));
+
+        if (! empty($rows)) {
+            DB::table('favorites')->upsert($rows, ['id'], ['user_id', 'product_id', 'created_at']);
+        }
     }
 
     private function seedCartItems($now): void
@@ -717,10 +704,10 @@ class DatabaseSeeder extends Seeder
             return;
         }
 
-        $userIds = DB::table('users')->pluck('id');
         $discountIds = DB::table('user_discounts')->pluck('id');
 
-        if ($userIds->count() < 2) {
+        // Need users with IDs 1 and 2 specifically to seed referrals
+        if (! DB::table('users')->where('id', 1)->exists() || ! DB::table('users')->where('id', 2)->exists()) {
             return;
         }
 
