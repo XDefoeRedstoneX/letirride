@@ -91,8 +91,8 @@
     </div>
 
     <!-- Add Prize Modal -->
-    <div x-show="showAddModal" @click="showAddModal = false" class="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/20 backdrop-blur-md" style="display: none;">
-        <div @click.away="showAddModal = false = false = false" class="bg-white dark:bg-[#0f172a] border border-border rounded-3xl shadow-2xl w-full max-w-2xl">
+    <div x-show="showAddModal" @click.self="showAddModal = false" class="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/20 backdrop-blur-md" style="display: none;">
+        <div class="bg-white dark:bg-[#0f172a] border border-border rounded-3xl shadow-2xl w-full max-w-2xl">
             
             
             <div class="p-6 sm:p-8" style=" display: flex; flex-direction: column; gap: 12px;">
@@ -112,7 +112,7 @@
                         </div>
                         <div>
                             <label class="text-[10px] font-black uppercase tracking-widest text-foreground/70 dark:text-muted-foreground mb-2 block">DISCOUNT TYPE <span class="req">*</span></label>
-                            <select name="discount_type_id" required class="w-full px-4 py-3 bg-foreground/5 border-2 border-border/50 rounded-xl text-xs font-bold text-foreground outline-none focus:border-primary focus:ring-4 focus:ring-primary/20 placeholder:text-muted-foreground/50 transition-all">
+                            <select name="discount_type_id" required class="w-full px-4 py-3  bg-white dark:bg-[#0f172a]  border-2 border-border/50 rounded-xl text-xs font-bold text-foreground outline-none focus:border-primary focus:ring-4 focus:ring-primary/20 placeholder:text-muted-foreground/50 transition-all">
                                 <option value="">Select discount</option>
                                 @foreach(\App\Models\DiscountType::all() as $dt)
                                     <option value="{{ $dt->id }}">{{ $dt->name }}</option>
@@ -121,7 +121,7 @@
                         </div>
                         <div>
                             <label class="text-[10px] font-black uppercase tracking-widest text-foreground/70 dark:text-muted-foreground mb-2 block">RARITY <span class="req">*</span></label>
-                            <select name="rarity_item" required class="w-full px-4 py-3 bg-foreground/5 border-2 border-border/50 rounded-xl text-xs font-bold text-foreground outline-none focus:border-primary focus:ring-4 focus:ring-primary/20 placeholder:text-muted-foreground/50 transition-all">
+                            <select name="rarity_item" required class="w-full px-4 py-3  bg-white dark:bg-[#0f172a]  border-2 border-border/50 rounded-xl text-xs font-bold text-foreground outline-none focus:border-primary focus:ring-4 focus:ring-primary/20 placeholder:text-muted-foreground/50 transition-all">
                                 <option value="common">Common</option>
                                 <option value="uncommon">Uncommon</option>
                                 <option value="rare">Rare</option>
@@ -147,8 +147,8 @@
     </div>
 
     <!-- Edit Prize Modal -->
-    <div x-show="showEditModal" @click="showEditModal = false" class="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/20 backdrop-blur-md" style="display: none;">
-        <div @click.away="showEditModal = false = false = false" class="bg-white dark:bg-[#0f172a] border border-border rounded-3xl shadow-2xl w-full max-w-2xl">
+    <div x-show="showEditModal" @click.self="showEditModal = false" class="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/20 backdrop-blur-md" style="display: none;">
+        <div class="bg-white dark:bg-[#0f172a] border border-border rounded-3xl shadow-2xl w-full max-w-2xl">
             
             
             <div class="p-6 sm:p-8" style=" display: flex; flex-direction: column; gap: 12px;">
@@ -168,7 +168,7 @@
                         </div>
                         <div>
                             <label class="text-[10px] font-black uppercase tracking-widest text-foreground/70 dark:text-muted-foreground mb-2 block">DISCOUNT TYPE <span class="req">*</span></label>
-                            <select name="discount_type_id" x-model="pool.discount_type_id" required class="w-full px-4 py-3 bg-foreground/5 border-2 border-border/50 rounded-xl text-xs font-bold text-foreground outline-none focus:border-primary focus:ring-4 focus:ring-primary/20 placeholder:text-muted-foreground/50 transition-all">
+                            <select name="discount_type_id" x-model="pool.discount_type_id" required class="w-full px-4 py-3  bg-white dark:bg-[#0f172a]  border-2 border-border/50 rounded-xl text-xs font-bold text-foreground outline-none focus:border-primary focus:ring-4 focus:ring-primary/20 placeholder:text-muted-foreground/50 transition-all">
                                 @foreach(\App\Models\DiscountType::all() as $dt)
                                     <option value="{{ $dt->id }}">{{ $dt->name }}</option>
                                 @endforeach
@@ -176,7 +176,7 @@
                         </div>
                         <div>
                             <label class="text-[10px] font-black uppercase tracking-widest text-foreground/70 dark:text-muted-foreground mb-2 block">RARITY <span class="req">*</span></label>
-                            <select name="rarity_item" x-model="pool.rarity_item" required class="w-full px-4 py-3 bg-foreground/5 border-2 border-border/50 rounded-xl text-xs font-bold text-foreground outline-none focus:border-primary focus:ring-4 focus:ring-primary/20 placeholder:text-muted-foreground/50 transition-all">
+                            <select name="rarity_item" x-model="pool.rarity_item" required class="w-full px-4 py-3  bg-white dark:bg-[#0f172a]  border-2 border-border/50 rounded-xl text-xs font-bold text-foreground outline-none focus:border-primary focus:ring-4 focus:ring-primary/20 placeholder:text-muted-foreground/50 transition-all">
                                 <option value="common">Common</option>
                                 <option value="uncommon">Uncommon</option>
                                 <option value="rare">Rare</option>
@@ -202,8 +202,8 @@
     </div>
 
     <!-- Delete Prize Modal -->
-    <div x-show="showDeleteModal" @click="showDeleteModal = false" class="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/20 backdrop-blur-md" style="display: none;">
-        <div @click.away="showDeleteModal = false = false = false" class="bg-white dark:bg-[#0f172a] border border-border rounded-3xl shadow-2xl w-full max-w-2xl">
+    <div x-show="showDeleteModal" @click.self="showDeleteModal = false" class="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/20 backdrop-blur-md" style="display: none;">
+        <div class="bg-white dark:bg-[#0f172a] border border-border rounded-3xl shadow-2xl w-full max-w-2xl">
             
             
             <div class="p-6 sm:p-8" style=" display: flex; flex-direction: column; gap: 12px;">
