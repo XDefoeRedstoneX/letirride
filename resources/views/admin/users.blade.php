@@ -190,7 +190,6 @@
                         </td>
                         <td class="px-5 py-3">
                             <div class="flex items-center gap-1">
-                                <button @click="openEdit({{ json_encode($u) }})" class="px-2.5 py-1.5 bg-foreground/5 rounded-lg text-[9px] font-black uppercase tracking-widest hover:bg-primary/10 hover:text-primary transition-colors">Edit</button>
                                 <button @click="openInsights({{ json_encode($u) }})" class="px-2.5 py-1.5 bg-primary/10 text-primary rounded-lg text-[9px] font-black uppercase tracking-widest hover:bg-primary/20 transition-colors">Insights</button>
                                 <button @click="openHistory({{ json_encode($u) }})" class="px-2.5 py-1.5 bg-blue-500/10 text-blue-500 rounded-lg text-[9px] font-black uppercase tracking-widest hover:bg-blue-500/20 transition-colors">History</button>
 
