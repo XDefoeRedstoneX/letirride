@@ -19,13 +19,11 @@ class GachaPool extends Model
         'reward_type',
         'points_amount',
         'image_path',
-        'base_win_chance',
     ];
 
     protected function casts(): array
     {
         return [
-            'base_win_chance' => 'decimal:2',
             'points_amount' => 'integer',
         ];
     }

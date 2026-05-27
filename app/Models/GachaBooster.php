@@ -17,7 +17,7 @@ class GachaBooster extends Model
         'point_cost',
         'rarity_floor',
         'bonus_percent',
-        'duration_minutes',
+        'rolls_granted',
         'is_active',
     ];
 
@@ -26,7 +26,7 @@ class GachaBooster extends Model
         return [
             'point_cost' => 'integer',
             'bonus_percent' => 'decimal:2',
-            'duration_minutes' => 'integer',
+            'rolls_granted' => 'integer',
             'is_active' => 'boolean',
         ];
     }

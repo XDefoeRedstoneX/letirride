@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\GachaBooster;
 use App\Models\GachaHistory;
 use App\Models\GachaPool;
+use App\Models\GachaRarityChance;
 use App\Services\GachaRollService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -16,6 +17,8 @@ class GachaController extends Controller
 {
     public const SPIN_COST_POINTS = 200;
 
+    private const RARITY_ORDER = ['grand_prize', 'legendary', 'epic', 'rare', 'uncommon', 'common'];
+
     public function __construct(private readonly GachaRollService $roller) {}
 
     /**
@@ -23,19 +26,45 @@ class GachaController extends Controller
      */
     public function showGacha()
     {
-        $prizes = GachaPool::with('discountType')
-            ->orderByDesc('base_win_chance')
+        $rarityRank = array_flip(self::RARITY_ORDER);
+
+        $poolModels = GachaPool::with('discountType')
             ->get()
-            ->map(fn (GachaPool $pool) => [
+            ->sortBy(fn (GachaPool $p) => $rarityRank[$p->rarity_item] ?? 99)
+            ->values();
+
+        $rarityChances = GachaRarityChance::all()->keyBy('rarity');
+        $prizeCounts = $poolModels->groupBy('rarity_item')->map->count();
+
+        $prizes = $poolModels->map(function (GachaPool $pool) use ($rarityChances, $prizeCounts) {
+            $rarity = $pool->rarity_item;
+            $rarityChance = (float) ($rarityChances[$rarity]->base_chance ?? 0);
+            $count = (int) ($prizeCounts[$rarity] ?? 1);
+            $perPrize = $count > 0 ? round($rarityChance / $count, 4) : 0.0;
+
+            return [
                 'id' => $pool->id,
                 'name' => $pool->prize_name,
-                'rarity' => $pool->rarity_item,
+                'rarity' => $rarity,
                 'reward_type' => $pool->reward_type,
                 'points_amount' => $pool->points_amount,
-                'rate' => (float) $pool->base_win_chance,
+                'rate' => $perPrize,
                 'discount_name' => $pool->discountType?->name ?? '',
                 'image' => $this->resolveImage($pool),
-            ]);
+            ];
+        });
+
+        $rarityBreakdown = collect(self::RARITY_ORDER)->map(function (string $rarity) use ($rarityChances, $prizeCounts) {
+            $count = (int) ($prizeCounts[$rarity] ?? 0);
+            $chance = (float) ($rarityChances[$rarity]->base_chance ?? 0);
+
+            return [
+                'rarity' => $rarity,
+                'base_chance' => $chance,
+                'prize_count' => $count,
+                'per_prize_chance' => $count > 0 ? round($chance / $count, 4) : 0.0,
+            ];
+        })->filter(fn ($row) => $row['prize_count'] > 0)->values();
 
         $snapshot = Auth::check() ? $this->roller->snapshotFor(Auth::user()) : null;
 
@@ -50,11 +79,12 @@ class GachaController extends Controller
                 'point_cost' => (int) $b->point_cost,
                 'rarity_floor' => $b->rarity_floor,
                 'bonus_percent' => (float) $b->bonus_percent,
-                'duration_minutes' => (int) $b->duration_minutes,
+                'rolls_granted' => (int) $b->rolls_granted,
             ]);
 
         return view('pages.gacha', [
             'prizes' => $prizes,
+            'rarityBreakdown' => $rarityBreakdown,
             'spinCost' => self::SPIN_COST_POINTS,
             'midtransClientKey' => config('midtrans.client_key'),
             'midtransIsProduction' => config('midtrans.is_production'),

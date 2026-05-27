@@ -18,7 +18,6 @@ function seedHistoryPool(): GachaPool
         'discount_type_id' => null,
         'points_amount' => 100,
         'image_path' => null,
-        'base_win_chance' => 100.0,
     ]);
 }
 

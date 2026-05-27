@@ -60,7 +60,7 @@ class GachaBoosterController extends Controller
             'point_cost' => 'required|integer|min:0',
             'rarity_floor' => 'required|in:uncommon,rare,epic,legendary,grand_prize',
             'bonus_percent' => 'required|numeric|min:0|max:100',
-            'duration_minutes' => 'required|integer|min:1|max:1440',
+            'rolls_granted' => 'required|integer|min:1|max:200',
         ]);
     }
 }

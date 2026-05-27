@@ -21,7 +21,7 @@
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
             <h1 class="text-2xl sm:text-3xl font-black tracking-tighter uppercase">Gacha <span class="text-primary">Boosters</span></h1>
-            <p class="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mt-1">Time-limited luck boosters players can buy with points</p>
+            <p class="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mt-1">Roll-charge luck boosters players can buy with points</p>
         </div>
         <button @click="openAdd()" class="px-5 py-2.5 bg-primary text-primary-foreground rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2 hover:bg-primary/90 transition-colors">
             + ADD BOOSTER
@@ -50,7 +50,7 @@
                         <th class="px-5 py-3">Cost</th>
                         <th class="px-5 py-3">Floor</th>
                         <th class="px-5 py-3">Bonus %</th>
-                        <th class="px-5 py-3">Duration</th>
+                        <th class="px-5 py-3">Rolls</th>
                         <th class="px-5 py-3">Active</th>
                         <th class="px-5 py-3">Actions</th>
                     </tr>
@@ -64,7 +64,7 @@
                         <td class="px-5 py-3 text-xs">{{ number_format($b->point_cost) }} pts</td>
                         <td class="px-5 py-3 text-xs uppercase">{{ str_replace('_', ' ', $b->rarity_floor) }}</td>
                         <td class="px-5 py-3 text-xs font-bold">+{{ $b->bonus_percent }}%</td>
-                        <td class="px-5 py-3 text-xs">{{ $b->duration_minutes }} min</td>
+                        <td class="px-5 py-3 text-xs">{{ $b->rolls_granted }} rolls</td>
                         <td class="px-5 py-3">
                             @if ($b->is_active)
                                 <span class="px-2 py-1 rounded-lg text-[8px] font-black uppercase tracking-widest bg-green-500/10 text-green-400">ON</span>
@@ -155,8 +155,8 @@
                             <input type="number" name="bonus_percent" x-model="booster.bonus_percent" required min="0" max="100" step="0.01" class="w-full px-4 py-3 bg-foreground/5 border-2 border-border/50 rounded-xl text-xs font-bold text-foreground outline-none focus:border-primary focus:ring-4 focus:ring-primary/20 transition-all">
                         </div>
                         <div>
-                            <label class="text-[10px] font-black uppercase tracking-widest text-foreground/70 dark:text-muted-foreground mb-2 block">DURATION (min) <span class="req">*</span></label>
-                            <input type="number" name="duration_minutes" x-model="booster.duration_minutes" required min="1" max="1440" class="w-full px-4 py-3 bg-foreground/5 border-2 border-border/50 rounded-xl text-xs font-bold text-foreground outline-none focus:border-primary focus:ring-4 focus:ring-primary/20 transition-all">
+                            <label class="text-[10px] font-black uppercase tracking-widest text-foreground/70 dark:text-muted-foreground mb-2 block">ROLLS GRANTED <span class="req">*</span></label>
+                            <input type="number" name="rolls_granted" x-model="booster.rolls_granted" required min="1" max="200" class="w-full px-4 py-3 bg-foreground/5 border-2 border-border/50 rounded-xl text-xs font-bold text-foreground outline-none focus:border-primary focus:ring-4 focus:ring-primary/20 transition-all">
                         </div>
                         <div class="flex items-center gap-2">
                             <input type="checkbox" name="is_active" id="edit_is_active" value="1" x-bind:checked="booster.is_active" class="w-4 h-4">

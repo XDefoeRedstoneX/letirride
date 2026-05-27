@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\GachaPool;
+use App\Models\GachaRarityChance;
 use App\Models\User;
 use App\Models\UserActiveBooster;
 use App\Models\UserDiscount;
@@ -34,9 +35,10 @@ class GachaRollService
 
     /**
      * Resolve a single roll outcome for the given user: applies pity, applies any
-     * active luck boosters, runs weighted RNG against the eligible pool, and
-     * mutates the user's gacha state. Does NOT deduct the spin cost or grant the
-     * reward — callers handle those.
+     * active luck boosters, picks a rarity by weighted RNG, then picks a prize
+     * uniformly from that rarity's eligible prizes. Consumes one charge from each
+     * active booster (deleting rows that hit zero). Does NOT deduct the spin cost
+     * or grant the reward — callers handle those.
      *
      * @return array{prize: GachaPool, pity_triggered: ?string, boosters_applied: array<int, int>}
      */
@@ -52,11 +54,12 @@ class GachaRollService
         }
 
         $boosters = $this->activeBoostersFor($user);
-        $weighted = $this->applyBoosters($pool, $boosters);
-
-        $prize = $this->pickWeighted($weighted);
+        $rarityWeights = $this->effectiveRarityWeights($pool, $boosters);
+        $rarity = $this->pickRarity($rarityWeights);
+        $prize = $this->pickPrizeInRarity($pool, $rarity);
 
         $this->updateStateAfterRoll($state, $prize->rarity_item);
+        $this->consumeBoosterCharges($boosters);
 
         return [
             'prize' => $prize,
@@ -82,18 +85,20 @@ class GachaRollService
     /**
      * Pity counters BEFORE the next spin. Returns the current effective state for UI.
      *
-     * @return array{pity_counter: int, mini_pity_counter: int, free_spins: int, total_spins: int}
+     * @return array{pity_counter: int, mini_pity_counter: int, free_spins: int, total_spins: int, active_boosters: array<int, array<string, mixed>>, effective_rarity_chances: array<string, float>, base_rarity_chances: array<string, float>}
      */
     public function snapshotFor(User $user): array
     {
         $state = $this->ensureState($user);
+        $boosters = $this->activeBoostersFor($user);
+        $pool = GachaPool::all();
 
         return [
             'pity_counter' => $state->pity_counter,
             'mini_pity_counter' => $state->mini_pity_counter,
             'free_spins' => $state->free_spins,
             'total_spins' => $state->total_spins,
-            'active_boosters' => $this->activeBoostersFor($user)
+            'active_boosters' => $boosters
                 ->map(fn (UserActiveBooster $ab) => [
                     'id' => $ab->id,
                     'booster_id' => $ab->gacha_booster_id,
@@ -101,9 +106,22 @@ class GachaRollService
                     'name' => $ab->booster->name,
                     'rarity_floor' => $ab->booster->rarity_floor,
                     'bonus_percent' => (float) $ab->booster->bonus_percent,
-                    'expires_at' => $ab->expires_at->toIso8601String(),
+                    'rolls_remaining' => (int) $ab->rolls_remaining,
                 ])->values()->all(),
+            'base_rarity_chances' => $this->baseRarityChances($pool),
+            'effective_rarity_chances' => $this->effectiveRarityWeights($pool, $boosters),
         ];
+    }
+
+    /**
+     * Public helper for the UI: effective rarity weights for the user's
+     * current active-booster set against the live pool.
+     *
+     * @return array<string, float>
+     */
+    public function effectiveRarityWeightsFor(User $user): array
+    {
+        return $this->effectiveRarityWeights(GachaPool::all(), $this->activeBoostersFor($user));
     }
 
     /**
@@ -113,24 +131,44 @@ class GachaRollService
     {
         return UserActiveBooster::with('booster')
             ->where('user_id', $user->id)
-            ->where('expires_at', '>', now())
+            ->where('rolls_remaining', '>', 0)
             ->get()
             ->filter(fn (UserActiveBooster $b) => $b->booster && $b->booster->is_active)
             ->values();
     }
 
     /**
-     * Shift weight into bonus-tier prizes per each active booster. Total weight is
-     * preserved. Effect is clamped if non-bonus weight is insufficient.
+     * Decrement one charge from every active booster; delete rows that hit zero.
+     *
+     * @param  Collection<int, UserActiveBooster>  $boosters
+     */
+    private function consumeBoosterCharges(Collection $boosters): void
+    {
+        foreach ($boosters as $ab) {
+            $remaining = max(0, ((int) $ab->rolls_remaining) - 1);
+            if ($remaining === 0) {
+                $ab->delete();
+            } else {
+                $ab->rolls_remaining = $remaining;
+                $ab->save();
+            }
+        }
+    }
+
+    /**
+     * Rarity chances after each active booster shifts weight into its floor-and-above
+     * rarities. Operates on rarities present in the supplied pool. Output sums to ~100.
      *
      * @param  Collection<int, GachaPool>  $pool
      * @param  Collection<int, UserActiveBooster>  $boosters
-     * @return Collection<int, GachaPool>
+     * @return array<string, float>
      */
-    private function applyBoosters(Collection $pool, Collection $boosters): Collection
+    private function effectiveRarityWeights(Collection $pool, Collection $boosters): array
     {
-        if ($boosters->isEmpty()) {
-            return $pool;
+        $weights = $this->baseRarityChances($pool);
+
+        if (empty($weights)) {
+            return [];
         }
 
         foreach ($boosters as $active) {
@@ -138,33 +176,68 @@ class GachaRollService
             $floorRank = self::RARITY_RANK[$booster->rarity_floor] ?? 0;
             $bonus = (float) $booster->bonus_percent;
 
-            [$bonusTier, $nonBonus] = $pool->partition(function (GachaPool $prize) use ($floorRank) {
-                return ($prize->reward_type !== 'nothing')
-                    && ((self::RARITY_RANK[$prize->rarity_item] ?? 0) >= $floorRank);
-            });
+            $bonusKeys = array_keys(array_filter(
+                $weights,
+                fn ($_, $rarity) => (self::RARITY_RANK[$rarity] ?? 0) >= $floorRank,
+                ARRAY_FILTER_USE_BOTH
+            ));
+            $nonBonusKeys = array_diff(array_keys($weights), $bonusKeys);
 
-            $bonusSum = (float) $bonusTier->sum('base_win_chance');
-            $nonBonusSum = (float) $nonBonus->sum('base_win_chance');
+            $bonusSum = array_sum(array_intersect_key($weights, array_flip($bonusKeys)));
+            $nonBonusSum = array_sum(array_intersect_key($weights, array_flip($nonBonusKeys)));
 
             if ($bonusSum <= 0 || $nonBonusSum <= 0) {
                 continue;
             }
 
             $shift = min($bonus, $nonBonusSum);
-
             $bonusScale = ($bonusSum + $shift) / $bonusSum;
             $nonBonusScale = ($nonBonusSum - $shift) / $nonBonusSum;
 
-            foreach ($bonusTier as $prize) {
-                $prize->base_win_chance = (float) $prize->base_win_chance * $bonusScale;
+            foreach ($bonusKeys as $rarity) {
+                $weights[$rarity] *= $bonusScale;
             }
-
-            foreach ($nonBonus as $prize) {
-                $prize->base_win_chance = (float) $prize->base_win_chance * $nonBonusScale;
+            foreach ($nonBonusKeys as $rarity) {
+                $weights[$rarity] *= $nonBonusScale;
             }
         }
 
-        return $pool;
+        return array_map(fn ($w) => round($w, 4), $weights);
+    }
+
+    /**
+     * Read the rarity chance table, restrict to rarities present in the pool,
+     * and normalize to 100 across the survivors so pity-restricted pools still
+     * give a valid distribution.
+     *
+     * @param  Collection<int, GachaPool>  $pool
+     * @return array<string, float>
+     */
+    private function baseRarityChances(Collection $pool): array
+    {
+        $presentRarities = $pool->pluck('rarity_item')->unique()->values()->all();
+
+        $rows = GachaRarityChance::whereIn('rarity', $presentRarities)->get();
+
+        $weights = [];
+        foreach ($rows as $row) {
+            $chance = (float) $row->base_chance;
+            if ($chance > 0) {
+                $weights[$row->rarity] = $chance;
+            }
+        }
+
+        $sum = array_sum($weights);
+        if ($sum <= 0) {
+            // Fallback: uniform across present rarities so a roll can always succeed.
+            $uniform = count($presentRarities) > 0 ? 100 / count($presentRarities) : 0;
+
+            return array_fill_keys($presentRarities, $uniform);
+        }
+
+        $scale = 100 / $sum;
+
+        return array_map(fn ($w) => $w * $scale, $weights);
     }
 
     private function ensureState(User $user): UserGachaState
@@ -212,28 +285,42 @@ class GachaRollService
     }
 
     /**
-     * @param  Collection<int, GachaPool>  $pool
+     * @param  array<string, float>  $weights
      */
-    private function pickWeighted(Collection $pool): GachaPool
+    private function pickRarity(array $weights): string
     {
-        $totalWeight = (float) $pool->sum('base_win_chance');
-
-        if ($totalWeight <= 0) {
-            return $pool->first();
+        $total = array_sum($weights);
+        if ($total <= 0) {
+            return (string) array_key_first($weights);
         }
 
-        // Two decimal places of precision in base_win_chance — scale to integers for mt_rand.
-        $random = mt_rand(1, (int) round($totalWeight * 100)) / 100;
+        $random = mt_rand(1, (int) round($total * 100)) / 100;
         $cumulative = 0.0;
 
-        foreach ($pool as $prize) {
-            $cumulative += (float) $prize->base_win_chance;
+        foreach ($weights as $rarity => $w) {
+            $cumulative += (float) $w;
             if ($random <= $cumulative) {
-                return $prize;
+                return $rarity;
             }
         }
 
-        return $pool->last();
+        return (string) array_key_last($weights);
+    }
+
+    /**
+     * Uniform pick among prizes of the chosen rarity. Falls back to any prize if
+     * the rarity bucket is unexpectedly empty (race against an admin edit).
+     *
+     * @param  Collection<int, GachaPool>  $pool
+     */
+    private function pickPrizeInRarity(Collection $pool, string $rarity): GachaPool
+    {
+        $bucket = $pool->where('rarity_item', $rarity)->values();
+        if ($bucket->isEmpty()) {
+            return $pool->first();
+        }
+
+        return $bucket->get(random_int(0, $bucket->count() - 1));
     }
 
     private function updateStateAfterRoll(UserGachaState $state, string $wonRarity): void
