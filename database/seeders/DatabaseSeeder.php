@@ -35,6 +35,7 @@ class DatabaseSeeder extends Seeder
         $this->seedUserDiscounts();
         $this->seedPointShopItems();
         $this->seedPointShopPurchases($now);
+        $this->seedGachaRarityChances();
         $this->seedGachaPools();
         $this->seedGachaBoosters();
         $this->seedNews();
@@ -351,6 +352,26 @@ class DatabaseSeeder extends Seeder
         DB::table('user_discounts')->upsert($rows, ['id'], $updateColumns);
     }
 
+    private function seedGachaRarityChances(): void
+    {
+        if (! Schema::hasTable('gacha_rarity_chances')) {
+            return;
+        }
+
+        $now = now();
+
+        // Per-rarity base chances that sum to exactly 100%. Per-prize odds are
+        // auto-derived at runtime as base_chance / prize_count_in_rarity.
+        DB::table('gacha_rarity_chances')->upsert([
+            ['rarity' => 'grand_prize', 'base_chance' => 0.50,  'sort_order' => 0, 'created_at' => $now, 'updated_at' => $now],
+            ['rarity' => 'legendary',   'base_chance' => 2.50,  'sort_order' => 1, 'created_at' => $now, 'updated_at' => $now],
+            ['rarity' => 'epic',        'base_chance' => 7.00,  'sort_order' => 2, 'created_at' => $now, 'updated_at' => $now],
+            ['rarity' => 'rare',        'base_chance' => 15.00, 'sort_order' => 3, 'created_at' => $now, 'updated_at' => $now],
+            ['rarity' => 'uncommon',    'base_chance' => 25.00, 'sort_order' => 4, 'created_at' => $now, 'updated_at' => $now],
+            ['rarity' => 'common',      'base_chance' => 50.00, 'sort_order' => 5, 'created_at' => $now, 'updated_at' => $now],
+        ], ['rarity'], ['base_chance', 'sort_order', 'updated_at']);
+    }
+
     private function seedGachaPools(): void
     {
         if (! Schema::hasTable('gacha_pools')) {
@@ -358,54 +379,45 @@ class DatabaseSeeder extends Seeder
         }
 
         // Revised pool: 18 prizes across 6 rarities + 1 "no prize" filler.
-        // Odds sum to 100% — no implicit re-normalization. Top tiers: Grand 0.5%, Legendary 2%, Epic 7%.
+        // Per-rarity chances live in gacha_rarity_chances; per-prize odds are
+        // rarity_chance / count_of_prizes_in_rarity (computed at runtime).
         // NOTE: this destructively replaces the pool. gacha_histories cascades on delete.
         DB::table('gacha_pools')->delete();
 
-        $hasNewColumns = Schema::hasColumn('gacha_pools', 'reward_type');
-
         $rows = [
-            // === Grand Prize (0.5%) ===
-            ['id' => 1, 'prize_name' => 'Whale Status', 'rarity_item' => 'grand_prize', 'reward_type' => 'discount', 'discount_type_id' => 9, 'points_amount' => null, 'image_path' => null, 'base_win_chance' => 0.5000],
+            // === Grand Prize ===
+            ['id' => 1, 'prize_name' => 'Whale Status', 'rarity_item' => 'grand_prize', 'reward_type' => 'discount', 'discount_type_id' => 9, 'points_amount' => null, 'image_path' => null],
 
-            // === Legendary (2.0%) ===
-            ['id' => 2, 'prize_name' => 'Free Welkin Moon', 'rarity_item' => 'legendary', 'reward_type' => 'discount', 'discount_type_id' => 10, 'points_amount' => null, 'image_path' => null, 'base_win_chance' => 1.0000],
-            ['id' => 3, 'prize_name' => '1000 Points Bundle', 'rarity_item' => 'legendary', 'reward_type' => 'points', 'discount_type_id' => null, 'points_amount' => 1000, 'image_path' => null, 'base_win_chance' => 1.0000],
+            // === Legendary ===
+            ['id' => 2, 'prize_name' => 'Free Welkin Moon', 'rarity_item' => 'legendary', 'reward_type' => 'discount', 'discount_type_id' => 10, 'points_amount' => null, 'image_path' => null],
+            ['id' => 3, 'prize_name' => '1000 Points Bundle', 'rarity_item' => 'legendary', 'reward_type' => 'points', 'discount_type_id' => null, 'points_amount' => 1000, 'image_path' => null],
 
-            // === Epic (7.0%) ===
-            ['id' => 4, 'prize_name' => '50% Off Discord Nitro', 'rarity_item' => 'epic', 'reward_type' => 'discount', 'discount_type_id' => 6, 'points_amount' => null, 'image_path' => null, 'base_win_chance' => 2.5000],
-            ['id' => 5, 'prize_name' => '20% Off PSN', 'rarity_item' => 'epic', 'reward_type' => 'discount', 'discount_type_id' => 4, 'points_amount' => null, 'image_path' => null, 'base_win_chance' => 2.5000],
-            ['id' => 6, 'prize_name' => '500 Points Stack', 'rarity_item' => 'epic', 'reward_type' => 'points', 'discount_type_id' => null, 'points_amount' => 500, 'image_path' => null, 'base_win_chance' => 2.0000],
+            // === Epic ===
+            ['id' => 4, 'prize_name' => '50% Off Discord Nitro', 'rarity_item' => 'epic', 'reward_type' => 'discount', 'discount_type_id' => 6, 'points_amount' => null, 'image_path' => null],
+            ['id' => 5, 'prize_name' => '20% Off PSN', 'rarity_item' => 'epic', 'reward_type' => 'discount', 'discount_type_id' => 4, 'points_amount' => null, 'image_path' => null],
+            ['id' => 6, 'prize_name' => '500 Points Stack', 'rarity_item' => 'epic', 'reward_type' => 'points', 'discount_type_id' => null, 'points_amount' => 500, 'image_path' => null],
 
-            // === Rare (15.0%) ===
-            ['id' => 7, 'prize_name' => 'Rp75.000 Welcome Bonus', 'rarity_item' => 'rare', 'reward_type' => 'discount', 'discount_type_id' => 5, 'points_amount' => null, 'image_path' => null, 'base_win_chance' => 4.0000],
-            ['id' => 8, 'prize_name' => 'Rp30.000 Off Netflix', 'rarity_item' => 'rare', 'reward_type' => 'discount', 'discount_type_id' => 3, 'points_amount' => null, 'image_path' => null, 'base_win_chance' => 4.0000],
-            ['id' => 9, 'prize_name' => '15% Off Xbox', 'rarity_item' => 'rare', 'reward_type' => 'discount', 'discount_type_id' => 8, 'points_amount' => null, 'image_path' => null, 'base_win_chance' => 4.0000],
-            ['id' => 10, 'prize_name' => 'Free Spin Token', 'rarity_item' => 'rare', 'reward_type' => 'free_spin', 'discount_type_id' => null, 'points_amount' => null, 'image_path' => null, 'base_win_chance' => 3.0000],
+            // === Rare ===
+            ['id' => 7, 'prize_name' => 'Rp75.000 Welcome Bonus', 'rarity_item' => 'rare', 'reward_type' => 'discount', 'discount_type_id' => 5, 'points_amount' => null, 'image_path' => null],
+            ['id' => 8, 'prize_name' => 'Rp30.000 Off Netflix', 'rarity_item' => 'rare', 'reward_type' => 'discount', 'discount_type_id' => 3, 'points_amount' => null, 'image_path' => null],
+            ['id' => 9, 'prize_name' => '15% Off Xbox', 'rarity_item' => 'rare', 'reward_type' => 'discount', 'discount_type_id' => 8, 'points_amount' => null, 'image_path' => null],
+            ['id' => 10, 'prize_name' => 'Free Spin Token', 'rarity_item' => 'rare', 'reward_type' => 'free_spin', 'discount_type_id' => null, 'points_amount' => null, 'image_path' => null],
 
-            // === Uncommon (25.5%) ===
-            ['id' => 11, 'prize_name' => '10% Off Storewide', 'rarity_item' => 'uncommon', 'reward_type' => 'discount', 'discount_type_id' => 1, 'points_amount' => null, 'image_path' => null, 'base_win_chance' => 7.0000],
-            ['id' => 12, 'prize_name' => '5% Off Steam', 'rarity_item' => 'uncommon', 'reward_type' => 'discount', 'discount_type_id' => 2, 'points_amount' => null, 'image_path' => null, 'base_win_chance' => 6.5000],
-            ['id' => 13, 'prize_name' => 'Rp15.000 Off Valorant', 'rarity_item' => 'uncommon', 'reward_type' => 'discount', 'discount_type_id' => 7, 'points_amount' => null, 'image_path' => null, 'base_win_chance' => 6.0000],
-            ['id' => 14, 'prize_name' => '200 Points', 'rarity_item' => 'uncommon', 'reward_type' => 'points', 'discount_type_id' => null, 'points_amount' => 200, 'image_path' => null, 'base_win_chance' => 6.0000],
+            // === Uncommon ===
+            ['id' => 11, 'prize_name' => '10% Off Storewide', 'rarity_item' => 'uncommon', 'reward_type' => 'discount', 'discount_type_id' => 1, 'points_amount' => null, 'image_path' => null],
+            ['id' => 12, 'prize_name' => '5% Off Steam', 'rarity_item' => 'uncommon', 'reward_type' => 'discount', 'discount_type_id' => 2, 'points_amount' => null, 'image_path' => null],
+            ['id' => 13, 'prize_name' => 'Rp15.000 Off Valorant', 'rarity_item' => 'uncommon', 'reward_type' => 'discount', 'discount_type_id' => 7, 'points_amount' => null, 'image_path' => null],
+            ['id' => 14, 'prize_name' => '200 Points', 'rarity_item' => 'uncommon', 'reward_type' => 'points', 'discount_type_id' => null, 'points_amount' => 200, 'image_path' => null],
 
-            // === Common (30.0%) ===
-            ['id' => 15, 'prize_name' => '100 Points', 'rarity_item' => 'common', 'reward_type' => 'points', 'discount_type_id' => null, 'points_amount' => 100, 'image_path' => null, 'base_win_chance' => 7.5000],
-            ['id' => 16, 'prize_name' => '50 Points', 'rarity_item' => 'common', 'reward_type' => 'points', 'discount_type_id' => null, 'points_amount' => 50, 'image_path' => null, 'base_win_chance' => 7.5000],
-            ['id' => 17, 'prize_name' => '50 Points', 'rarity_item' => 'common', 'reward_type' => 'points', 'discount_type_id' => null, 'points_amount' => 50, 'image_path' => null, 'base_win_chance' => 7.5000],
-            ['id' => 18, 'prize_name' => '25 Points', 'rarity_item' => 'common', 'reward_type' => 'points', 'discount_type_id' => null, 'points_amount' => 25, 'image_path' => null, 'base_win_chance' => 7.5000],
+            // === Common ===
+            ['id' => 15, 'prize_name' => '100 Points', 'rarity_item' => 'common', 'reward_type' => 'points', 'discount_type_id' => null, 'points_amount' => 100, 'image_path' => null],
+            ['id' => 16, 'prize_name' => '50 Points', 'rarity_item' => 'common', 'reward_type' => 'points', 'discount_type_id' => null, 'points_amount' => 50, 'image_path' => null],
+            ['id' => 17, 'prize_name' => '50 Points', 'rarity_item' => 'common', 'reward_type' => 'points', 'discount_type_id' => null, 'points_amount' => 50, 'image_path' => null],
+            ['id' => 18, 'prize_name' => '25 Points', 'rarity_item' => 'common', 'reward_type' => 'points', 'discount_type_id' => null, 'points_amount' => 25, 'image_path' => null],
 
-            // === No Prize (20.0%) ===
-            ['id' => 19, 'prize_name' => 'Better Luck Next Time', 'rarity_item' => 'common', 'reward_type' => 'nothing', 'discount_type_id' => null, 'points_amount' => null, 'image_path' => null, 'base_win_chance' => 20.0000],
+            // === Filler (still common rarity, just a no-prize slot) ===
+            ['id' => 19, 'prize_name' => 'Better Luck Next Time', 'rarity_item' => 'common', 'reward_type' => 'nothing', 'discount_type_id' => null, 'points_amount' => null, 'image_path' => null],
         ];
-
-        if (! $hasNewColumns) {
-            $rows = array_map(function (array $row) {
-                unset($row['reward_type'], $row['points_amount'], $row['image_path']);
-
-                return $row;
-            }, $rows);
-        }
 
         DB::table('gacha_pools')->insert($rows);
     }
@@ -423,11 +435,11 @@ class DatabaseSeeder extends Seeder
                 'id' => 1,
                 'key' => 'lucky_charm',
                 'name' => 'Lucky Charm',
-                'description' => '+5% Rare+ chance for 30 minutes.',
+                'description' => '+5% Rare+ chance for 10 rolls.',
                 'point_cost' => 500,
                 'rarity_floor' => 'rare',
                 'bonus_percent' => 5.00,
-                'duration_minutes' => 30,
+                'rolls_granted' => 10,
                 'is_active' => true,
                 'created_at' => $now,
                 'updated_at' => $now,
@@ -436,16 +448,16 @@ class DatabaseSeeder extends Seeder
                 'id' => 2,
                 'key' => 'golden_touch',
                 'name' => 'Golden Touch',
-                'description' => '+10% Epic+ chance for 15 minutes.',
+                'description' => '+10% Epic+ chance for 5 rolls.',
                 'point_cost' => 2000,
                 'rarity_floor' => 'epic',
                 'bonus_percent' => 10.00,
-                'duration_minutes' => 15,
+                'rolls_granted' => 5,
                 'is_active' => true,
                 'created_at' => $now,
                 'updated_at' => $now,
             ],
-        ], ['id'], ['key', 'name', 'description', 'point_cost', 'rarity_floor', 'bonus_percent', 'duration_minutes', 'is_active', 'updated_at']);
+        ], ['id'], ['key', 'name', 'description', 'point_cost', 'rarity_floor', 'bonus_percent', 'rolls_granted', 'is_active', 'updated_at']);
     }
 
     private function seedOrders($now): void

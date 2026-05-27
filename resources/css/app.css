@@ -402,33 +402,560 @@ button,
   }
 }
 
-/* Gacha Carousel Animation */
-@keyframes gacha-spin {
-  0% {
-    transform: translateX(0);
-  }
+/* ===========================================================
+   GACHA — carousel animation
+   =========================================================== */
 
-  100% {
-    transform: translateX(-50%);
-  }
+/* One "set" of cards is 880px (5 cards × 160 + 4 × 16 gaps + 1 × 16 trailing
+   gap). The track repeats 5 sets, so translating −880px lands on an identical
+   visual position — animation-wise, an infinite loop. */
+@keyframes gacha-spin-loop {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-880px); }
+}
+
+/* Slow drift while the user has not pulled yet — slowly reveals every prize. */
+@keyframes gacha-idle-drift {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-880px); }
 }
 
 @keyframes gacha-decelerate {
-  0% {
-    transform: translateX(0);
-  }
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(var(--gacha-stop-position, -2000px)); }
+}
 
-  100% {
-    transform: translateX(var(--gacha-stop-position, -2000px));
-  }
+.gacha-idle-loop {
+  animation: gacha-idle-drift 30s linear infinite;
 }
 
 .gacha-spinning {
-  animation: gacha-spin 1s linear infinite;
+  animation: gacha-spin-loop 0.5s linear infinite;
 }
 
 .gacha-decelerating {
-  animation: gacha-decelerate 3s cubic-bezier(0.2, 0.8, 0.3, 1) forwards;
+  animation: gacha-decelerate 4s cubic-bezier(0.15, 0, 0.15, 1) forwards;
+}
+
+/* ===========================================================
+   GACHA — carousel frame & cards
+   =========================================================== */
+
+.gacha-carousel-frame {
+  position: relative;
+  max-width: 900px;
+  margin: 0 auto;
+  overflow: hidden;
+  height: 240px;
+  display: flex;
+  align-items: center;
+}
+
+.gacha-skip-wrap {
+  position: absolute;
+  bottom: 10px;
+  right: 12px;
+  z-index: 20;
+}
+
+.gacha-skip-btn {
+  font-family: var(--px);
+  font-size: 7px;
+  letter-spacing: 0.1em;
+  padding: 6px 14px;
+  background: rgba(0, 0, 0, 0.6);
+  border: 2px solid var(--dark-line);
+  color: var(--text-dim);
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.gacha-skip-btn:hover {
+  color: var(--gold);
+  border-color: var(--gold);
+}
+
+.gacha-pointer {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: var(--gold);
+  transform: translateX(-50%);
+  z-index: 10;
+  box-shadow: 0 0 15px rgba(245, 158, 11, 0.5);
+}
+
+.gacha-pointer-cap {
+  position: absolute;
+  left: 50%;
+  width: 12px;
+  height: 12px;
+  background: var(--gold);
+  border: 2px solid var(--dark-bg);
+  transform: translateX(-50%) rotate(45deg);
+}
+
+.gacha-pointer-cap-top    { top: -1px; }
+.gacha-pointer-cap-bottom { bottom: -1px; }
+
+.gacha-track {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding-block: 2rem;
+}
+
+.gacha-track-set {
+  display: flex;
+  gap: 1rem;
+}
+
+.gacha-card {
+  width: 10rem;
+  flex-shrink: 0;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 2px solid var(--dark-line);
+  background: var(--dark-card, rgba(255, 255, 255, 0.03));
+}
+
+.gacha-card-img {
+  width: 56px;
+  height: 56px;
+}
+
+.gacha-card-name {
+  font-family: var(--font-sans);
+  font-size: 10px;
+  font-weight: 800;
+  text-align: center;
+  color: #e8f0ff;
+}
+
+/* ===========================================================
+   GACHA — spin buttons
+   =========================================================== */
+
+.gacha-spin-buttons {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+@media (min-width: 640px) {
+  .gacha-spin-buttons { flex-direction: row; justify-content: center; }
+}
+
+.gacha-spin-btn {
+  padding: 18px 36px;
+  font-size: 9px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Green variant for the free-spin button. */
+.px-btn-success {
+  font-family: var(--px);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  background: linear-gradient(180deg, #22c55e 0%, #16a34a 100%);
+  color: #04210e;
+  border: 2px solid #16a34a;
+  cursor: pointer;
+  transition: filter 0.15s, transform 0.05s;
+}
+
+.px-btn-success:hover  { filter: brightness(1.1); }
+.px-btn-success:active { transform: translateY(1px); }
+
+.px-btn-success:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  filter: grayscale(0.4);
+}
+
+/* ===========================================================
+   GACHA — status row (pity + free-spin + rules + history)
+   =========================================================== */
+
+.gacha-status-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.gacha-status-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  font-family: var(--px);
+  font-size: 7px;
+  letter-spacing: 0.1em;
+  border: 2px solid var(--dark-line);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text-dim);
+  text-decoration: none;
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
+  cursor: default;
+}
+
+.gacha-status-pity {
+  background: rgba(245, 158, 11, 0.1);
+  border-color: rgba(245, 158, 11, 0.25);
+  color: var(--gold);
+}
+
+.gacha-status-free {
+  background: rgba(34, 197, 94, 0.12);
+  border-color: rgba(34, 197, 94, 0.3);
+  color: #22c55e;
+}
+
+.gacha-status-rules {
+  cursor: pointer;
+}
+
+.gacha-status-rules:hover,
+.gacha-status-link:hover {
+  color: var(--gold);
+  border-color: var(--gold);
+}
+
+.gacha-status-sep { opacity: 0.5; }
+
+/* ===========================================================
+   GACHA — drop-rate panel (per rarity)
+   =========================================================== */
+
+.gacha-panels {
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.gacha-panel { padding: 24px; }
+
+.gacha-rarity-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.gacha-rarity-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.gacha-rarity-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.gacha-rarity-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 1px;
+  flex-shrink: 0;
+}
+
+.gacha-rarity-name {
+  font-family: var(--font-sans);
+  font-size: 12px;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.gacha-rarity-count {
+  font-family: var(--font-sans);
+  font-size: 10px;
+  color: var(--text-dim);
+  opacity: 0.7;
+}
+
+.gacha-rarity-numbers {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.gacha-rarity-base {
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 800;
+  color: #e8f0ff;
+}
+
+.gacha-rarity-eff {
+  font-family: var(--font-sans);
+  font-size: 10px;
+  color: var(--text-dim);
+}
+
+.gacha-chance-bonus {
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: 800;
+  color: #22c55e;
+}
+
+.gacha-chance-penalty {
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: 800;
+  color: #f43f5e;
+}
+
+.gacha-chance-bonus-inline { color: #22c55e; font-weight: 800; }
+.gacha-chance-penalty-inline { color: #f43f5e; font-weight: 800; }
+
+/* ===========================================================
+   GACHA — booster cards
+   =========================================================== */
+
+.gacha-booster-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.gacha-booster-card {
+  background: var(--dark-card2);
+  border: 2px solid var(--dark-line);
+  padding: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.gacha-booster-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.gacha-booster-name {
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 800;
+  color: #e8f0ff;
+}
+
+.gacha-booster-desc {
+  font-family: var(--font-sans);
+  font-size: 10px;
+  color: var(--text-dim);
+  margin-top: 2px;
+}
+
+.gacha-booster-active {
+  font-family: var(--font-sans);
+  font-size: 9px;
+  color: #22c55e;
+  margin-top: 4px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+}
+
+.gacha-booster-btn {
+  padding: 6px 12px;
+  font-size: 6px;
+  white-space: nowrap;
+}
+
+.gacha-booster-empty {
+  font-family: var(--font-sans);
+  font-size: 10px;
+  color: var(--text-dim);
+  text-align: center;
+  padding: 12px;
+}
+
+/* ===========================================================
+   GACHA — result modal
+   =========================================================== */
+
+.gacha-result-box { text-align: center; }
+
+.gacha-result-img {
+  width: 120px;
+  height: 120px;
+  margin: 0 auto;
+}
+
+.gacha-result-rarity {
+  font-family: var(--px);
+  font-size: 7px;
+  letter-spacing: 0.12em;
+  margin-top: 16px;
+}
+
+.gacha-result-name {
+  font-family: var(--font-sans);
+  font-size: 24px;
+  font-weight: 800;
+  color: #e8f0ff;
+  margin-top: 6px;
+}
+
+.gacha-result-sub {
+  font-family: var(--font-sans);
+  font-size: 12px;
+  color: var(--text-dim);
+  margin-top: 4px;
+}
+
+.gacha-result-claim {
+  width: 100%;
+  padding: 16px;
+  margin-top: 20px;
+  font-size: 8px;
+}
+
+/* ===========================================================
+   GACHA — info / rules modal
+   =========================================================== */
+
+.gacha-info-box {
+  max-width: 720px;
+  max-height: 85vh;
+  overflow-y: auto;
+  text-align: left;
+}
+
+.gacha-info-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid var(--dark-line);
+}
+
+.gacha-info-title {
+  font-family: var(--font-sans);
+  font-size: 20px;
+  font-weight: 800;
+  color: #e8f0ff;
+  letter-spacing: 0.02em;
+}
+
+.gacha-info-close {
+  background: transparent;
+  border: none;
+  color: var(--text-dim);
+  cursor: pointer;
+  padding: 6px;
+  transition: color 0.15s;
+}
+
+.gacha-info-close:hover { color: var(--gold); }
+
+.gacha-info-section {
+  margin-bottom: 18px;
+  padding-bottom: 14px;
+  border-bottom: 1px dashed var(--dark-line);
+}
+
+.gacha-info-section:last-of-type { border-bottom: none; }
+
+.gacha-info-section-title {
+  font-family: var(--px);
+  font-size: 8px;
+  letter-spacing: 0.15em;
+  color: var(--gold);
+  margin-bottom: 8px;
+}
+
+.gacha-info-list {
+  list-style: disc;
+  padding-left: 20px;
+  font-family: var(--font-sans);
+  font-size: 12px;
+  color: #e8f0ff;
+  line-height: 1.6;
+}
+
+.gacha-info-list li { margin-bottom: 4px; }
+
+.gacha-info-list strong { color: var(--gold); font-weight: 800; }
+
+.gacha-info-note {
+  font-family: var(--font-sans);
+  font-size: 11px;
+  color: var(--text-dim);
+  line-height: 1.6;
+  margin-bottom: 12px;
+}
+
+.gacha-info-rarity-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.gacha-info-rarity-block {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--dark-line);
+  padding: 10px 12px;
+}
+
+.gacha-info-rarity-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 6px;
+}
+
+.gacha-info-prize-list {
+  list-style: none;
+  padding-left: 16px;
+  margin: 4px 0 0 0;
+  font-family: var(--font-sans);
+  font-size: 11px;
+  color: var(--text-dim);
+}
+
+.gacha-info-prize-list li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 3px 0;
+}
+
+.gacha-info-prize-rate {
+  font-weight: 800;
+  color: #e8f0ff;
+}
+
+.gacha-info-footer {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 16px;
+}
+
+.gacha-info-close-btn {
+  padding: 12px 24px;
+  font-size: 8px;
 }
 
 @keyframes reveal-bounce {

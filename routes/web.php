@@ -3,6 +3,7 @@
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\GachaBoosterController as AdminGachaBoosterController;
 use App\Http\Controllers\Admin\GachaController as AdminGachaController;
+use App\Http\Controllers\Admin\GachaRarityChanceController as AdminGachaRarityChanceController;
 use App\Http\Controllers\Admin\NewsController as AdminNewsController;
 use App\Http\Controllers\Admin\OrderController as AdminOrderController;
 use App\Http\Controllers\Admin\ProductController as AdminProductController;
@@ -114,6 +115,9 @@ Route::prefix('admin')
         Route::post('/gacha', [AdminGachaController::class, 'store'])->name('admin.gacha.store');
         Route::patch('/gacha/{pool}', [AdminGachaController::class, 'update'])->name('admin.gacha.update');
         Route::delete('/gacha/{pool}', [AdminGachaController::class, 'destroy'])->name('admin.gacha.destroy');
+
+        Route::get('/gacha-rarities', [AdminGachaRarityChanceController::class, 'index'])->name('admin.gacha-rarities');
+        Route::patch('/gacha-rarities', [AdminGachaRarityChanceController::class, 'update'])->name('admin.gacha-rarities.update');
 
         Route::get('/gacha-boosters', [AdminGachaBoosterController::class, 'index'])->name('admin.gacha-boosters');
         Route::post('/gacha-boosters', [AdminGachaBoosterController::class, 'store'])->name('admin.gacha-boosters.store');

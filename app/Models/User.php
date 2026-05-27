@@ -71,7 +71,7 @@ class User extends Authenticatable
 
     public function activeBoosters(): HasMany
     {
-        return $this->hasMany(UserActiveBooster::class)->where('expires_at', '>', now());
+        return $this->hasMany(UserActiveBooster::class)->where('rolls_remaining', '>', 0);
     }
 
     /**

@@ -5,14 +5,15 @@ namespace App\Http\Controllers;
 use App\Models\GachaBooster;
 use App\Models\UserActiveBooster;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 class GachaBoosterController extends Controller
 {
     /**
-     * Activate (or extend) a luck booster for the authenticated user.
+     * Activate (or top up) a luck booster for the authenticated user.
+     * Boosters are charge-based: activating grants `rolls_granted` charges, one
+     * consumed per spin while active.
      */
     public function activate(GachaBooster $booster): JsonResponse
     {
@@ -33,14 +34,11 @@ class GachaBoosterController extends Controller
 
             $existing = UserActiveBooster::where('user_id', $user->id)
                 ->where('gacha_booster_id', $booster->id)
-                ->where('expires_at', '>', now())
+                ->where('rolls_remaining', '>', 0)
                 ->first();
 
-            $now = now();
-            $extension = (int) $booster->duration_minutes;
-
             if ($existing) {
-                $existing->expires_at = Carbon::parse($existing->expires_at)->addMinutes($extension);
+                $existing->rolls_remaining = ((int) $existing->rolls_remaining) + (int) $booster->rolls_granted;
                 $existing->save();
 
                 return $existing;
@@ -49,8 +47,7 @@ class GachaBoosterController extends Controller
             return UserActiveBooster::create([
                 'user_id' => $user->id,
                 'gacha_booster_id' => $booster->id,
-                'activated_at' => $now,
-                'expires_at' => $now->copy()->addMinutes($extension),
+                'rolls_remaining' => (int) $booster->rolls_granted,
             ]);
         });
 
@@ -64,7 +61,7 @@ class GachaBoosterController extends Controller
                 'name' => $booster->name,
                 'rarity_floor' => $booster->rarity_floor,
                 'bonus_percent' => (float) $booster->bonus_percent,
-                'expires_at' => $active->expires_at->toIso8601String(),
+                'rolls_remaining' => (int) $active->rolls_remaining,
             ],
         ]);
     }

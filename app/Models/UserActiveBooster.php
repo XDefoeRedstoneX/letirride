@@ -14,15 +14,13 @@ class UserActiveBooster extends Model
     protected $fillable = [
         'user_id',
         'gacha_booster_id',
-        'activated_at',
-        'expires_at',
+        'rolls_remaining',
     ];
 
     protected function casts(): array
     {
         return [
-            'activated_at' => 'datetime',
-            'expires_at' => 'datetime',
+            'rolls_remaining' => 'integer',
         ];
     }
 
@@ -38,6 +36,6 @@ class UserActiveBooster extends Model
 
     public function scopeActive(Builder $query): Builder
     {
-        return $query->where('expires_at', '>', now());
+        return $query->where('rolls_remaining', '>', 0);
     }
 }
