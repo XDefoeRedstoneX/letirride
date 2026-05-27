@@ -15,6 +15,8 @@ class ReferralReward extends Model
 
     public const KIND_COMMISSION = 'commission';
 
+    public const KIND_MILESTONE = 'milestone';
+
     /**
      * @var array<int, string>
      */
@@ -22,6 +24,7 @@ class ReferralReward extends Model
         'referral_id',
         'recipient_id',
         'order_id',
+        'tier_id',
         'kind',
         'points_amount',
     ];
@@ -47,5 +50,10 @@ class ReferralReward extends Model
     public function order(): BelongsTo
     {
         return $this->belongsTo(Order::class);
+    }
+
+    public function tier(): BelongsTo
+    {
+        return $this->belongsTo(ReferralTier::class, 'tier_id');
     }
 }

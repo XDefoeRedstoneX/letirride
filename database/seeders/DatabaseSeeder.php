@@ -45,6 +45,7 @@ class DatabaseSeeder extends Seeder
         $this->seedCartItems($now);
         $this->seedReferrals($now);
         $this->seedReferralConfig($now);
+        $this->seedReferralTiers($now);
 
         $this->call([
             DemoDataSeeder::class,
@@ -783,6 +784,95 @@ class DatabaseSeeder extends Seeder
             'commission_lifetime_cap',
             'referrer_min_account_age_h',
             'updated_at',
+        ]);
+    }
+
+    private function seedReferralTiers($now): void
+    {
+        if (! Schema::hasTable('referral_tiers')) {
+            return;
+        }
+
+        // Look up a few discount type ids defensively — they only exist after
+        // seedDiscountTypes has run, which it has by this point.
+        $steam5 = DB::table('discount_types')->where('id', 2)->value('id');     // 5% Off Steam
+        $netflix30k = DB::table('discount_types')->where('id', 3)->value('id'); // Rp30.000 Off Netflix
+        $whale = DB::table('discount_types')->where('id', 9)->value('id');      // Whale Discount
+
+        DB::table('referral_tiers')->upsert([
+            [
+                'id' => 1,
+                'threshold' => 1,
+                'title' => 'First Catch',
+                'description' => 'One friend in. Welcome to the rewards ladder.',
+                'points_reward' => 200,
+                'discount_type_id' => null,
+                'free_spins_reward' => 0,
+                'icon' => 'sparkles',
+                'sort_order' => 1,
+                'is_active' => true,
+                'created_at' => $now,
+                'updated_at' => $now,
+            ],
+            [
+                'id' => 2,
+                'threshold' => 3,
+                'title' => 'Triple Threat',
+                'description' => 'Three paying friends. Have a free spin on the house.',
+                'points_reward' => 500,
+                'discount_type_id' => null,
+                'free_spins_reward' => 1,
+                'icon' => 'flame',
+                'sort_order' => 2,
+                'is_active' => true,
+                'created_at' => $now,
+                'updated_at' => $now,
+            ],
+            [
+                'id' => 3,
+                'threshold' => 5,
+                'title' => 'Hot Streak',
+                'description' => 'Five and counting. Big points + a Steam voucher.',
+                'points_reward' => 1000,
+                'discount_type_id' => $steam5,
+                'free_spins_reward' => 2,
+                'icon' => 'zap',
+                'sort_order' => 3,
+                'is_active' => true,
+                'created_at' => $now,
+                'updated_at' => $now,
+            ],
+            [
+                'id' => 4,
+                'threshold' => 10,
+                'title' => 'Squad Leader',
+                'description' => 'Ten friends locked in. A heavyweight package.',
+                'points_reward' => 2500,
+                'discount_type_id' => $netflix30k,
+                'free_spins_reward' => 5,
+                'icon' => 'shield',
+                'sort_order' => 4,
+                'is_active' => true,
+                'created_at' => $now,
+                'updated_at' => $now,
+            ],
+            [
+                'id' => 5,
+                'threshold' => 25,
+                'title' => 'Hall of Fame',
+                'description' => 'Twenty-five paying friends. You\'re carrying us.',
+                'points_reward' => 10000,
+                'discount_type_id' => $whale,
+                'free_spins_reward' => 10,
+                'icon' => 'crown',
+                'sort_order' => 5,
+                'is_active' => true,
+                'created_at' => $now,
+                'updated_at' => $now,
+            ],
+        ], ['id'], [
+            'threshold', 'title', 'description', 'points_reward', 'discount_type_id',
+            'free_spins_reward', 'icon', 'sort_order', 'is_active', 'updated_at',
         ]);
     }
 }

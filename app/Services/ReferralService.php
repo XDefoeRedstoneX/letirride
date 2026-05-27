@@ -6,7 +6,10 @@ use App\Models\Order;
 use App\Models\Referral;
 use App\Models\ReferralConfig;
 use App\Models\ReferralReward;
+use App\Models\ReferralTier;
 use App\Models\User;
+use App\Models\UserDiscount;
+use App\Models\UserGachaState;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use RuntimeException;
@@ -139,29 +142,23 @@ class ReferralService
     private function payFirstPurchase(Order $order, Referral $referral, User $referrer, ReferralConfig $config): void
     {
         $points = (int) $config->referrer_first_purchase_pts;
-        if ($points <= 0) {
-            $referral->forceFill([
-                'status' => Referral::STATUS_FIRST_PURCHASE_REWARDED,
-                'first_purchase_order_id' => $order->id,
-                'first_purchase_rewarded_at' => now(),
-            ])->save();
 
-            return;
+        if ($points > 0) {
+            $created = $this->recordReward($referral, $referrer, $order, ReferralReward::KIND_FIRST_PURCHASE, $points);
+            if ($created) {
+                $referrer->increment('points_balance', $points);
+            }
         }
-
-        $created = $this->recordReward($referral, $referrer, $order, ReferralReward::KIND_FIRST_PURCHASE, $points);
-
-        if (! $created) {
-            return;
-        }
-
-        $referrer->increment('points_balance', $points);
 
         $referral->forceFill([
             'status' => Referral::STATUS_FIRST_PURCHASE_REWARDED,
             'first_purchase_order_id' => $order->id,
             'first_purchase_rewarded_at' => now(),
         ])->save();
+
+        // Status just flipped to first_purchase_rewarded — re-evaluate any
+        // milestone tiers the referrer may have just crossed.
+        $this->checkMilestonesForReferrer($referrer->fresh() ?? $referrer);
     }
 
     private function payCommission(Order $order, Referral $referral, User $referrer, ReferralConfig $config): void
@@ -230,5 +227,128 @@ class ReferralService
             }
             throw $e;
         }
+    }
+
+    /**
+     * Count the user's referrals that have completed a first purchase. These
+     * are the only ones that count toward milestone progression.
+     */
+    public function paidReferralCount(User $user): int
+    {
+        return Referral::where('referrer_id', $user->id)
+            ->where('status', Referral::STATUS_FIRST_PURCHASE_REWARDED)
+            ->count();
+    }
+
+    /**
+     * Grant every active tier the user has just crossed but hasn't received yet.
+     * Returns the list of tiers granted (empty if none). Idempotent against
+     * concurrent calls via the (recipient_id, kind, tier_id) unique index.
+     *
+     * @return array<int, ReferralTier>
+     */
+    public function checkMilestonesForReferrer(User $referrer): array
+    {
+        $count = $this->paidReferralCount($referrer);
+        if ($count <= 0) {
+            return [];
+        }
+
+        $alreadyGrantedIds = ReferralReward::where('recipient_id', $referrer->id)
+            ->where('kind', ReferralReward::KIND_MILESTONE)
+            ->whereNotNull('tier_id')
+            ->pluck('tier_id')
+            ->all();
+
+        $tiers = ReferralTier::active()
+            ->where('threshold', '<=', $count)
+            ->when(! empty($alreadyGrantedIds), fn ($q) => $q->whereNotIn('id', $alreadyGrantedIds))
+            ->orderBy('threshold')
+            ->get();
+
+        $granted = [];
+        foreach ($tiers as $tier) {
+            if ($this->grantMilestone($referrer, $tier)) {
+                $granted[] = $tier;
+            }
+        }
+
+        if (! empty($granted)) {
+            // Refresh the user instance in memory so callers see the new balance.
+            $referrer->refresh();
+        }
+
+        return $granted;
+    }
+
+    /**
+     * Grant every outstanding milestone to every user who currently qualifies.
+     * Called after an admin creates or activates a tier so users who already
+     * crossed that threshold receive it immediately.
+     */
+    public function backfillMilestonesForAll(): int
+    {
+        $referrerIds = Referral::where('status', Referral::STATUS_FIRST_PURCHASE_REWARDED)
+            ->select('referrer_id')
+            ->distinct()
+            ->pluck('referrer_id');
+
+        $total = 0;
+        foreach ($referrerIds as $userId) {
+            $user = User::find($userId);
+            if (! $user) {
+                continue;
+            }
+            $total += count($this->checkMilestonesForReferrer($user));
+        }
+
+        return $total;
+    }
+
+    /**
+     * Insert the milestone reward row + dispatch its rewards (points, discount,
+     * free spins). Returns true if newly granted, false if a race lost.
+     */
+    private function grantMilestone(User $recipient, ReferralTier $tier): bool
+    {
+        return DB::transaction(function () use ($recipient, $tier) {
+            try {
+                ReferralReward::create([
+                    'referral_id' => null,
+                    'recipient_id' => $recipient->id,
+                    'order_id' => null,
+                    'tier_id' => $tier->id,
+                    'kind' => ReferralReward::KIND_MILESTONE,
+                    'points_amount' => (int) $tier->points_reward,
+                ]);
+            } catch (QueryException $e) {
+                if ((int) $e->getCode() === 23000 || str_contains($e->getMessage(), 'UNIQUE')) {
+                    return false;
+                }
+                throw $e;
+            }
+
+            if ($tier->points_reward > 0) {
+                $recipient->increment('points_balance', (int) $tier->points_reward);
+            }
+
+            if ($tier->discount_type_id) {
+                UserDiscount::create([
+                    'user_id' => $recipient->id,
+                    'discount_type_id' => $tier->discount_type_id,
+                    'is_used' => false,
+                    'obtained_from' => 'referral_milestone',
+                    'expires_at' => now()->addDays(30),
+                ]);
+            }
+
+            if ($tier->free_spins_reward > 0) {
+                UserGachaState::firstOrCreate(['user_id' => $recipient->id]);
+                UserGachaState::where('user_id', $recipient->id)
+                    ->increment('free_spins', (int) $tier->free_spins_reward);
+            }
+
+            return true;
+        });
     }
 }

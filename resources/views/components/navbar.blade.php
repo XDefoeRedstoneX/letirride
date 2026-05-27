@@ -76,6 +76,18 @@
                 </button>
 
                 @auth
+                    @php
+                        // Pulse the profile chip when a milestone has been granted since the user last
+                        // visited /referrals. Single boolean fed to a CSS-only dot.
+                        $hasNewReferralUnlocks = false;
+                        if (! Auth::user()->isAdmin()) {
+                            $lastSeen = Auth::user()->referrals_last_seen_at;
+                            $hasNewReferralUnlocks = \App\Models\ReferralReward::where('recipient_id', Auth::id())
+                                ->where('kind', \App\Models\ReferralReward::KIND_MILESTONE)
+                                ->when($lastSeen, fn ($q) => $q->where('created_at', '>', $lastSeen))
+                                ->exists();
+                        }
+                    @endphp
                     @unless(Auth::user()->isAdmin())
                     {{-- Points Balance --}}
                     <div class="hidden sm:flex" style="align-items: center; gap: 6px; padding: 5px 10px; background: rgba(245,158,11,0.1); border: 2px solid rgba(245,158,11,0.25);">
@@ -95,7 +107,7 @@
 
                     {{-- User Dropdown --}}
                     <div style="position: relative;" x-data="{ open: false }">
-                        <button @click="open = !open" style="display: flex; align-items: center; gap: 8px; padding: 4px 8px; background: var(--dark-card2); border: 2px solid var(--dark-line); cursor: pointer; transition: all 0.15s;"
+                        <button @click="open = !open" class="navbar-user-chip {{ $hasNewReferralUnlocks ? 'has-referral-pulse' : '' }}" style="display: flex; align-items: center; gap: 8px; padding: 4px 8px; background: var(--dark-card2); border: 2px solid var(--dark-line); cursor: pointer; transition: all 0.15s; position: relative;"
                                 onmouseover="this.style.borderColor='var(--gold)';"
                                 onmouseout="this.style.borderColor='var(--dark-line)';">
                             <div style="width: 28px; height: 28px; overflow: hidden;">
@@ -103,6 +115,9 @@
                             </div>
                             <span class="hidden lg:block" style="font-family: var(--px); font-size: 8px; color: #e8f0ff; letter-spacing: 0.08em;">{{ Auth::user()->name }}</span>
                             <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="square" style="color: var(--text-dim); transition: transform 0.2s;" :style="open ? 'transform: rotate(180deg)' : ''"><path d="m6 9 6 6 6-6"/></svg>
+                            @if ($hasNewReferralUnlocks)
+                                <span class="navbar-referral-pulse" aria-label="New referral rewards unlocked"></span>
+                            @endif
                         </button>
 
                         <div x-show="open" @click.away="open = false"
@@ -116,6 +131,7 @@
                                     ['route' => 'profile', 'label' => 'MY PROFILE', 'icon' => '<path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>'],
                                     ['route' => 'inventory', 'label' => 'INVENTORY', 'icon' => '<path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/>'],
                                     ['route' => 'transactions', 'label' => 'TRANSACTIONS', 'icon' => '<path d="M12 2v20"/><path d="m17 5-5-3-5 3"/><path d="m17 19-5 3-5-3"/><path d="M2 12h20"/><path d="m7 7-5 5 5 5"/><path d="m17 7 5 5-5 5"/>'],
+                                    ['route' => 'referrals', 'label' => 'REFER FRIENDS', 'icon' => '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 11h-6"/><path d="M19 8v6"/>', 'pulse' => $hasNewReferralUnlocks],
                                 ];
                             @endphp
                             @foreach($menuItems as $mi)
@@ -123,7 +139,10 @@
                                    onmouseover="this.style.background='var(--dark-card2)';this.style.color='var(--gold)';"
                                    onmouseout="this.style.background='transparent';this.style.color='#e8f0ff';">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="square">{!! $mi['icon'] !!}</svg>
-                                    {{ $mi['label'] }}
+                                    <span style="flex:1;">{{ $mi['label'] }}</span>
+                                    @if (! empty($mi['pulse']))
+                                        <span class="navbar-dropdown-pulse" aria-hidden="true"></span>
+                                    @endif
                                 </a>
                             @endforeach
                             @endunless
