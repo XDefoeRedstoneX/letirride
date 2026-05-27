@@ -168,6 +168,16 @@
 
         <!-- Legal Links -->
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-8 pb-12" x-show="show" x-transition:enter="md:transition md:ease-out md:duration-1000 md:delay-500" x-transition:enter-start="md:opacity-0 md:translate-y-8" x-transition:enter-end="md:opacity-100 md:translate-y-0">
+            <a href="{{ route('referrals') }}" class="glass-card rounded-[2.5rem] p-8 flex items-center justify-between group hover:border-primary/30 transition-all duration-500 sm:col-span-2">
+                <div class="space-y-1">
+                    <p class="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Earn Points</p>
+                    <h3 class="text-xl font-black uppercase tracking-tight group-hover:text-primary transition-colors">Refer Friends</h3>
+                    <p class="text-[11px] text-muted-foreground">Share your code · earn points when friends shop</p>
+                </div>
+                <div class="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="pixel-render"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 11h-6"/><path d="M19 8v6"/></svg>
+                </div>
+            </a>
             <a href="{{ route('terms-of-service') }}" class="glass-card rounded-[2.5rem] p-8 flex items-center justify-between group hover:border-primary/30 transition-all duration-500">
                 <div class="space-y-1">
                     <p class="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Legal</p>

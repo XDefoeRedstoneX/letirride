@@ -44,6 +44,7 @@ class DatabaseSeeder extends Seeder
         $this->seedFavorites($now);
         $this->seedCartItems($now);
         $this->seedReferrals($now);
+        $this->seedReferralConfig($now);
 
         $this->call([
             DemoDataSeeder::class,
@@ -716,8 +717,6 @@ class DatabaseSeeder extends Seeder
             return;
         }
 
-        $discountIds = DB::table('user_discounts')->pluck('id');
-
         // Need users with IDs 1 and 2 specifically to seed referrals
         if (! DB::table('users')->where('id', 1)->exists() || ! DB::table('users')->where('id', 2)->exists()) {
             return;
@@ -740,20 +739,50 @@ class DatabaseSeeder extends Seeder
             ]);
         }
 
-        // Upsert the referral record
+        // Upsert the referral record using the post-migration schema.
         $exists = DB::table('referrals')
             ->where('referrer_id', $alice)
             ->where('referred_user_id', $bob)
             ->exists();
 
-        if (! $exists && $discountIds->isNotEmpty()) {
+        if (! $exists) {
             DB::table('referrals')->insert([
                 'referrer_id' => $alice,
                 'referred_user_id' => $bob,
-                'reward_discount_id' => $discountIds->first(),
-                'status' => 'rewarded',
+                'status' => 'first_purchase_rewarded',
+                'first_purchase_rewarded_at' => $now,
+                'total_commission_paid' => 0,
                 'created_at' => $now,
             ]);
         }
+    }
+
+    private function seedReferralConfig($now): void
+    {
+        if (! Schema::hasTable('referral_configs')) {
+            return;
+        }
+
+        DB::table('referral_configs')->upsert([
+            [
+                'id' => 1,
+                'referee_welcome_points' => 100,
+                'referrer_first_purchase_pts' => 500,
+                'commission_percent' => 0,
+                'commission_per_order_cap' => 5000,
+                'commission_lifetime_cap' => 50000,
+                'referrer_min_account_age_h' => 0,
+                'created_at' => $now,
+                'updated_at' => $now,
+            ],
+        ], ['id'], [
+            'referee_welcome_points',
+            'referrer_first_purchase_pts',
+            'commission_percent',
+            'commission_per_order_cap',
+            'commission_lifetime_cap',
+            'referrer_min_account_age_h',
+            'updated_at',
+        ]);
     }
 }

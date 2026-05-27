@@ -11,6 +11,7 @@
     loginLoading: false,
     signupError: '',
     signupLoading: false,
+    referralCode: '',
     passwordStrength: 0,
     get strengthLabel() {
         const labels = ['', 'Weak', 'Fair', 'Good', 'Strong'];
@@ -90,6 +91,16 @@
             this.tab = e.detail.tab || 'login';
             this.open = true;
         });
+
+        // ?ref=CODE in the URL pre-fills the signup field and pops the modal
+        // to the signup tab so the visitor lands ready to convert.
+        const params = new URLSearchParams(window.location.search);
+        const ref = params.get('ref');
+        if (ref) {
+            this.referralCode = ref.toUpperCase().slice(0, 16);
+            this.tab = 'signup';
+            this.open = true;
+        }
     }
 }" x-show="open" class="modal-overlay" x-cloak
    x-transition:enter="transition ease-out duration-200"
@@ -193,6 +204,16 @@
                                 'text-green-500': passwordStrength === 4,
                             }" x-text="strengthLabel"></p>
                         </div>
+                    </div>
+
+                    {{-- Optional referral code --}}
+                    <div class="space-y-2">
+                        <label class="text-xs font-black text-muted-foreground uppercase tracking-widest">Referral Code <span class="text-muted-foreground/60">(optional)</span></label>
+                        <input type="text" name="referral_code" x-model="referralCode" maxlength="16"
+                               @input="referralCode = referralCode.toUpperCase()"
+                               class="referral-signup-input"
+                               placeholder="GOTACODE">
+                        <p class="referral-signup-hint">Friend gave you a code? Pop it in to earn bonus points.</p>
                     </div>
 
                     {{-- TOS & Privacy (only on signup) --}}
