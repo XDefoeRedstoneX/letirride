@@ -1,192 +1,276 @@
 <x-app-layout>
     @auth
-    <div class="max-w-5xl mx-auto space-y-12" x-data="{
-        show: false,
-        uploading: false,
-        profileName: @js(Auth::user()->name),
-        profileError: '',
-        profileSuccess: '',
-        profileLoading: false,
-        passwordError: '',
-        passwordSuccess: '',
-        passwordLoading: false,
-        currentPassword: '',
-        newPassword: '',
-        async submitProfile() {
-            this.profileError = ''; this.profileSuccess = ''; this.profileLoading = true;
-            const form = this.$refs.profileForm;
-            const response = await fetch(form.action, { method: 'POST', headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }, body: new FormData(form) });
-            const data = await response.json().catch(() => ({}));
-            this.profileLoading = false;
-            if (response.ok) { this.profileName = data.name || this.profileName; this.profileSuccess = data.message || 'Profile updated successfully.'; return; }
-            const errors = data.errors || {};
-            this.profileError = errors.name?.[0] || data.message || 'Unable to update profile.';
-        },
-        async submitPassword() {
-            this.passwordError = ''; this.passwordSuccess = ''; this.passwordLoading = true;
-            const form = this.$refs.passwordForm;
-            const response = await fetch(form.action, { method: 'POST', headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }, body: new FormData(form) });
-            const data = await response.json().catch(() => ({}));
-            this.passwordLoading = false;
-            if (response.ok) { this.currentPassword = ''; this.newPassword = ''; this.passwordSuccess = data.message || 'Password updated successfully.'; return; }
-            const errors = data.errors || {};
-            this.passwordError = errors.current_password?.[0] || errors.new_password?.[0] || data.message || 'Unable to update password.';
-        }
-    }" x-init="setTimeout(() => show = true, 50)">
+    <div class="px-page">
+        <div class="px-page-inner space-y-8" style="max-width:780px;" x-data="profilePage(@js(Auth::user()->name))">
 
-        <!-- Profile Card -->
-        <div class="relative overflow-hidden glass-card rounded-[3rem] shadow-2xl" x-show="show" x-transition:enter="md:transition md:ease-out md:duration-1000" x-transition:enter-start="md:opacity-0 md:scale-95 md:translate-y-8" x-transition:enter-end="md:opacity-100 md:scale-100 md:translate-y-0">
-            <div class="h-48 bg-gradient-to-r from-primary/20 via-primary/5 to-transparent"></div>
-            <div class="px-10 pb-10 -mt-20 relative z-10 flex flex-col md:flex-row items-center md:items-end gap-8">
-                <!-- Avatar -->
-                <div class="relative group">
-                    <div class="w-40 h-40 rounded-[2.5rem] bg-background border-8 border-background p-1 shadow-2xl overflow-hidden">
-                        <img src="{{ Auth::user()->avatar_url }}" class="w-full h-full object-cover rounded-[2rem]" alt="Avatar">
+            {{-- Heading --}}
+            <div>
+                <h1 class="px-heading">My <span class="gold">Profile</span></h1>
+                <p class="px-subheading">MANAGE YOUR ACCOUNT AND PREFERENCES</p>
+            </div>
+            <div class="px-divider"><div class="px-divider-dot"></div><div class="px-divider-line"></div><div class="px-divider-dot"></div></div>
+
+            {{-- Profile Info Card --}}
+            <div class="px-card-static" style="padding:28px;">
+                <div style="display:flex;align-items:center;gap:20px;flex-wrap:wrap;">
+                    {{-- Pixel avatar placeholder --}}
+                    <div style="width:72px;height:72px;background:rgba(245,158,11,0.1);border:3px solid rgba(245,158,11,0.25);display:flex;align-items:center;justify-content:center;color:var(--gold);flex-shrink:0;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="square" class="pixel-render"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
                     </div>
-                    <button @click="$refs.avatarInput.click()" :disabled="uploading"
-                            class="absolute bottom-3 right-3 w-10 h-10 bg-primary text-primary-foreground rounded-2xl shadow-xl flex items-center justify-center hover:scale-110 transition-all border-4 border-background disabled:opacity-50">
-                        <svg x-show="!uploading" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="pixel-render"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>
-                        <svg x-show="uploading" class="animate-spin" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
-                    </button>
-                    <form method="POST" action="{{ route('updateProfilePicture') }}" enctype="multipart/form-data" class="hidden">
-                        @csrf
-                        <input type="file" name="avatar" x-ref="avatarInput" accept="image/*"
-                               @change="uploading = true; $event.target.closest('form').submit();">
-                    </form>
-                </div>
-                <!-- Info -->
-                <div class="flex-1 text-center md:text-left space-y-3">
-                    <div class="flex flex-col md:flex-row md:items-center gap-3 md:gap-6">
-                        <h1 class="text-4xl font-black tracking-tighter uppercase">{{ Auth::user()->name }}</h1>
-                        @if(Auth::user()->role !== 'customer')
-                            <span class="px-4 py-1.5 rounded-full bg-primary text-primary-foreground text-[10px] font-black uppercase tracking-widest shadow-lg shadow-primary/20 self-center">
-                                {{ Auth::user()->role }}
-                            </span>
-                        @endif
-                    </div>
-                    <div class="flex items-center justify-center md:justify-start gap-2 text-muted-foreground font-medium">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="pixel-render text-primary"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
-                        <span>{{ Auth::user()->email }}</span>
+                    <div style="flex:1;min-width:0;">
+                        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+                            <h2 style="font-family:var(--font-sans);font-size:22px;font-weight:800;color:var(--foreground);letter-spacing:-0.02em;">{{ Auth::user()->name }}</h2>
+                            @if(Auth::user()->role !== 'customer')
+                                <span class="px-badge px-badge-gold">{{ strtoupper(Auth::user()->role) }}</span>
+                            @endif
+                        </div>
+                        <div style="display:flex;align-items:center;gap:6px;margin-top:6px;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="square" class="pixel-render" style="color:var(--gold);flex-shrink:0;"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+                            <span style="font-family:var(--font-sans);font-size:13px;color:var(--muted-foreground);">{{ Auth::user()->email }}</span>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
 
-        <!-- User Stats Grid -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-8" x-show="show" x-transition:enter="md:transition md:ease-out md:duration-1000 md:delay-200" x-transition:enter-start="md:opacity-0 md:translate-y-8" x-transition:enter-end="md:opacity-100 md:translate-y-0">
-            <div class="glass-card rounded-[2.5rem] p-8 space-y-3 group hover:border-primary/30 transition-all duration-500">
-                <div class="flex items-center justify-between">
-                    <p class="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Available Points</p>
-                    <div class="w-8 h-8 rounded-lg bg-yellow-500/10 flex items-center justify-center text-yellow-500">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="pixel-render"><circle cx="12" cy="12" r="10"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/></svg>
+            {{-- Stats Row --}}
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                <div class="px-stat-card">
+                    <div style="display:flex;align-items:center;justify-content:space-between;">
+                        <span class="stat-label">AVAILABLE POINTS</span>
+                        <div style="width:32px;height:32px;background:rgba(245,158,11,0.1);border:2px solid rgba(245,158,11,0.25);display:flex;align-items:center;justify-content:center;color:var(--gold);">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="square" class="pixel-render"><circle cx="12" cy="12" r="10"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/></svg>
+                        </div>
                     </div>
+                    <p class="stat-value" style="color:var(--gold);">{{ number_format(Auth::user()->points_balance) }}</p>
                 </div>
-                <p class="text-3xl font-black text-foreground tracking-tighter">{{ number_format(Auth::user()->points_balance) }}</p>
-            </div>
-            <div class="glass-card rounded-[2.5rem] p-8 space-y-3 group hover:border-primary/30 transition-all duration-500">
-                <div class="flex items-center justify-between">
-                    <p class="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Inventory Size</p>
-                    <div class="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="pixel-render"><path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg>
+                <div class="px-stat-card">
+                    <div style="display:flex;align-items:center;justify-content:space-between;">
+                        <span class="stat-label">INVENTORY SIZE</span>
+                        <div style="width:32px;height:32px;background:rgba(59,130,246,0.1);border:2px solid rgba(59,130,246,0.25);display:flex;align-items:center;justify-content:center;color:#3b82f6;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="square" class="pixel-render"><path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg>
+                        </div>
                     </div>
+                    <p class="stat-value">
+                        {{ \App\Models\ProductKey::whereHas('order', fn($q) => $q->where('user_id', Auth::id())->where('status', 'paid'))->count()
+                         + Auth::user()->userDiscounts()->where('is_used', false)->where(fn($q) => $q->whereNull('expires_at')->orWhere('expires_at', '>', now()))->count() }}
+                        <span style="font-family:var(--px);font-size:7px;letter-spacing:0.1em;color:var(--muted-foreground);margin-left:4px;">ITEMS</span>
+                    </p>
                 </div>
-                <p class="text-3xl font-black text-foreground tracking-tighter">
-                    {{ \App\Models\ProductKey::whereHas('order', fn($q) => $q->where('user_id', Auth::id())->where('status', 'paid'))->count()
-                     + Auth::user()->userDiscounts()->where('is_used', false)->where(fn($q) => $q->whereNull('expires_at')->orWhere('expires_at', '>', now()))->count() }}
-                    <span class="text-xs text-muted-foreground uppercase tracking-widest ml-1">Items</span>
-                </p>
             </div>
-        </div>
 
-        <!-- Account Settings -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-8" x-show="show" x-transition:enter="md:transition md:ease-out md:duration-1000 md:delay-300" x-transition:enter-start="md:opacity-0 md:translate-y-8" x-transition:enter-end="md:opacity-100 md:translate-y-0">
-            <!-- Personal Information -->
-            <div class="glass-card rounded-[2.5rem] p-8 space-y-6 group hover:border-primary/30 transition-all duration-500">
-                <div class="flex items-center gap-4">
-                    <div class="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="pixel-render"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                    </div>
-                    <h3 class="text-lg font-black uppercase tracking-widest">Personal Info</h3>
-                </div>
-                <form class="space-y-4" x-ref="profileForm" @submit.prevent="submitProfile" method="POST" action="{{ route('updateProfile') }}">
+            {{-- Personal Information --}}
+            <div class="px-card-static" style="padding:28px;">
+                <div class="px-section-header"><div class="section-icon"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="square"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div><span class="section-title">PERSONAL INFORMATION</span></div>
+                <form style="display:flex;flex-direction:column;gap:16px;" x-ref="profileForm" @submit.prevent="submitProfile" method="POST" action="{{ route('updateProfile') }}">
                     @csrf
-                    <div class="space-y-2">
-                        <label class="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Display Name</label>
-                        <input type="text" name="name" :value="profileName" x-model="profileName" class="w-full px-6 py-3 glass-card rounded-2xl focus:ring-2 focus:ring-primary/50 outline-none transition-all font-bold text-sm">
+                    <div style="display:flex;flex-direction:column;gap:6px;">
+                        <label style="font-family:var(--px);font-size:6px;letter-spacing:0.12em;color:var(--text-dim);">DISPLAY NAME</label>
+                        <input type="text" name="name" :value="profileName" x-model="profileName" class="px-input" style="padding:12px 16px;font-size:13px;">
                     </div>
-                    <div class="space-y-2">
-                        <label class="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Email Address</label>
-                        <input type="email" name="email" value="{{ Auth::user()->email }}" disabled class="w-full px-6 py-3 glass-card rounded-2xl cursor-not-allowed opacity-50 font-bold text-sm">
+                    <div style="display:flex;flex-direction:column;gap:6px;">
+                        <label style="font-family:var(--px);font-size:6px;letter-spacing:0.12em;color:var(--text-dim);">EMAIL ADDRESS</label>
+                        <input type="email" value="{{ Auth::user()->email }}" disabled class="px-input" style="padding:12px 16px;font-size:13px;opacity:0.5;cursor:not-allowed;">
+                        <p style="font-family:var(--px);font-size:5px;color:var(--text-dim);letter-spacing:0.1em;">EMAIL CANNOT BE CHANGED ONCE VERIFIED</p>
                     </div>
-                    <button type="submit" :disabled="profileLoading" class="w-full px-8 py-4 bg-primary text-primary-foreground font-black text-[10px] uppercase tracking-widest rounded-2xl hover:scale-[1.02] transition-all shadow-xl shadow-primary/20 disabled:opacity-70">Save Changes</button>
-                    <p x-show="profileError" x-text="profileError" class="text-sm text-red-500"></p>
-                    <p x-show="profileSuccess" x-text="profileSuccess" class="text-sm text-green-600"></p>
+                    <button type="submit" :disabled="profileLoading" class="px-btn-gold" style="padding:14px;font-size:7px;">SAVE CHANGES</button>
+                    <p x-show="profileError" x-text="profileError" style="font-family:var(--font-sans);font-size:13px;color:#ef4444;"></p>
+                    <p x-show="profileSuccess" x-text="profileSuccess" style="font-family:var(--font-sans);font-size:13px;color:#22c55e;"></p>
                 </form>
             </div>
 
-            <!-- Security -->
-            <div class="glass-card rounded-[2.5rem] p-8 space-y-6 group hover:border-primary/30 transition-all duration-500">
-                <div class="flex items-center gap-4">
-                    <div class="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="pixel-render"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-                    </div>
-                    <h3 class="text-lg font-black uppercase tracking-widest">Security</h3>
-                </div>
-                <form class="space-y-4" x-ref="passwordForm" @submit.prevent="submitPassword" method="POST" action="{{ route('changePassword') }}">
+            {{-- Security --}}
+            <div class="px-card-static" style="padding:28px;">
+                <div class="px-section-header"><div class="section-icon"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="square"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div><span class="section-title">SECURITY</span></div>
+                <form style="display:flex;flex-direction:column;gap:16px;" x-ref="passwordForm" @submit.prevent="submitPassword" method="POST" action="{{ route('changePassword') }}">
                     @csrf
-                    <div class="space-y-2">
-                        <label class="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Current Password</label>
-                        <input type="password" name="current_password" x-model="currentPassword" placeholder="••••••••" class="w-full px-6 py-3 glass-card rounded-2xl focus:ring-2 focus:ring-primary/50 outline-none transition-all font-bold text-sm">
+                    <div style="display:flex;flex-direction:column;gap:6px;">
+                        <label style="font-family:var(--px);font-size:6px;letter-spacing:0.12em;color:var(--text-dim);">CURRENT PASSWORD</label>
+                        <input type="password" name="current_password" x-model="currentPassword" placeholder="••••••••" class="px-input" style="padding:12px 16px;font-size:13px;">
                     </div>
-                    <div class="space-y-2">
-                        <label class="text-[10px] font-black text-muted-foreground uppercase tracking-widest">New Password</label>
-                        <input type="password" name="new_password" x-model="newPassword" placeholder="Min. 8 characters" class="w-full px-6 py-3 glass-card rounded-2xl focus:ring-2 focus:ring-primary/50 outline-none transition-all font-bold text-sm">
+                    <div style="display:flex;flex-direction:column;gap:6px;">
+                        <label style="font-family:var(--px);font-size:6px;letter-spacing:0.12em;color:var(--text-dim);">NEW PASSWORD</label>
+                        <input type="password" name="new_password" x-model="newPassword" placeholder="Min. 8 characters" class="px-input" style="padding:12px 16px;font-size:13px;">
                     </div>
-                    <div class="grid grid-cols-2 gap-3">
-                        <button type="submit" :disabled="passwordLoading" class="px-4 py-4 bg-primary text-primary-foreground font-black text-[10px] uppercase tracking-widest rounded-2xl hover:scale-[1.02] transition-all shadow-xl shadow-primary/20 disabled:opacity-70">Update</button>
-                        <a href="{{ route('forgot-password') }}" class="px-4 py-4 glass-card text-center font-black text-[10px] uppercase tracking-widest rounded-2xl hover:bg-white/10 transition-all">Forgot?</a>
+                    <div style="display:flex;gap:8px;">
+                        <button type="submit" :disabled="passwordLoading" class="px-btn-gold" style="padding:14px 24px;font-size:7px;">UPDATE PASSWORD</button>
+                        <a href="{{ route('forgot-password') }}" class="px-btn-ghost" style="padding:14px 24px;font-size:7px;text-decoration:none;">FORGOT PASSWORD</a>
                     </div>
-                    <p x-show="passwordError" x-text="passwordError" class="text-sm text-red-500"></p>
-                    <p x-show="passwordSuccess" x-text="passwordSuccess" class="text-sm text-green-600"></p>
+                    <p x-show="passwordError" x-text="passwordError" style="font-family:var(--font-sans);font-size:13px;color:#ef4444;"></p>
+                    <p x-show="passwordSuccess" x-text="passwordSuccess" style="font-family:var(--font-sans);font-size:13px;color:#22c55e;"></p>
                 </form>
             </div>
-        </div>
 
-        <!-- Account Management (Danger Zone) -->
-        <div class="glass-card rounded-[2.5rem] p-8 space-y-6" x-show="show" x-transition:enter="md:transition md:ease-out md:duration-1000 md:delay-400" x-transition:enter-start="md:opacity-0 md:translate-y-8" x-transition:enter-end="md:opacity-100 md:translate-y-0">
-            <div class="flex flex-col md:flex-row items-center justify-between gap-6">
-                <div class="space-y-2 text-center md:text-left">
-                    <h3 class="text-lg font-black uppercase tracking-widest text-destructive">Account Management</h3>
-                    <p class="text-xs font-bold text-muted-foreground uppercase tracking-widest leading-relaxed max-w-xl">To ensure security, account deletion must be processed by our support team. If you wish to permanently delete your account, please contact our Customer Services.</p>
+            {{-- Delete Account (Danger Zone) --}}
+            <div class="px-card-static" style="padding:24px;border-color:rgba(239,68,68,0.3);">
+                <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
+                    <div style="width:40px;height:40px;background:rgba(239,68,68,0.1);border:2px solid rgba(239,68,68,0.3);display:flex;align-items:center;justify-content:center;color:#ef4444;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="square" class="pixel-render"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>
+                    </div>
+                    <h3 style="font-family:var(--font-sans);font-size:16px;font-weight:800;color:#ef4444;">Delete Account</h3>
                 </div>
-                <a href="{{ route('tickets') }}" class="whitespace-nowrap px-8 py-4 bg-destructive text-destructive-foreground font-black rounded-2xl hover:scale-105 transition-all shadow-xl shadow-destructive/20 uppercase tracking-widest text-[10px] flex items-center gap-2">
-                    Contact Support
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="pixel-render"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+                <p style="font-family:var(--font-sans);font-size:12px;color:var(--text-dim);line-height:1.6;margin-bottom:16px;">Once your account is deleted, all of your data — including orders, inventory, points, and vouchers — will be permanently removed. This action cannot be undone.</p>
+                <button type="button" @click="startDeleteAccount()" class="px-btn-danger" style="padding:12px 20px;font-size:7px;display:inline-flex;align-items:center;gap:6px;">
+                    DELETE MY ACCOUNT
+                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="square" class="pixel-render"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/></svg>
+                </button>
+                <p x-show="deleteError" x-text="deleteError" style="font-family:var(--font-sans);font-size:13px;color:#ef4444;margin-top:10px;"></p>
+            </div>
+
+            {{-- Legal Links --}}
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6" style="padding-bottom:40px;">
+                <a href="{{ route('terms-of-service') }}" class="px-card" style="padding:20px;display:flex;align-items:center;justify-content:space-between;text-decoration:none;">
+                    <div>
+                        <p style="font-family:var(--px);font-size:6px;letter-spacing:0.12em;color:var(--muted-foreground);text-transform:uppercase;">LEGAL</p>
+                        <h3 style="font-family:var(--font-sans);font-size:15px;font-weight:800;color:var(--foreground);margin-top:4px;">Terms Of Service</h3>
+                    </div>
+                    <div style="width:40px;height:40px;background:rgba(245,158,11,0.1);border:2px solid rgba(245,158,11,0.25);display:flex;align-items:center;justify-content:center;color:var(--gold);">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="square" class="pixel-render"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                    </div>
+                </a>
+                <a href="{{ route('privacy-policy') }}" class="px-card" style="padding:20px;display:flex;align-items:center;justify-content:space-between;text-decoration:none;">
+                    <div>
+                        <p style="font-family:var(--px);font-size:6px;letter-spacing:0.12em;color:var(--muted-foreground);text-transform:uppercase;">PRIVACY</p>
+                        <h3 style="font-family:var(--font-sans);font-size:15px;font-weight:800;color:var(--foreground);margin-top:4px;">Privacy Policies</h3>
+                    </div>
+                    <div style="width:40px;height:40px;background:rgba(245,158,11,0.1);border:2px solid rgba(245,158,11,0.25);display:flex;align-items:center;justify-content:center;color:var(--gold);">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="square" class="pixel-render"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                    </div>
                 </a>
             </div>
-        </div>
 
-        <!-- Legal Links -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-8 pb-12" x-show="show" x-transition:enter="md:transition md:ease-out md:duration-1000 md:delay-500" x-transition:enter-start="md:opacity-0 md:translate-y-8" x-transition:enter-end="md:opacity-100 md:translate-y-0">
-            <a href="{{ route('terms-of-service') }}" class="glass-card rounded-[2.5rem] p-8 flex items-center justify-between group hover:border-primary/30 transition-all duration-500">
-                <div class="space-y-1">
-                    <p class="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Legal</p>
-                    <h3 class="text-xl font-black uppercase tracking-tight group-hover:text-primary transition-colors">Terms Of Service</h3>
-                </div>
-                <div class="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="pixel-render"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
-                </div>
-            </a>
-            <a href="{{ route('privacy-policy') }}" class="glass-card rounded-[2.5rem] p-8 flex items-center justify-between group hover:border-primary/30 transition-all duration-500">
-                <div class="space-y-1">
-                    <p class="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Privacy</p>
-                    <h3 class="text-xl font-black uppercase tracking-tight group-hover:text-primary transition-colors">Privacy Policies</h3>
-                </div>
-                <div class="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="pixel-render"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-                </div>
-            </a>
         </div>
     </div>
+
+    {{-- Password prompt modal for account deletion --}}
+    <div x-show="showPasswordModal" x-cloak
+         class="px-modal-overlay"
+         @keydown.escape.window="showPasswordModal = false"
+         x-transition:enter="transition ease-out duration-150"
+         x-transition:enter-start="opacity-0"
+         x-transition:enter-end="opacity-100"
+         x-transition:leave="transition ease-in duration-100"
+         x-transition:leave-start="opacity-100"
+         x-transition:leave-end="opacity-0"
+         @click.self="showPasswordModal = false">
+        <div class="px-modal-box" style="max-width:400px;"
+             x-transition:enter="transition ease-out duration-150"
+             x-transition:enter-start="opacity-0 scale-95"
+             x-transition:enter-end="opacity-100 scale-100"
+             @click.stop>
+            <div style="display:flex;flex-direction:column;gap:18px;text-align:center;">
+                <div style="width:56px;height:56px;background:rgba(239,68,68,0.12);border:3px solid #ef4444;color:#ef4444;display:flex;align-items:center;justify-content:center;margin:0 auto;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="square" class="pixel-render"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                </div>
+                <h3 style="font-family:var(--font-sans);font-size:16px;font-weight:800;color:#e8f0ff;letter-spacing:0.02em;">Enter Your Password</h3>
+                <p style="font-family:var(--font-sans);font-size:13px;color:var(--text-dim);line-height:1.5;">To confirm account deletion, please enter your current password.</p>
+                <input type="password" x-model="deletePassword" placeholder="Your password" class="px-input" style="padding:12px 16px;font-size:13px;text-align:center;" @keydown.enter="confirmDeleteWithPassword()">
+                <p x-show="deleteError" x-text="deleteError" style="font-family:var(--font-sans);font-size:12px;color:#ef4444;"></p>
+                <div style="display:flex;flex-direction:column;gap:10px;margin-top:6px;">
+                    <button type="button" @click="showPasswordModal = false" class="px-btn-gold" style="width:100%;padding:14px;font-size:7px;">CANCEL</button>
+                    <button type="button" @click="confirmDeleteWithPassword()" :disabled="deletingAccount" class="px-btn-ghost" style="width:100%;padding:12px;font-size:7px;color:#ef4444;border-color:rgba(239,68,68,0.45);">
+                        <span x-text="deletingAccount ? 'DELETING...' : 'CONFIRM DELETE'"></span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    function profilePage(initialName) {
+        return {
+            profileName: initialName,
+            profileError: '',
+            profileSuccess: '',
+            profileLoading: false,
+            passwordError: '',
+            passwordSuccess: '',
+            passwordLoading: false,
+            currentPassword: '',
+            newPassword: '',
+            deleteError: '',
+            deletePassword: '',
+            deletingAccount: false,
+            showPasswordModal: false,
+
+            async submitProfile() {
+                this.profileError = ''; this.profileSuccess = ''; this.profileLoading = true;
+                const form = this.$refs.profileForm;
+                const r = await fetch(form.action, { method: 'POST', headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }, body: new FormData(form) });
+                const data = await r.json().catch(() => ({}));
+                this.profileLoading = false;
+                if (r.ok) { this.profileName = data.name || this.profileName; this.profileSuccess = data.message || 'Profile updated.'; return; }
+                this.profileError = data.errors?.name?.[0] || data.message || 'Unable to update.';
+            },
+
+            async submitPassword() {
+                this.passwordError = ''; this.passwordSuccess = ''; this.passwordLoading = true;
+                const form = this.$refs.passwordForm;
+                const r = await fetch(form.action, { method: 'POST', headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }, body: new FormData(form) });
+                const data = await r.json().catch(() => ({}));
+                this.passwordLoading = false;
+                if (r.ok) { this.currentPassword = ''; this.newPassword = ''; this.passwordSuccess = data.message || 'Password updated.'; return; }
+                this.passwordError = data.errors?.current_password?.[0] || data.errors?.new_password?.[0] || data.message || 'Unable to update.';
+            },
+
+            async startDeleteAccount() {
+                this.deleteError = '';
+                // First confirmation
+                const first = await window.openConfirmModal({
+                    title: 'Delete Your Account?',
+                    message: 'This action is permanent. All your data including orders, inventory, points, and vouchers will be deleted forever.',
+                    confirmLabel: 'YES, I WANT TO DELETE',
+                    cancelLabel: 'NO, KEEP MY ACCOUNT'
+                });
+                if (!first) return;
+
+                // Second confirmation
+                const second = await window.openConfirmModal({
+                    title: 'Final Warning',
+                    message: 'This is your last chance. Once deleted, your account and all associated data cannot be recovered. Are you absolutely sure?',
+                    confirmLabel: 'DELETE PERMANENTLY',
+                    cancelLabel: 'CANCEL'
+                });
+                if (!second) return;
+
+                // Prompt for password
+                this.deletePassword = '';
+                this.showPasswordModal = true;
+            },
+
+            async confirmDeleteWithPassword() {
+                if (!this.deletePassword || this.deletingAccount) return;
+                this.deleteError = '';
+                this.deletingAccount = true;
+
+                try {
+                    const r = await fetch('{{ route("deleteAccount") }}', {
+                        method: 'DELETE',
+                        headers: {
+                            'Accept': 'application/json',
+                            'Content-Type': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                        },
+                        body: JSON.stringify({ password: this.deletePassword })
+                    });
+                    const data = await r.json().catch(() => ({}));
+                    this.deletingAccount = false;
+
+                    if (r.ok) {
+                        this.showPasswordModal = false;
+                        window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: 'Account deleted successfully. Goodbye!', type: 'success' } }));
+                        setTimeout(() => { window.location.href = data.redirect || '/'; }, 1500);
+                        return;
+                    }
+
+                    this.deleteError = data.errors?.password?.[0] || data.message || 'Unable to delete account.';
+                } catch (e) {
+                    this.deletingAccount = false;
+                    this.deleteError = 'Network error. Please try again.';
+                }
+            }
+        };
+    }
+    </script>
     @endauth
 </x-app-layout>
