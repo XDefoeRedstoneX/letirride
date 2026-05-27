@@ -7,6 +7,7 @@ use App\Http\Controllers\Admin\GachaRarityChanceController as AdminGachaRarityCh
 use App\Http\Controllers\Admin\NewsController as AdminNewsController;
 use App\Http\Controllers\Admin\OrderController as AdminOrderController;
 use App\Http\Controllers\Admin\ProductController as AdminProductController;
+use App\Http\Controllers\Admin\ReferralController as AdminReferralController;
 use App\Http\Controllers\Admin\TicketController as AdminTicketController;
 use App\Http\Controllers\Admin\UserController as AdminUserController;
 use App\Http\Controllers\AuthController;
@@ -18,6 +19,7 @@ use App\Http\Controllers\GachaController;
 use App\Http\Controllers\GachaPaymentController;
 use App\Http\Controllers\InventoryController;
 use App\Http\Controllers\PointController;
+use App\Http\Controllers\ReferralController;
 use App\Http\Controllers\StoreController;
 use App\Http\Controllers\TransactionController;
 use App\Http\Middleware\EnsureUserIsAdmin;
@@ -86,6 +88,12 @@ Route::middleware('auth')->group(function () {
     Route::get('/transactions', [TransactionController::class, 'index'])->name('transactions');
     Route::post('/transactions/{order}/cancel', [TransactionController::class, 'cancel'])->name('transactions.cancel');
 
+    // Referrals (share + claim)
+    Route::get('/referrals', [ReferralController::class, 'show'])->name('referrals');
+    Route::post('/referrals/claim', [ReferralController::class, 'claim'])
+        ->middleware('throttle:10,1')
+        ->name('referrals.claim');
+
     // Forgot Password
     Route::get('/forgot-password', [AuthController::class, 'showForgot'])->name('forgot-password');
 });
@@ -122,6 +130,10 @@ Route::prefix('admin')
         Route::post('/gacha-boosters', [AdminGachaBoosterController::class, 'store'])->name('admin.gacha-boosters.store');
         Route::patch('/gacha-boosters/{booster}', [AdminGachaBoosterController::class, 'update'])->name('admin.gacha-boosters.update');
         Route::delete('/gacha-boosters/{booster}', [AdminGachaBoosterController::class, 'destroy'])->name('admin.gacha-boosters.destroy');
+
+        Route::get('/referrals', [AdminReferralController::class, 'index'])->name('admin.referrals');
+        Route::patch('/referrals/config', [AdminReferralController::class, 'updateConfig'])->name('admin.referrals.config');
+        Route::post('/referrals/{referral}/void', [AdminReferralController::class, 'void'])->name('admin.referrals.void');
 
         Route::get('/tickets', [AdminTicketController::class, 'index'])->name('admin.tickets');
         Route::patch('/tickets/{ticket}/status', [AdminTicketController::class, 'updateStatus'])->name('admin.tickets.status');

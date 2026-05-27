@@ -1,4 +1,34 @@
 <x-app-layout>
+@auth
+    @if (! empty($showReferralPrompt))
+        <section x-data="{
+            show: localStorage.getItem('ridly_ref_dismissed') !== '1'
+        }"
+        x-show="show"
+        x-transition.opacity
+        class="referral-banner">
+            <div class="referral-banner-body">
+                <span class="referral-banner-icon" aria-hidden="true">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 11h-6"/><path d="M19 8v6"/></svg>
+                </span>
+                <p class="referral-banner-text">
+                    Got invited by a friend? Enter their code in
+                    <a href="{{ route('referrals') }}" class="referral-banner-link">Refer Friends</a>
+                    @if ($referralWelcomePoints > 0)
+                        to claim <strong>{{ number_format($referralWelcomePoints) }} bonus points</strong>.
+                    @else
+                        before your first purchase.
+                    @endif
+                </p>
+            </div>
+            <button type="button"
+                    @click="show = false; localStorage.setItem('ridly_ref_dismissed', '1')"
+                    class="referral-banner-close" aria-label="Dismiss">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="square"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+            </button>
+        </section>
+    @endif
+@endauth
 {{-- ── Hero Billboard ──────────────────────────────────────────── --}}
 <section class="hero-section" aria-label="Hero banner">
     <div class="hero-frame-grid">

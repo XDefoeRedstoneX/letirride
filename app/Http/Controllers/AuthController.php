@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Services\ReferralService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -85,11 +86,26 @@ class AuthController extends Controller
                 'name' => 'required|min:2|max:50',
                 'email' => 'required|email:dns|unique:users',
                 'password' => 'required|min:8',
+                'referral_code' => 'nullable|string|max:16',
             ]);
+
+            $referralCode = trim((string) ($creds['referral_code'] ?? ''));
+            unset($creds['referral_code']);
 
             $creds['referral_code'] = strtoupper(Str::random(8));
 
             $user = User::create($creds);
+
+            $referralMessage = null;
+            if ($referralCode !== '') {
+                $outcome = app(ReferralService::class)->claimCode($user, $referralCode);
+                $referralMessage = match ($outcome['status']) {
+                    ReferralService::CLAIM_OK => 'Referral applied! You received '.($outcome['points_awarded'] ?? 0).' bonus points.',
+                    ReferralService::CLAIM_NOT_FOUND => 'We couldn\'t find that referral code, but your account was created.',
+                    ReferralService::CLAIM_SELF => 'A referral code can\'t be your own — account created anyway.',
+                    default => null,
+                };
+            }
 
             Auth::login($user);
             $request->session()->regenerate();
@@ -98,14 +114,19 @@ class AuthController extends Controller
                 ? route('admin.dashboard')
                 : route('home');
 
+            $message = 'Registration successful! Welcome to Ridly.';
+            if ($referralMessage) {
+                $message .= ' '.$referralMessage;
+            }
+
             if ($request->expectsJson()) {
                 return response()->json([
-                    'message' => 'Registration successful! Welcome to Ridly.',
+                    'message' => $message,
                     'redirect' => $redirect,
                 ], 200);
             }
 
-            return redirect()->to($redirect)->with('success', 'Registration successful! Welcome to Ridly.');
+            return redirect()->to($redirect)->with('success', $message);
         } catch (ValidationException $e) {
             if ($request->expectsJson()) {
                 return response()->json([

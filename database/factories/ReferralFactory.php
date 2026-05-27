@@ -21,15 +21,23 @@ class ReferralFactory extends Factory
         return [
             'referrer_id' => User::factory(),
             'referred_user_id' => User::factory(),
-            'reward_discount_id' => null,
-            'status' => 'pending',
+            'status' => Referral::STATUS_PENDING,
+            'total_commission_paid' => 0,
         ];
     }
 
     public function rewarded(): static
     {
         return $this->state(fn (array $attributes) => [
-            'status' => 'rewarded',
+            'status' => Referral::STATUS_FIRST_PURCHASE_REWARDED,
+            'first_purchase_rewarded_at' => now(),
+        ]);
+    }
+
+    public function void(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'status' => Referral::STATUS_VOID,
         ]);
     }
 }

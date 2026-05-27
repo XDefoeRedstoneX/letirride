@@ -24,6 +24,23 @@ class StoreController extends Controller
      */
     private function storeData(): array
     {
+        // Show the referral prompt only to fresh accounts that haven't been
+        // referred yet AND haven't bought anything yet — those are the only
+        // users still eligible to claim a code.
+        $showReferralPrompt = false;
+        $referralWelcomePoints = 0;
+        if (Auth::check()) {
+            $user = Auth::user();
+            $isFresh = $user->created_at && $user->created_at->gte(now()->subDays(7));
+            if (! $user->referred_by && $isFresh) {
+                $hasPaid = $user->orders()->where('status', 'paid')->exists();
+                if (! $hasPaid) {
+                    $showReferralPrompt = true;
+                    $referralWelcomePoints = (int) (\App\Models\ReferralConfig::current()->referee_welcome_points);
+                }
+            }
+        }
+
         $availableProductImages = collect(glob(public_path('products/*.png')))
             ->map(fn (string $path) => basename($path))
             ->all();
@@ -87,6 +104,8 @@ class StoreController extends Controller
             'products'    => $products,
             'favoriteIds' => $favoriteIds,
             'newsImages'  => $newsImages,
+            'showReferralPrompt' => $showReferralPrompt,
+            'referralWelcomePoints' => $referralWelcomePoints,
         ];
     }
 }

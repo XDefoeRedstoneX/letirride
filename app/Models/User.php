@@ -114,6 +114,12 @@ class User extends Authenticatable
         return $this->hasOne(Referral::class, 'referred_user_id');
     }
 
+    /** Every referral reward this user has received (referee welcome + referrer payouts). */
+    public function referralRewards(): HasMany
+    {
+        return $this->hasMany(ReferralReward::class, 'recipient_id');
+    }
+
     /**
      * Get the attributes that should be cast.
      *
