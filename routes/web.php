@@ -77,12 +77,11 @@ Route::middleware('auth')->group(function () {
     Route::get('/checkout/status/{order}', [CheckoutController::class, 'status'])->name('checkout.status');
     Route::post('/checkout/verify/{order}', [CheckoutController::class, 'verify'])->name('checkout.verify');
 
-    // Profile & Settings
-    Route::get('/settings', [AuthController::class, 'showSettings'])->name('settings');
+    // Profile
     Route::get('/profile', [AuthController::class, 'showProfile'])->name('profile');
     Route::post('/update-profile', [AuthController::class, 'updateProfile'])->name('updateProfile');
-    Route::post('/update-profile-picture', [AuthController::class, 'updateProfilePicture'])->name('updateProfilePicture');
     Route::post('/change-password', [AuthController::class, 'changePassword'])->name('changePassword');
+    Route::delete('/delete-account', [AuthController::class, 'deleteAccount'])->name('deleteAccount');
 
     // Inventory & Transactions (real data from DB)
     Route::get('/inventory', [InventoryController::class, 'index'])->name('inventory');

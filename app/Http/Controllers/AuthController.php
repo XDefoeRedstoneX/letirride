@@ -7,7 +7,7 @@ use App\Services\ReferralService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Storage;
+
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
@@ -24,10 +24,7 @@ class AuthController extends Controller
         return view('ganti');
     }
 
-    public function showSettings()
-    {
-        return view('pages.settings');
-    }
+
 
     public function showProfile()
     {
@@ -200,31 +197,42 @@ class AuthController extends Controller
         }
     }
 
-    public function updateProfilePicture(Request $request)
+    /**
+     * Delete the authenticated user's account after password verification.
+     */
+    public function deleteAccount(Request $request)
     {
         $request->validate([
-            'avatar' => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+            'password' => 'required',
         ]);
 
         $user = Auth::user();
 
-        // Delete old picture if exists
-        if ($user->profile_picture) {
-            Storage::disk('public')->delete($user->profile_picture);
+        if (! Hash::check($request->password, $user->password)) {
+            return response()->json([
+                'errors' => ['password' => ['The password you entered is incorrect.']],
+            ], 422);
         }
 
-        // Store new picture
-        $path = $request->file('avatar')->store('avatars', 'public');
+        // Clean up related data
+        $user->cartItems()->delete();
+        $user->favorites()->delete();
+        $user->tickets()->delete();
+        $user->userDiscounts()->delete();
+        $user->gachaState()?->delete();
+        $user->activeBoosters()->delete();
 
-        $user->update(['profile_picture' => $path]);
+        // Log out before deletion
+        Auth::logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        $user->delete();
 
         if ($request->expectsJson()) {
-            return response()->json([
-                'message' => 'Profile picture updated successfully.',
-                'avatar_url' => $user->avatar_url,
-            ]);
+            return response()->json(['message' => 'Account deleted successfully.', 'redirect' => route('home')]);
         }
 
-        return back()->with('success', 'Profile picture updated successfully!');
+        return redirect(route('home'));
     }
 }
