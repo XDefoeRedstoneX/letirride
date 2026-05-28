@@ -228,43 +228,49 @@ class DatabaseSeeder extends Seeder
             return;
         }
 
-        $hasOrderId = Schema::hasColumn('product_keys', 'order_id');
+        $hasOrderId    = Schema::hasColumn('product_keys', 'order_id');
+        $hasReservedId = Schema::hasColumn('product_keys', 'reserved_for_order_id');
 
-        $rows = [
-            ['id' => 1, 'product_id' => 1, 'key_code' => 'STM-1234-ABCD-5678', 'status' => 'available'],
-            ['id' => 2, 'product_id' => 1, 'key_code' => 'STM-9876-WXYZ-1234', 'status' => 'sold'],
-            ['id' => 3, 'product_id' => 3, 'key_code' => 'NF-AAAA-BBBB-CCCC', 'status' => 'available'],
-            ['id' => 4, 'product_id' => 4, 'key_code' => 'SPO-QWER-TYUI-OPAS', 'status' => 'sold'],
-            ['id' => 5, 'product_id' => 5, 'key_code' => 'PSN-ZZZZ-XXXX-YYYY', 'status' => 'sold'],
-            ['id' => 6, 'product_id' => 6, 'key_code' => 'VAL-1111-2222-3333', 'status' => 'available'],
-            ['id' => 7, 'product_id' => 7, 'key_code' => 'ML-9999-8888-7777', 'status' => 'available'],
-            ['id' => 8, 'product_id' => 8, 'key_code' => 'GEN-5555-4444-3333', 'status' => 'available'],
-            ['id' => 9, 'product_id' => 9, 'key_code' => 'DIS-0000-1111-2222', 'status' => 'available'],
-            ['id' => 10, 'product_id' => 10, 'key_code' => 'XBX-ABAB-CDCD-EFEF', 'status' => 'available'],
-        ];
+        // Voucher-type products only — direct_topup products (6, 7, 8) use Player ID, not keys
+        $voucherProductIds = [1, 2, 3, 4, 5, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28];
 
-        if ($hasOrderId) {
-            $rows = array_map(function (array $row) {
-                $row['order_id'] = null;
+        $rows  = [];
+        $keyId = 1;
 
-                return $row;
-            }, $rows);
+        foreach ($voucherProductIds as $productId) {
+            for ($seq = 1; $seq <= 30; $seq++) {
+                $hash = strtoupper(substr(md5("p{$productId}-k{$seq}"), 0, 12));
+                $keyCode = sprintf('P%03d-%s-%s-%s', $productId,
+                    substr($hash, 0, 4), substr($hash, 4, 4), substr($hash, 8, 4));
+
+                $row = [
+                    'id'         => $keyId++,
+                    'product_id' => $productId,
+                    'key_code'   => $keyCode,
+                    'status'     => 'available',
+                ];
+
+                if ($hasOrderId) {
+                    $row['order_id'] = null;
+                }
+                if ($hasReservedId) {
+                    $row['reserved_for_order_id'] = null;
+                }
+
+                $rows[] = $row;
+            }
         }
 
         $updateColumns = ['product_id', 'key_code', 'status'];
         if ($hasOrderId) {
             $updateColumns[] = 'order_id';
         }
+        if ($hasReservedId) {
+            $updateColumns[] = 'reserved_for_order_id';
+        }
 
-        DB::table('product_keys')->upsert($rows, ['id'], $updateColumns);
-
-        if ($hasOrderId) {
-            if (DB::table('orders')->where('id', 1)->exists()) {
-                DB::table('product_keys')->where('id', 2)->update(['order_id' => 1]);
-            }
-            if (DB::table('orders')->where('id', 3)->exists()) {
-                DB::table('product_keys')->where('id', 4)->update(['order_id' => 3]);
-            }
+        foreach (array_chunk($rows, 100) as $chunk) {
+            DB::table('product_keys')->upsert($chunk, ['id'], $updateColumns);
         }
     }
 
