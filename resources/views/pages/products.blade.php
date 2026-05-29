@@ -83,64 +83,6 @@
             {{-- Reserved for the "Popular" feature. --}}
         </section>
 
-        {{-- ── Split Row: Game Top-Ups | Vouchers & Gift Cards ───── --}}
-        <div class="hub-split">
-            <template x-for="group in splitGroups" :key="group.key">
-                <section class="hub-pane">
-                    <div class="section-bar">
-                        <span class="section-title">
-                            <span class="cat-emoji" x-text="group.emoji"></span>
-                            <span x-text="group.label"></span>
-                        </span>
-                        <div class="section-right">
-                            <button class="section-viewall" type="button"
-                                    @click="viewGroup(group.key)">VIEW ALL →</button>
-                        </div>
-                    </div>
-                    <div class="brand-grid">
-                        <template x-for="tile in tilesFor(group)" :key="tile.key">
-                            <button class="brand-tile" type="button"
-                                    @click="onTileClick(tile)">
-                                <div class="brand-img-wrap">
-                                    <img :src="tile.image" alt="steam-wallet.png" class="brand-img">
-                                </div>
-                                <span class="brand-name" x-text="tile.name"></span>
-                                <span class="brand-count" x-show="tile.meta" x-text="tile.meta"></span>
-                            </button>
-                        </template>
-                    </div>
-                </section>
-            </template>
-        </div>
-
-        {{-- ── Full Rows: Subscriptions, then Game Keys ──────────── --}}
-        <template x-for="group in fullGroups" :key="group.key">
-            <section class="brand-section">
-                <div class="section-bar">
-                    <span class="section-title">
-                        <span class="cat-emoji" x-text="group.emoji"></span>
-                        <span x-text="group.label"></span>
-                    </span>
-                    <div class="section-right">
-                        <button class="section-viewall" type="button"
-                                @click="viewGroup(group.key)">VIEW ALL →</button>
-                    </div>
-                </div>
-                <div class="brand-grid">
-                    <template x-for="tile in tilesFor(group)" :key="tile.key">
-                        <button class="brand-tile" type="button"
-                                @click="onTileClick(tile)">
-                            <div class="brand-img-wrap">
-                                <img :src="tile.image" alt="steam-wallet.png" class="brand-img">
-                            </div>
-                            <span class="brand-name" x-text="tile.name"></span>
-                            <span class="brand-count" x-show="tile.meta" x-text="tile.meta"></span>
-                        </button>
-                    </template>
-                </div>
-            </section>
-        </template>
-
         {{-- ════════════════════════════════════════════════════════
              FULL CATALOG (merged from the old All Products page).
              VIEW ALL / brand tiles above filter and scroll to here.
@@ -158,90 +100,95 @@
                 <p class="page-sub">SEARCH, FILTER, AND BUY THE FULL RIDLY CATALOG</p>
             </div>
 
-            {{-- ── Search Bar ──────────────────────────────────────── --}}
-            <div class="search-wrap">
-                <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16"
-                     viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
-                     stroke-linecap="square" stroke-linejoin="miter">
-                    <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
-                </svg>
-                <input type="text"
-                       x-model="search"
-                       placeholder="SEARCH PRODUCTS..."
-                       class="px-search">
-            </div>
-
-            {{-- ── Two-column: filter rail (left) + results (right) ── --}}
-            <div class="catalog-layout">
-
-                {{-- Left: category filter buttons --}}
-                <aside class="filter-rail">
-                    <span class="filter-rail-label">CATEGORY</span>
-                    <template x-for="cat in categories" :key="cat">
+            {{-- ── Sticky Header: Search + Horizontal Categories ── --}}
+            <div class="sticky z-40 bg-background/90 backdrop-blur-xl pt-4 pb-4 border-b border-border shadow-sm mb-8 -mx-4 px-4 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8 transition-all" style="top: 56px;">
+                <div class="search-wrap mb-4" style="margin-bottom: 16px;">
+                    <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+                         viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                         stroke-linecap="square" stroke-linejoin="miter">
+                        <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
+                    </svg>
+                    <input type="text"
+                           x-model="search"
+                           placeholder="SEARCH PRODUCTS..."
+                           class="w-full bg-card border-2 border-border rounded-xl px-12 py-3.5 text-sm font-bold text-foreground outline-none focus:border-primary focus:ring-4 focus:ring-primary/20 transition-all shadow-sm">
+                </div>
+                
+                <div class="flex gap-3 overflow-x-auto scrollbar-hide py-1">
+                    <button @click="setFilter('All')"
+                            :class="activeFilter === 'All' ? 'bg-primary text-primary-foreground border-primary' : 'bg-card text-muted-foreground border-border hover:border-primary/50 hover:text-primary'"
+                            class="whitespace-nowrap px-6 py-2.5 rounded-xl font-black text-[10px] tracking-widest border-2 shadow-sm transition-all flex-shrink-0">
+                        ALL
+                    </button>
+                    <template x-for="cat in categories.filter(c => c !== 'All')" :key="cat">
                         <button @click="setFilter(cat)"
-                                :class="activeFilter === cat ? 'px-tab-active' : 'px-tab-inactive'"
-                                class="px-tab filter-rail-btn"
+                                :class="activeFilter === cat ? 'bg-primary text-primary-foreground border-primary' : 'bg-card text-muted-foreground border-border hover:border-primary/50 hover:text-primary'"
+                                class="whitespace-nowrap px-6 py-2.5 rounded-xl font-black text-[10px] tracking-widest border-2 shadow-sm transition-all flex-shrink-0"
                                 x-text="cat">
                         </button>
                     </template>
-                </aside>
+                </div>
+            </div>
 
-                {{-- Right: brand grid + product groups --}}
-                <div class="catalog-main">
+            {{-- ── Full Width Main Catalog ── --}}
+            <div class="w-full">
 
-                    {{-- Browse By Brand --}}
-                    <section class="brand-section" x-show="brands.length > 0">
-                        <div class="section-bar">
-                            <span class="section-title">▣ BROWSE BY BRAND</span>
-                            <div class="section-right">
-                                <span class="section-meta"
-                                      x-text="brands.length + ' BRAND' + (brands.length !== 1 ? 'S' : '')"></span>
-                                <button class="section-viewall" type="button"
-                                        @click="scrollToProducts()">↓ PRODUCTS</button>
-                            </div>
-                        </div>
-
-                        <div class="brand-grid">
-                            <template x-for="brand in brands" :key="brand.name">
-                                <button class="brand-tile"
-                                        :class="selectedBrand === brand.name ? 'active' : (selectedBrand ? 'faded' : '')"
-                                        @click="selectBrand(brand.name)"
-                                        type="button">
-                                    <div class="brand-img-wrap">
-                                        <img :src="brand.image" alt="steam-wallet.png" class="brand-img">
-                                    </div>
-                                    <span class="brand-name" x-text="brand.name"></span>
-                                    <span class="brand-count"
-                                          x-show="!selectedBrand || selectedBrand === brand.name"
-                                          x-text="brand.count + ' ITEM' + (brand.count !== 1 ? 'S' : '')"></span>
-                                </button>
+                {{-- Browse By Brand (3D Coverflow) --}}
+                <div x-show="brands.length > 0" class="mb-2">
+                    <div x-data="brandSlider()" x-init="initSlider()" class="relative w-full py-2" style="perspective: 1200px;">
+                        <div x-ref="slider" class="flex overflow-x-auto snap-x snap-mandatory scrollbar-hide py-4 px-[calc(50%-6rem)] sm:px-[calc(50%-7rem)] items-center" 
+                             style="scroll-behavior: smooth; cursor: grab;"
+                             @mousedown="startDrag" @mouseleave="endDrag" @mouseup="endDrag" @mousemove="doDrag"
+                             @touchstart="startDrag" @touchend="endDrag" @touchmove="doDrag">
+                            <template x-for="(brand, index) in brands" :key="brand.name">
+                                <div class="snap-center shrink-0 w-48 sm:w-56 transition-all duration-300 ease-out cursor-pointer group relative mx-[-1rem] sm:mx-[-1.5rem]"
+                                     @click="if(!isDragging) { scrollTo(index); $nextTick(() => selectBrand(brand.name)); }"
+                                     :style="getCardStyle(index)">
+                                     
+                                     <div class="flex flex-col bg-card shadow-2xl rounded-xl h-full transition-all duration-300 border-2 pointer-events-none select-none overflow-hidden"
+                                          :class="selectedBrand === brand.name ? 'border-primary ring-4 ring-primary/20' : 'border-border'">
+                                         
+                                         {{-- Full Frame Thumbnail Area --}}
+                                         <div class="w-full aspect-[4/3] flex items-center justify-center p-4 bg-gradient-to-br from-slate-800 to-slate-950 dark:from-[#0a1020] dark:to-[#040812]">
+                                             <img :src="brand.image" draggable="false" class="w-3/4 h-3/4 object-contain drop-shadow-xl transition-transform duration-500 group-hover:scale-110">
+                                         </div>
+                                         
+                                         {{-- Text Area Below --}}
+                                         <div class="flex flex-col items-center p-3 bg-card border-t border-border/50">
+                                             <span class="text-xs font-black uppercase tracking-widest text-foreground text-center" x-text="brand.name"></span>
+                                             <span class="text-[9px] font-bold text-muted-foreground mt-1 tracking-widest" x-text="brand.count + ' ITEM' + (brand.count !== 1 ? 'S' : '')"></span>
+                                         </div>
+                                     
+                                     </div>
+                                </div>
                             </template>
                         </div>
-                    </section>
+                    </div>
+                </div>
 
-                    {{-- Sentinel — selectBrand() and the ↓ button scroll here --}}
-                    <div id="product-list" style="scroll-margin-top: 80px;"></div>
+                {{-- Sentinel — selectBrand() and the ↓ button scroll here --}}
+                <div id="product-list" style="scroll-margin-top: 140px;"></div>
 
-                    {{-- Product Groups (catalog OR selected brand variants) --}}
-                    <template x-for="group in displayGroups" :key="group.key">
-                        <section class="products-section">
+                {{-- Product Groups (catalog OR selected brand variants) --}}
+                <template x-for="group in displayGroups" :key="group.key">
+                    <section class="products-section">
 
-                            <div class="section-bar">
-                                <span class="section-title">
-                                    <span class="cat-emoji" x-show="group.emoji" x-text="group.emoji"></span>
-                                    <span x-text="(group.isBrand ? '▣ ' : '') + group.label"></span>
-                                </span>
-                                <div class="section-right">
-                                    <span class="section-meta"
-                                          x-text="group.products.length + ' ITEM' + (group.products.length !== 1 ? 'S' : '')"></span>
-                                    <button x-show="group.isBrand"
-                                            class="clear-brand-btn"
-                                            @click="clearBrand()"
-                                            type="button">✕ CLEAR</button>
-                                </div>
+                        <div class="section-bar">
+                            <span class="section-title">
+                                <span class="cat-emoji" x-show="group.emoji" x-text="group.emoji"></span>
+                                <span x-text="(group.isBrand ? '▣ ' : '') + group.label"></span>
+                            </span>
+                            <div class="section-right">
+                                <span class="section-meta"
+                                      x-text="group.products.length + ' ITEM' + (group.products.length !== 1 ? 'S' : '')"></span>
+                                <button x-show="group.isBrand"
+                                        class="clear-brand-btn"
+                                        @click="clearBrand()"
+                                        type="button">✕ CLEAR</button>
                             </div>
+                        </div>
 
-                            <div class="product-grid">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 pb-8">
                                 <template x-for="product in group.products" :key="product.id">
                                     <div class="product-card px-border-card"
                                          :class="!product.in_stock ? 'is-out-of-stock' : ''"
@@ -315,11 +262,10 @@
                         <p class="empty-sub">TRY A DIFFERENT SEARCH TERM OR CATEGORY</p>
                     </div>
 
-                </div>{{-- /catalog-main --}}
-            </div>{{-- /catalog-layout --}}
-        </div>{{-- /catalog-merged --}}
+                </div>{{-- /w-full --}}
+            </div>{{-- /catalog-merged --}}
 
-    </div>{{-- /page-inner --}}
+        </div>{{-- /page-inner --}}
 
     {{-- ── Buy Modal ──────────────────────────────────────────── --}}
     <div x-show="showCartModal"
@@ -632,7 +578,7 @@ function ridlyStore(initialProducts, initialFavorites, isAuthenticated, csrfToke
                 }
                 map[name].count++;
             }
-            return Object.values(map);
+            return Object.values(map).sort((a, b) => a.name.localeCompare(b.name));
         },
 
         get displayGroups() {
@@ -829,6 +775,75 @@ function ridlyStore(initialProducts, initialFavorites, isAuthenticated, csrfToke
                 window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: 'Network error.', type: 'error' } }));
             }
         },
+    };
+}
+
+function brandSlider() {
+    return {
+        activeIdx: 0,
+        isDown: false,
+        startX: 0,
+        scrollLeft: 0,
+        isDragging: false,
+        initSlider() {
+            const el = this.$refs.slider;
+            el.addEventListener("scroll", () => { this.calcActive(); });
+            this.$nextTick(() => this.calcActive());
+        },
+        calcActive() {
+            const el = this.$refs.slider;
+            const center = el.scrollLeft + (el.clientWidth / 2);
+            let closest = 0;
+            let minDiff = Infinity;
+            const cards = el.querySelectorAll(".snap-center");
+            cards.forEach((card, i) => {
+                const cc = card.offsetLeft + (card.offsetWidth / 2);
+                const d = Math.abs(center - cc);
+                if (d < minDiff) { minDiff = d; closest = i; }
+            });
+            this.activeIdx = closest;
+        },
+        scrollTo(index) {
+            const el = this.$refs.slider;
+            const cards = el.querySelectorAll(".snap-center");
+            const child = cards[index];
+            if (!child) return;
+            el.scrollTo({ left: child.offsetLeft - (el.clientWidth / 2) + (child.offsetWidth / 2), behavior: "smooth" });
+            this.activeIdx = index;
+        },
+        startDrag(e) {
+            this.isDown = true;
+            this.isDragging = false;
+            const pageX = e.pageX || (e.touches && e.touches[0].pageX);
+            this.startX = pageX - this.$refs.slider.getBoundingClientRect().left;
+            this.scrollLeft = this.$refs.slider.scrollLeft;
+        },
+        endDrag() {
+            this.isDown = false;
+            setTimeout(() => { this.isDragging = false; }, 50);
+        },
+        doDrag(e) {
+            if (!this.isDown) return;
+            e.preventDefault();
+            this.isDragging = true;
+            const pageX = e.pageX || (e.touches && e.touches[0].pageX);
+            const x = pageX - this.$refs.slider.getBoundingClientRect().left;
+            this.$refs.slider.scrollLeft = this.scrollLeft - (x - this.startX) * 1.5;
+        },
+        getCardStyle(index) {
+            const diff = Math.abs(this.activeIdx - index);
+            const isCenter = diff === 0;
+            const direction = Math.sign(index - this.activeIdx);
+            const zIndex = 50 - diff;
+            
+            // Pengaturan 3D
+            const scale = Math.max(0.65, 1 - (diff * 0.1)); // Lebih landai mengecilnya
+            const rotateY = isCenter ? 0 : direction * -10; // Sedikit diputar ke tengah
+            const translateZ = isCenter ? "0px" : (-40 * diff) + "px"; // Mundurnya tidak terlalu jauh
+            
+            // Note: filter brightness 100% agar tidak gelap
+            return `z-index:${zIndex};transform:perspective(1200px) translateZ(${translateZ}) rotateY(${rotateY}deg) scale(${scale});`;
+        }
     };
 }
 </script>
