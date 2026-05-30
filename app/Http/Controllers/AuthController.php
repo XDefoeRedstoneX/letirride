@@ -7,9 +7,9 @@ use App\Services\ReferralService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
+use Laravel\Socialite\Facades\Socialite;
 
 class AuthController extends Controller
 {
@@ -200,6 +200,43 @@ class AuthController extends Controller
     /**
      * Delete the authenticated user's account after password verification.
      */
+    public function googleRedirect()
+    {
+        return Socialite::driver('google')->redirect();
+    }
+
+    public function googleCallback(Request $request)
+    {
+        if ($request->has('error')) {
+            return redirect()->route('home');
+        }
+
+        $googleUser = Socialite::driver('google')->user();
+
+        $user = User::where('google_id', $googleUser->getId())->first()
+            ?? User::where('email', $googleUser->getEmail())->first();
+
+        if ($user) {
+            if (! $user->google_id) {
+                $user->update(['google_id' => $googleUser->getId()]);
+            }
+        } else {
+            $user = User::create([
+                'name' => $googleUser->getName(),
+                'email' => $googleUser->getEmail(),
+                'google_id' => $googleUser->getId(),
+                'password' => null,
+                'referral_code' => strtoupper(Str::random(8)),
+            ]);
+        }
+
+        Auth::login($user, remember: true);
+
+        return redirect()->intended(
+            $user->isAdmin() ? route('admin.dashboard') : route('home')
+        );
+    }
+
     public function deleteAccount(Request $request)
     {
         $request->validate([

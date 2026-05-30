@@ -29,7 +29,7 @@ class DatabaseSeeder extends Seeder
 
         $this->seedCategories();
         $this->seedSubcategories();
-        $this->seedProducts();
+        $this->seedProducts();;
         $this->seedProductKeys();
         $this->seedDiscountTypes();
         $this->seedUserDiscounts();

@@ -30,6 +30,8 @@ Route::get('/', [StoreController::class, 'showStore'])->name('home');
 Route::redirect('/all-products', '/')->name('all-products');
 Route::post('/login', [AuthController::class, 'logAuth'])->name('logAuth');
 Route::post('/register', [AuthController::class, 'regAuth'])->name('regAuth');
+Route::get('/auth/google', [AuthController::class, 'googleRedirect'])->name('auth.google');
+Route::get('/auth/google/callback', [AuthController::class, 'googleCallback'])->name('auth.google.callback');
 
 // Guest-accessible pages
 Route::get('/point-shop', [PointController::class, 'index'])->name('point-shop');
