@@ -10,8 +10,10 @@ use App\Http\Controllers\Admin\ProductController as AdminProductController;
 use App\Http\Controllers\Admin\ReferralController as AdminReferralController;
 use App\Http\Controllers\Admin\TicketController as AdminTicketController;
 use App\Http\Controllers\Admin\UserController as AdminUserController;
+use App\Http\Controllers\Admin\FaqController as AdminFaqController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CartController;
+use App\Http\Controllers\FaqController;
 use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\FavoriteController;
 use App\Http\Controllers\GachaBoosterController;
@@ -146,13 +148,18 @@ Route::prefix('admin')
 
         // UI-only pages (static views with dummy data)
         Route::get('/point-shop', fn () => view('admin.point-shop'))->name('admin.point-shop');
-        Route::get('/faqs', fn () => view('admin.faqs'))->name('admin.faqs');
+
+        // FAQs (DB-backed CRUD)
+        Route::get('/faqs', [AdminFaqController::class, 'index'])->name('admin.faqs');
+        Route::post('/faqs', [AdminFaqController::class, 'store'])->name('admin.faqs.store');
+        Route::patch('/faqs/{faq}', [AdminFaqController::class, 'update'])->name('admin.faqs.update');
+        Route::delete('/faqs/{faq}', [AdminFaqController::class, 'destroy'])->name('admin.faqs.destroy');
     });
 
 // Static pages (no auth required)
 Route::get('/terms', fn () => view('pages.terms-of-service'))->name('terms-of-service');
 Route::get('/privacy', fn () => view('pages.privacy-policy'))->name('privacy-policy');
 Route::get('/about', fn () => view('pages.about'))->name('about');
-Route::get('/faq', fn () => view('pages.faq'))->name('faq');
+Route::get('/faq', [FaqController::class, 'index'])->name('faq');
 Route::get('/contact', fn () => view('pages.contact'))->name('contact');
 Route::get('/tickets', fn () => view('pages.tickets'))->name('tickets');

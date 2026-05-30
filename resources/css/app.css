@@ -1017,7 +1017,7 @@ button,
 .px-frame {
   display: grid;
   grid-template-columns: var(--frame-size) 1fr var(--frame-size);
-  grid-template-rows: var(--frame-size) auto var(--frame-size);
+  grid-template-rows: var(--frame-size) minmax(0, 1fr) var(--frame-size);
   border: none !important;
   box-shadow: none !important;
   background: transparent;
@@ -1103,6 +1103,8 @@ button,
   grid-row: 2;
   background: var(--dark-card, #08152a);
   min-width: 0;
+  overflow-y: auto;
+  min-height: 0;
 }
 
 /* ── Coverflow Slider ─────────────────────────────────────────── */
