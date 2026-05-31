@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\GachaHistory;
 use App\Models\GachaPayment;
 use App\Models\User;
+use App\Services\GachaIconResolver;
 use App\Services\GachaRollService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
@@ -165,6 +166,7 @@ class GachaPaymentController extends Controller
                     'rarity' => $history->gachaPool->rarity_item,
                     'reward_type' => $history->gachaPool->reward_type,
                     'points_amount' => $history->gachaPool->points_amount,
+                    'icon_key' => GachaIconResolver::iconKeyFor($history->gachaPool),
                     'image' => GachaController::resolveImageFor($history->gachaPool),
                     'discount_name' => $history->gachaPool->discountType?->name ?? '',
                 ];

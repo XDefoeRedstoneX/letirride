@@ -6,6 +6,7 @@ use App\Models\GachaBooster;
 use App\Models\GachaHistory;
 use App\Models\GachaPool;
 use App\Models\GachaRarityChance;
+use App\Services\GachaIconResolver;
 use App\Services\GachaRollService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -50,6 +51,7 @@ class GachaController extends Controller
                 'points_amount' => $pool->points_amount,
                 'rate' => $perPrize,
                 'discount_name' => $pool->discountType?->name ?? '',
+                'icon_key' => GachaIconResolver::iconKeyFor($pool),
                 'image' => $this->resolveImage($pool),
             ];
         });
@@ -169,6 +171,7 @@ class GachaController extends Controller
                 'rarity' => $prize->rarity_item,
                 'reward_type' => $prize->reward_type,
                 'points_amount' => $prize->points_amount,
+                'icon_key' => GachaIconResolver::iconKeyFor($prize),
                 'image' => $this->resolveImage($prize),
                 'discount_name' => $prize->discountType?->name ?? '',
             ],
@@ -201,26 +204,16 @@ class GachaController extends Controller
     }
 
     /**
-     * Per-prize `image_path` wins, else rarity fallback, else the global placeholder.
+     * Custom image override → explicit catalog coin → reward/subcategory
+     * auto-pick → generic coin. Delegates to {@see GachaIconResolver}.
      */
     public static function resolveImageFor(GachaPool $prize): string
     {
-        if ($prize->image_path) {
-            return str_starts_with($prize->image_path, '/')
-                ? $prize->image_path
-                : '/gacha-assets/' . $prize->image_path;
-        }
-
-        return match ($prize->rarity_item) {
-            'grand_prize', 'legendary' => '/gacha-assets/jackpot.svg',
-            'epic', 'rare' => '/gacha-assets/voucher.svg',
-            'uncommon' => '/gacha-assets/points.svg',
-            default => '/alt/logo.png',
-        };
+        return GachaIconResolver::resolve($prize);
     }
 
     private function resolveImage(GachaPool $prize): string
     {
-        return self::resolveImageFor($prize);
+        return GachaIconResolver::resolve($prize);
     }
 }

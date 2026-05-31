@@ -8,6 +8,10 @@
     showEditModal: false,
     showDeleteModal: false,
     pool: {},
+    icons: {{ Illuminate\Support\Js::from($icons->pluck('image_path', 'key')) }},
+    rarityColors: { common: '#9ca3af', uncommon: '#22c55e', rare: '#3b82f6', epic: '#a855f7', legendary: '#f59e0b', grand_prize: '#f43f5e' },
+    iconSrc(key) { return this.icons[key] || '/gacha-icons/coin.svg'; },
+    rarityColor(r) { return this.rarityColors[r] || '#9ca3af'; },
     openAdd() {
         this.showAddModal = true;
     },
@@ -107,6 +111,7 @@
                 <thead>
                     <tr class="bg-foreground/5 text-[9px] font-black uppercase tracking-widest text-muted-foreground">
                         <th class="px-5 py-3">ID</th>
+                        <th class="px-5 py-3">Coin</th>
                         <th class="px-5 py-3">Prize</th>
                         <th class="px-5 py-3">Discount</th>
                         <th class="px-5 py-3">Rarity</th>
@@ -117,6 +122,14 @@
                     @foreach($pools as $p)
                     <tr class="hover:bg-foreground/5">
                         <td class="px-5 py-3 text-xs font-mono font-bold text-muted-foreground">#{{ $p->id }}</td>
+                        <td class="px-5 py-3">
+                            @include('partials.gacha-icon-tile', [
+                                'iconSrc' => \App\Services\GachaIconResolver::resolve($p),
+                                'rarity' => $p->rarity_item,
+                                'label' => $p->prize_name,
+                                'size' => 40,
+                            ])
+                        </td>
                         <td class="px-5 py-3 text-xs font-bold">{{ $p->prize_name }}</td>
                         <td class="px-5 py-3 text-xs text-muted-foreground">{{ $p->discountType?->name ?? '-' }}</td>
                         <td class="px-5 py-3">
@@ -146,7 +159,8 @@
                     </div>
                     <button @click="showAddModal = false" class="p-2 hover:bg-foreground/5 rounded-xl text-muted-foreground hover:text-foreground transition-colors"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="square"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>
                 </div>
-                <form method="POST" action="{{ route('admin.gacha.store') }}" class="flex flex-col gap-4">
+                <form method="POST" action="{{ route('admin.gacha.store') }}" class="flex flex-col gap-4"
+                      x-data="{ formIconKey: '', formRarity: 'common', showAdvanced: false }">
                     @csrf
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
@@ -164,7 +178,7 @@
                         </div>
                         <div class="sm:col-span-2">
                             <label class="text-[10px] font-black uppercase tracking-widest text-foreground/70 dark:text-muted-foreground mb-2 block">RARITY <span class="req">*</span></label>
-                            <select name="rarity_item" required class="w-full px-4 py-3  bg-white dark:bg-[#0f172a]  border-2 border-border/50 rounded-xl text-xs font-bold text-foreground outline-none focus:border-primary focus:ring-4 focus:ring-primary/20 placeholder:text-muted-foreground/50 transition-all">
+                            <select name="rarity_item" x-model="formRarity" required class="w-full px-4 py-3  bg-white dark:bg-[#0f172a]  border-2 border-border/50 rounded-xl text-xs font-bold text-foreground outline-none focus:border-primary focus:ring-4 focus:ring-primary/20 placeholder:text-muted-foreground/50 transition-all">
                                 <option value="common">Common</option>
                                 <option value="uncommon">Uncommon</option>
                                 <option value="rare">Rare</option>
@@ -173,6 +187,32 @@
                                 <option value="grand_prize">Grand Prize</option>
                             </select>
                             <p class="text-[10px] text-muted-foreground mt-2">Win chance is auto-derived from the rarity's base chance, split evenly across all prizes in that rarity.</p>
+                        </div>
+
+                        {{-- Icon picker + live "mixmatcher" preview --}}
+                        <div class="sm:col-span-2 flex items-end gap-4">
+                            <div class="flex-1">
+                                <label class="text-[10px] font-black uppercase tracking-widest text-foreground/70 dark:text-muted-foreground mb-2 block">ICON COIN</label>
+                                <select name="icon_key" x-model="formIconKey" class="w-full px-4 py-3 bg-white dark:bg-[#0f172a] border-2 border-border/50 rounded-xl text-xs font-bold text-foreground outline-none focus:border-primary focus:ring-4 focus:ring-primary/20 transition-all">
+                                    @include('admin._gacha-icon-options')
+                                </select>
+                                <p class="text-[10px] text-muted-foreground mt-2">Pick a coin, or leave on Auto to pick by reward type / targeted brand.</p>
+                            </div>
+                            <span class="gacha-icon-tile" :style="'--rarity-color:' + rarityColor(formRarity) + '; width:56px; height:56px;'">
+                                <img :src="iconSrc(formIconKey)" class="gacha-icon-tile-img pixel-render" alt="" />
+                                <span class="gacha-card-rarity-wedge" aria-hidden="true"></span>
+                            </span>
+                        </div>
+
+                        {{-- Advanced: full custom image override --}}
+                        <div class="sm:col-span-2">
+                            <button type="button" @click="showAdvanced = !showAdvanced" class="text-[10px] font-black uppercase tracking-widest text-muted-foreground hover:text-primary transition-colors">
+                                <span x-text="showAdvanced ? '▾' : '▸'"></span> ADVANCED: CUSTOM IMAGE
+                            </button>
+                            <div x-show="showAdvanced" x-cloak class="mt-2">
+                                <input type="text" name="image_path" class="w-full px-4 py-3 bg-foreground/5 border-2 border-border/50 rounded-xl text-xs font-mono text-foreground outline-none focus:border-primary focus:ring-4 focus:ring-primary/20 transition-all" placeholder="/gacha-icons/steam.svg or /storage/...">
+                                <p class="text-[10px] text-muted-foreground mt-1">Overrides the coin above entirely. For one-off hero art.</p>
+                            </div>
                         </div>
                     </div>
                     <div class="flex justify-end gap-3 mt-6 pt-5 border-t border-border/50">
@@ -195,7 +235,8 @@
                     </div>
                     <button @click="showEditModal = false" class="p-2 hover:bg-foreground/5 rounded-xl text-muted-foreground hover:text-foreground transition-colors"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="square"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>
                 </div>
-                <form method="POST" :action="'{{ route('admin.gacha') }}/' + pool.id" class="flex flex-col gap-4">
+                <form method="POST" :action="'{{ route('admin.gacha') }}/' + pool.id" class="flex flex-col gap-4"
+                      x-data="{ showAdvanced: false }">
                     @csrf @method('PATCH')
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
@@ -221,6 +262,31 @@
                                 <option value="legendary">Legendary</option>
                                 <option value="grand_prize">Grand Prize</option>
                             </select>
+                        </div>
+
+                        {{-- Icon picker + live "mixmatcher" preview --}}
+                        <div class="sm:col-span-2 flex items-end gap-4">
+                            <div class="flex-1">
+                                <label class="text-[10px] font-black uppercase tracking-widest text-foreground/70 dark:text-muted-foreground mb-2 block">ICON COIN</label>
+                                <select name="icon_key" x-model="pool.icon_key" class="w-full px-4 py-3 bg-white dark:bg-[#0f172a] border-2 border-border/50 rounded-xl text-xs font-bold text-foreground outline-none focus:border-primary focus:ring-4 focus:ring-primary/20 transition-all">
+                                    @include('admin._gacha-icon-options')
+                                </select>
+                            </div>
+                            <span class="gacha-icon-tile" :style="'--rarity-color:' + rarityColor(pool.rarity_item) + '; width:56px; height:56px;'">
+                                <img :src="iconSrc(pool.icon_key)" class="gacha-icon-tile-img pixel-render" alt="" />
+                                <span class="gacha-card-rarity-wedge" aria-hidden="true"></span>
+                            </span>
+                        </div>
+
+                        {{-- Advanced: full custom image override --}}
+                        <div class="sm:col-span-2">
+                            <button type="button" @click="showAdvanced = !showAdvanced" class="text-[10px] font-black uppercase tracking-widest text-muted-foreground hover:text-primary transition-colors">
+                                <span x-text="showAdvanced ? '▾' : '▸'"></span> ADVANCED: CUSTOM IMAGE
+                            </button>
+                            <div x-show="showAdvanced || (pool.image_path && pool.image_path.length)" x-cloak class="mt-2">
+                                <input type="text" name="image_path" x-model="pool.image_path" class="w-full px-4 py-3 bg-foreground/5 border-2 border-border/50 rounded-xl text-xs font-mono text-foreground outline-none focus:border-primary focus:ring-4 focus:ring-primary/20 transition-all" placeholder="/gacha-icons/steam.svg or /storage/...">
+                                <p class="text-[10px] text-muted-foreground mt-1">Overrides the coin above entirely. For one-off hero art.</p>
+                            </div>
                         </div>
                     </div>
                     <div class="flex justify-end gap-3 mt-6 pt-5 border-t border-border/50">
