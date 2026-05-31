@@ -42,9 +42,9 @@
                                     <div style="margin-top:8px;padding:14px;background:rgba(245,158,11,0.08);border:2px solid rgba(245,158,11,0.2);">
                                         <div style="display:flex;align-items:center;gap:6px;color:var(--gold);margin-bottom:10px;"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="square"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" x2="3" y1="12" y2="12"/></svg><span style="font-family:var(--px);font-size:6px;letter-spacing:0.1em;">DIRECT TOP-UP — ENTER CREDENTIALS</span></div>
                                         <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                                            <input type="text" placeholder="Player ID *" :value="topupCredentials[item.product_id]?.player_id || ''" @input="topupCredentials[item.product_id]={...(topupCredentials[item.product_id]||{}),player_id:$event.target.value}" class="px-input" style="padding:8px 12px;font-size:12px;" />
-                                            <input type="text" placeholder="Zone ID" :value="topupCredentials[item.product_id]?.zone_id || ''" @input="topupCredentials[item.product_id]={...(topupCredentials[item.product_id]||{}),zone_id:$event.target.value}" class="px-input" style="padding:8px 12px;font-size:12px;" />
-                                            <input type="text" placeholder="Server ID" :value="topupCredentials[item.product_id]?.server_id || ''" @input="topupCredentials[item.product_id]={...(topupCredentials[item.product_id]||{}),server_id:$event.target.value}" class="px-input" style="padding:8px 12px;font-size:12px;" />
+                                            <input type="text" placeholder="Player ID *" :value="topupCredentials[item.id]?.player_id || ''" @input="setCredential(item.id, 'player_id', $event.target.value)" class="px-input" style="padding:8px 12px;font-size:12px;" />
+                                            <input type="text" placeholder="Zone ID" :value="topupCredentials[item.id]?.zone_id || ''" @input="setCredential(item.id, 'zone_id', $event.target.value)" class="px-input" style="padding:8px 12px;font-size:12px;" />
+                                            <input type="text" placeholder="Server ID" :value="topupCredentials[item.id]?.server_id || ''" @input="setCredential(item.id, 'server_id', $event.target.value)" class="px-input" style="padding:8px 12px;font-size:12px;" />
                                         </div>
                                     </div>
                                 </template>
@@ -337,10 +337,14 @@
 
                 init() {
                     this.items.forEach(item => {
-                        if (item.product_type === 'direct_topup' && item.topup_meta) {
-                            this.topupCredentials[item.product_id] = { ...item.topup_meta };
+                        if (item.product_type === 'direct_topup') {
+                            this.topupCredentials[item.id] = item.topup_meta ? { ...item.topup_meta } : {};
                         }
                     });
+                },
+
+                setCredential(itemId, field, value) {
+                    this.topupCredentials[itemId] = { ...(this.topupCredentials[itemId] || {}), [field]: value };
                 },
 
                 get cartCategoryIds()    { return [...new Set(this.items.map(i => i.category_id))]; },
@@ -443,10 +447,29 @@
                     if (this.items.length === 0 || this.paying) return;
                     this.paying = true;
 
-                    for (const item of this.items.filter(i => i.product_type === 'direct_topup')) {
-                        const creds = this.topupCredentials[item.product_id];
+                    const topupItems = this.items.filter(i => i.product_type === 'direct_topup');
+
+                    for (const item of topupItems) {
+                        const creds = this.topupCredentials[item.id];
                         if (!creds || !creds.player_id || creds.player_id.trim() === '') {
                             window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: 'Please enter your Player ID for ' + item.name + '.', type: 'error' } }));
+                            this.paying = false;
+                            return;
+                        }
+                    }
+
+                    // Persist any credential edits made on the cart page back to the DB.
+                    if (topupItems.length > 0) {
+                        try {
+                            await Promise.all(topupItems.map(item =>
+                                fetch(`/cart/${item.id}`, {
+                                    method: 'PATCH',
+                                    headers: { 'Accept': 'application/json', 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest', 'X-CSRF-TOKEN': this.csrfToken },
+                                    body: JSON.stringify({ topup_meta: this.topupCredentials[item.id] })
+                                })
+                            ));
+                        } catch (e) {
+                            window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: 'Failed to save credentials. Please try again.', type: 'error' } }));
                             this.paying = false;
                             return;
                         }
