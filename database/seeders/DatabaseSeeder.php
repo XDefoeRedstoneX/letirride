@@ -30,7 +30,7 @@ class DatabaseSeeder extends Seeder
 
         $this->seedCategories();
         $this->seedSubcategories();
-        $this->seedProducts();;
+        $this->seedProducts();
         $this->seedProductKeys();
         $this->seedDiscountTypes();
         $this->seedUserDiscounts();
@@ -47,6 +47,7 @@ class DatabaseSeeder extends Seeder
         $this->seedCartItems($now);
         $this->seedReferrals($now);
         $this->seedReferralConfig($now);
+        $this->seedReferralTiers($now);
     }
 
     private function seedUsers($now): void
@@ -137,8 +138,8 @@ class DatabaseSeeder extends Seeder
         }
 
         DB::table('subcategories')->upsert([
-            // Games
-            ['id' => 1, 'category_id' => 1, 'name' => 'Capcom', 'slug' => 'capcom'],
+            // Games (PC game codes)
+            ['id' => 1, 'category_id' => 1, 'name' => 'PC Games', 'slug' => 'pc-games'],
 
             // Wallet Top-Ups
             ['id' => 2, 'category_id' => 2, 'name' => 'Steam', 'slug' => 'steam'],
@@ -149,12 +150,13 @@ class DatabaseSeeder extends Seeder
             ['id' => 5, 'category_id' => 3, 'name' => 'Riot Games / Valorant', 'slug' => 'riot-games-valorant'],
             ['id' => 6, 'category_id' => 3, 'name' => 'Mobile Legends', 'slug' => 'mobile-legends'],
             ['id' => 7, 'category_id' => 3, 'name' => 'Fortnite', 'slug' => 'fortnite'],
+            // Genshin's primary product is Genesis Crystals (in-game currency), not a subscription.
+            ['id' => 9, 'category_id' => 3, 'name' => 'Genshin Impact', 'slug' => 'genshin-impact'],
 
             // Gift Cards
             ['id' => 8, 'category_id' => 4, 'name' => 'Roblox', 'slug' => 'roblox'],
 
             // Subscriptions
-            ['id' => 9, 'category_id' => 5, 'name' => 'Genshin Impact', 'slug' => 'genshin-impact'],
             ['id' => 10, 'category_id' => 5, 'name' => 'Netflix', 'slug' => 'netflix'],
             ['id' => 11, 'category_id' => 5, 'name' => 'Spotify', 'slug' => 'spotify'],
             ['id' => 12, 'category_id' => 5, 'name' => 'Discord', 'slug' => 'discord'],
@@ -206,7 +208,64 @@ class DatabaseSeeder extends Seeder
             // ===== DIRECT TOP-UP products (buyer inputs Player ID) =====
             ['id' => 6, 'category_id' => 3, 'subcategory_id' => 5, 'type' => 'direct_topup', 'name' => '1000 Valorant Points', 'description' => 'Riot Games VP Ã¢â‚¬â€ requires Riot ID', 'price' => 160000.00, 'point_multiplier' => 1.00, 'is_active' => true, 'image' => 'valorant.png'],
             ['id' => 7, 'category_id' => 3, 'subcategory_id' => 6, 'type' => 'direct_topup', 'name' => '500 ML Diamonds', 'description' => 'Mobile Legends Ã¢â‚¬â€ requires Player ID & Zone ID', 'price' => 150000.00, 'point_multiplier' => 1.00, 'is_active' => true, 'image' => 'mobile-legends.png'],
-            ['id' => 8, 'category_id' => 5, 'subcategory_id' => 9, 'type' => 'direct_topup', 'name' => 'Welkin Moon', 'description' => 'Genshin Impact Ã¢â‚¬â€ requires UID', 'price' => 79000.00, 'point_multiplier' => 0.50, 'is_active' => true, 'image' => 'youtube.png'],
+            ['id' => 8, 'category_id' => 3, 'subcategory_id' => 9, 'type' => 'direct_topup', 'name' => 'Genshin Welkin Moon', 'description' => 'Genshin Impact - Blessing of the Welkin Moon, requires UID', 'price' => 79000.00, 'point_multiplier' => 0.50, 'is_active' => true, 'image' => 'google-play.png'],
+
+            // ===== EXPANDED LADDERS — more SKUs per brand =====
+            // --- Steam Wallet ---
+            ['id' => 29, 'category_id' => 2, 'subcategory_id' => 2, 'type' => 'voucher', 'name' => 'Steam Wallet Rp40.000', 'description' => 'Adds Rp40.000 to Steam', 'price' => 40000.00, 'point_multiplier' => 1.00, 'is_active' => true, 'image' => 'steam-wallet.png'],
+            ['id' => 30, 'category_id' => 2, 'subcategory_id' => 2, 'type' => 'voucher', 'name' => 'Steam Wallet Rp60.000', 'description' => 'Adds Rp60.000 to Steam', 'price' => 60000.00, 'point_multiplier' => 1.00, 'is_active' => true, 'image' => 'steam-wallet.png'],
+            ['id' => 31, 'category_id' => 2, 'subcategory_id' => 2, 'type' => 'voucher', 'name' => 'Steam Wallet Rp400.000', 'description' => 'Adds Rp400.000 to Steam', 'price' => 400000.00, 'point_multiplier' => 1.50, 'is_active' => true, 'image' => 'steam-wallet.png'],
+            // --- PlayStation / PSN ---
+            ['id' => 32, 'category_id' => 2, 'subcategory_id' => 3, 'type' => 'voucher', 'name' => 'PSN Rp100.000', 'description' => 'PS Store Credit', 'price' => 100000.00, 'point_multiplier' => 1.00, 'is_active' => true, 'image' => 'playstation.png'],
+            ['id' => 33, 'category_id' => 2, 'subcategory_id' => 3, 'type' => 'voucher', 'name' => 'PSN Rp200.000', 'description' => 'PS Store Credit', 'price' => 200000.00, 'point_multiplier' => 1.25, 'is_active' => true, 'image' => 'playstation.png'],
+            ['id' => 34, 'category_id' => 2, 'subcategory_id' => 3, 'type' => 'voucher', 'name' => 'PSN Rp750.000', 'description' => 'PS Store Credit', 'price' => 750000.00, 'point_multiplier' => 2.00, 'is_active' => true, 'image' => 'playstation.png'],
+            // --- Nintendo eShop ---
+            ['id' => 35, 'category_id' => 2, 'subcategory_id' => 4, 'type' => 'voucher', 'name' => 'Nintendo eShop $5', 'description' => '$5 Gift Card for Nintendo eShop', 'price' => 80000.00, 'point_multiplier' => 1.25, 'is_active' => true, 'image' => 'nintendo.png'],
+            ['id' => 36, 'category_id' => 2, 'subcategory_id' => 4, 'type' => 'voucher', 'name' => 'Nintendo eShop $50', 'description' => '$50 Gift Card for Nintendo eShop', 'price' => 780000.00, 'point_multiplier' => 1.50, 'is_active' => true, 'image' => 'nintendo.png'],
+            // --- Netflix ---
+            ['id' => 37, 'category_id' => 5, 'subcategory_id' => 10, 'type' => 'voucher', 'name' => 'Netflix Mobile 1 Month', 'description' => 'Mobile plan, 1 Month', 'price' => 65000.00, 'point_multiplier' => 1.00, 'is_active' => true, 'image' => 'netflix.png'],
+            ['id' => 38, 'category_id' => 5, 'subcategory_id' => 10, 'type' => 'voucher', 'name' => 'Netflix Premium 1 Month', 'description' => '4K Ultra HD, 1 Month', 'price' => 186000.00, 'point_multiplier' => 1.25, 'is_active' => true, 'image' => 'netflix.png'],
+            ['id' => 39, 'category_id' => 5, 'subcategory_id' => 10, 'type' => 'voucher', 'name' => 'Netflix Standard 3 Months', 'description' => 'Standard HD, 3 Months', 'price' => 690000.00, 'point_multiplier' => 1.50, 'is_active' => true, 'image' => 'netflix.png'],
+            // --- Spotify ---
+            ['id' => 40, 'category_id' => 5, 'subcategory_id' => 11, 'type' => 'voucher', 'name' => 'Spotify Premium 1 Month', 'description' => 'Premium Individual, 1 Month', 'price' => 65000.00, 'point_multiplier' => 1.00, 'is_active' => true, 'image' => 'spotify.png'],
+            ['id' => 41, 'category_id' => 5, 'subcategory_id' => 11, 'type' => 'voucher', 'name' => 'Spotify Premium 6 Months', 'description' => 'Premium Individual, 6 Months', 'price' => 850000.00, 'point_multiplier' => 1.50, 'is_active' => true, 'image' => 'spotify.png'],
+            ['id' => 42, 'category_id' => 5, 'subcategory_id' => 11, 'type' => 'voucher', 'name' => 'Spotify Premium 12 Months', 'description' => 'Premium Individual, 12 Months', 'price' => 1599000.00, 'point_multiplier' => 2.00, 'is_active' => true, 'image' => 'spotify.png'],
+            // --- Discord Nitro ---
+            ['id' => 43, 'category_id' => 5, 'subcategory_id' => 12, 'type' => 'voucher', 'name' => 'Discord Nitro Basic 1 Month', 'description' => 'Nitro Basic, 1 Month', 'price' => 35000.00, 'point_multiplier' => 1.00, 'is_active' => true, 'image' => 'discord.png'],
+            ['id' => 44, 'category_id' => 5, 'subcategory_id' => 12, 'type' => 'voucher', 'name' => 'Discord Nitro 1 Month', 'description' => 'Full Nitro, 1 Month', 'price' => 75000.00, 'point_multiplier' => 1.00, 'is_active' => true, 'image' => 'discord.png'],
+            // --- Xbox Game Pass ---
+            ['id' => 45, 'category_id' => 5, 'subcategory_id' => 13, 'type' => 'voucher', 'name' => 'Xbox Game Pass Ultimate 3 Months', 'description' => 'Ultimate, 3 Months', 'price' => 720000.00, 'point_multiplier' => 1.50, 'is_active' => true, 'image' => 'xbox.png'],
+            ['id' => 46, 'category_id' => 5, 'subcategory_id' => 13, 'type' => 'voucher', 'name' => 'Xbox Game Pass Ultimate 12 Months', 'description' => 'Ultimate, 12 Months', 'price' => 1990000.00, 'point_multiplier' => 2.00, 'is_active' => true, 'image' => 'xbox.png'],
+            // --- YouTube Premium ---
+            ['id' => 47, 'category_id' => 5, 'subcategory_id' => 14, 'type' => 'voucher', 'name' => 'Youtube Premium Individual 3 Months', 'description' => '3 Months Premium for 1 User', 'price' => 180000.00, 'point_multiplier' => 1.25, 'is_active' => true, 'image' => 'youtube.png'],
+            // --- Canva ---
+            ['id' => 48, 'category_id' => 5, 'subcategory_id' => 15, 'type' => 'voucher', 'name' => 'Canva Pro 12 Months', 'description' => '12 Months Pro for 1 User', 'price' => 750000.00, 'point_multiplier' => 1.50, 'is_active' => true, 'image' => 'canva.png'],
+            ['id' => 49, 'category_id' => 5, 'subcategory_id' => 15, 'type' => 'voucher', 'name' => 'Canva Teams 1 Month', 'description' => '1 Month Teams (up to 5 users)', 'price' => 150000.00, 'point_multiplier' => 1.25, 'is_active' => true, 'image' => 'canva.png'],
+            // --- ChatGPT / OpenAI ---
+            ['id' => 50, 'category_id' => 5, 'subcategory_id' => 16, 'type' => 'voucher', 'name' => 'Chatgpt Team', 'description' => '1 Month Team tier (per seat)', 'price' => 600000.00, 'point_multiplier' => 1.50, 'is_active' => true, 'image' => 'chatgpt.png'],
+            // --- Adobe ---
+            ['id' => 51, 'category_id' => 5, 'subcategory_id' => 17, 'type' => 'voucher', 'name' => 'Adobe Photography Plan', 'description' => '1 Month Photography (Lightroom + Photoshop)', 'price' => 250000.00, 'point_multiplier' => 1.25, 'is_active' => true, 'image' => 'adobe.png'],
+            ['id' => 52, 'category_id' => 5, 'subcategory_id' => 17, 'type' => 'voucher', 'name' => 'Adobe Single App', 'description' => '1 Month single Creative Cloud app', 'price' => 350000.00, 'point_multiplier' => 1.25, 'is_active' => true, 'image' => 'adobe.png'],
+            // --- Roblox ---
+            ['id' => 53, 'category_id' => 4, 'subcategory_id' => 8, 'type' => 'voucher', 'name' => 'Roblox Gift Card Rp.200000', 'description' => 'Rp.200000 Gift card for Robux', 'price' => 200000.00, 'point_multiplier' => 1.25, 'is_active' => true, 'image' => 'roblox.png'],
+            // --- PC Games ---
+            ['id' => 65, 'category_id' => 1, 'subcategory_id' => 1, 'type' => 'voucher', 'name' => 'Monster Hunter Wilds', 'description' => 'Steam code for Monster Hunter Wilds', 'price' => 800000.00, 'point_multiplier' => 1.25, 'is_active' => true, 'image' => 'steam-wallet.png'],
+            ['id' => 66, 'category_id' => 1, 'subcategory_id' => 1, 'type' => 'voucher', 'name' => 'Street Fighter 6', 'description' => 'Steam code for Street Fighter 6', 'price' => 600000.00, 'point_multiplier' => 1.25, 'is_active' => true, 'image' => 'steam-wallet.png'],
+
+            // --- Valorant Points (direct top-up) ---
+            ['id' => 54, 'category_id' => 3, 'subcategory_id' => 5, 'type' => 'direct_topup', 'name' => '475 Valorant Points', 'description' => 'Riot Games VP - requires Riot ID', 'price' => 80000.00, 'point_multiplier' => 1.00, 'is_active' => true, 'image' => 'valorant.png'],
+            ['id' => 55, 'category_id' => 3, 'subcategory_id' => 5, 'type' => 'direct_topup', 'name' => '2050 Valorant Points', 'description' => 'Riot Games VP - requires Riot ID', 'price' => 320000.00, 'point_multiplier' => 1.00, 'is_active' => true, 'image' => 'valorant.png'],
+            ['id' => 56, 'category_id' => 3, 'subcategory_id' => 5, 'type' => 'direct_topup', 'name' => '3650 Valorant Points', 'description' => 'Riot Games VP - requires Riot ID', 'price' => 550000.00, 'point_multiplier' => 1.25, 'is_active' => true, 'image' => 'valorant.png'],
+            // --- Mobile Legends Diamonds (direct top-up) ---
+            ['id' => 57, 'category_id' => 3, 'subcategory_id' => 6, 'type' => 'direct_topup', 'name' => '86 ML Diamonds', 'description' => 'Mobile Legends - requires Player ID & Zone ID', 'price' => 28000.00, 'point_multiplier' => 1.00, 'is_active' => true, 'image' => 'mobile-legends.png'],
+            ['id' => 58, 'category_id' => 3, 'subcategory_id' => 6, 'type' => 'direct_topup', 'name' => '172 ML Diamonds', 'description' => 'Mobile Legends - requires Player ID & Zone ID', 'price' => 55000.00, 'point_multiplier' => 1.00, 'is_active' => true, 'image' => 'mobile-legends.png'],
+            ['id' => 59, 'category_id' => 3, 'subcategory_id' => 6, 'type' => 'direct_topup', 'name' => '257 ML Diamonds', 'description' => 'Mobile Legends - requires Player ID & Zone ID', 'price' => 80000.00, 'point_multiplier' => 1.00, 'is_active' => true, 'image' => 'mobile-legends.png'],
+            ['id' => 60, 'category_id' => 3, 'subcategory_id' => 6, 'type' => 'direct_topup', 'name' => '706 ML Diamonds', 'description' => 'Mobile Legends - requires Player ID & Zone ID', 'price' => 200000.00, 'point_multiplier' => 1.25, 'is_active' => true, 'image' => 'mobile-legends.png'],
+            // --- Genshin Genesis Crystals (direct top-up) ---
+            ['id' => 61, 'category_id' => 3, 'subcategory_id' => 9, 'type' => 'direct_topup', 'name' => '60 Genesis Crystals', 'description' => 'Genshin Impact - requires UID', 'price' => 16000.00, 'point_multiplier' => 0.50, 'is_active' => true, 'image' => 'google-play.png'],
+            ['id' => 62, 'category_id' => 3, 'subcategory_id' => 9, 'type' => 'direct_topup', 'name' => '330 Genesis Crystals', 'description' => 'Genshin Impact - requires UID', 'price' => 80000.00, 'point_multiplier' => 0.50, 'is_active' => true, 'image' => 'google-play.png'],
+            ['id' => 63, 'category_id' => 3, 'subcategory_id' => 9, 'type' => 'direct_topup', 'name' => '980 Genesis Crystals', 'description' => 'Genshin Impact - requires UID', 'price' => 250000.00, 'point_multiplier' => 0.75, 'is_active' => true, 'image' => 'google-play.png'],
+            ['id' => 64, 'category_id' => 3, 'subcategory_id' => 9, 'type' => 'direct_topup', 'name' => '1980 Genesis Crystals', 'description' => 'Genshin Impact - requires UID', 'price' => 480000.00, 'point_multiplier' => 1.00, 'is_active' => true, 'image' => 'google-play.png'],
         ];
 
         if (! $hasType) {
@@ -226,13 +285,17 @@ class DatabaseSeeder extends Seeder
             return;
         }
 
-        $hasOrderId    = Schema::hasColumn('product_keys', 'order_id');
+        $hasOrderId = Schema::hasColumn('product_keys', 'order_id');
         $hasReservedId = Schema::hasColumn('product_keys', 'reserved_for_order_id');
 
         // Voucher-type products only Ã¢â‚¬â€ direct_topup products (6, 7, 8) use Player ID, not keys
-        $voucherProductIds = [1, 2, 3, 4, 5, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28];
+        $voucherProductIds = [
+            1, 2, 3, 4, 5, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28,
+            // Expanded-ladder voucher SKUs (direct_topup ids 54-64 still use Player ID, no keys).
+            29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 65, 66,
+        ];
 
-        $rows  = [];
+        $rows = [];
         $keyId = 1;
 
         foreach ($voucherProductIds as $productId) {
@@ -242,10 +305,10 @@ class DatabaseSeeder extends Seeder
                     substr($hash, 0, 4), substr($hash, 4, 4), substr($hash, 8, 4));
 
                 $row = [
-                    'id'         => $keyId++,
+                    'id' => $keyId++,
                     'product_id' => $productId,
-                    'key_code'   => $keyCode,
-                    'status'     => 'available',
+                    'key_code' => $keyCode,
+                    'status' => 'available',
                 ];
 
                 if ($hasOrderId) {
@@ -294,6 +357,9 @@ class DatabaseSeeder extends Seeder
             ['id' => 9,  'name' => 'Whale Discount',         'type' => 'percent', 'value' => 25.00,    'target_category_id' => null, 'target_subcategory_id' => null],
             ['id' => 10, 'name' => 'Free Welkin',            'type' => 'fixed',   'value' => 79000.00, 'target_category_id' => null, 'target_subcategory_id' => 9],   // Genshin
             ['id' => 11, 'name' => '20% Off All Subscriptions', 'type' => 'percent', 'value' => 20.00, 'target_category_id' => 5,    'target_subcategory_id' => null], // category-level
+            // Gacha top-prize rewards (replace the retired Whale/Welkin prizes).
+            ['id' => 12, 'name' => 'Free Steam Wallet Rp250.000', 'type' => 'fixed', 'value' => 250000.00, 'target_category_id' => null, 'target_subcategory_id' => 2],   // Steam
+            ['id' => 13, 'name' => 'Rp100.000 Cash Voucher',      'type' => 'fixed', 'value' => 100000.00, 'target_category_id' => null, 'target_subcategory_id' => null],
         ];
 
         if (! $hasSubcategoryTarget) {
@@ -409,46 +475,50 @@ class DatabaseSeeder extends Seeder
             return;
         }
 
-        // Revised pool: 18 prizes across 6 rarities + 1 "no prize" filler.
+        // Rebalanced pool: 20 prizes across 6 rarities (incl. 1 "no prize" filler).
         // Per-rarity chances live in gacha_rarity_chances; per-prize odds are
-        // rarity_chance / count_of_prizes_in_rarity (computed at runtime).
+        // rarity_chance / count_of_prizes_in_rarity (computed at runtime). Value
+        // roughly tracks rarity now: real brand vouchers outrank points bundles.
         // NOTE: this destructively replaces the pool. gacha_histories cascades on delete.
         DB::table('gacha_pools')->delete();
 
-        $rows = [
-            // === Grand Prize ===
-            ['id' => 1, 'prize_name' => 'Whale Status', 'rarity_item' => 'grand_prize', 'reward_type' => 'discount', 'icon_key' => 'whale', 'discount_type_id' => 9, 'points_amount' => null, 'image_path' => null],
+        // Default cap (unlimited unless overridden) keeps every row's keys aligned.
+        $rows = array_map(fn (array $r) => $r + ['max_per_user' => null, 'image_path' => null], [
+            // === Grand Prize (0.50%) ===
+            ['id' => 1, 'prize_name' => 'Free Steam Wallet Rp250.000', 'rarity_item' => 'grand_prize', 'reward_type' => 'discount', 'icon_key' => 'steam', 'discount_type_id' => 12, 'points_amount' => null],
 
-            // === Legendary ===
-            ['id' => 2, 'prize_name' => 'Free Welkin Moon', 'rarity_item' => 'legendary', 'reward_type' => 'discount', 'icon_key' => 'genshin', 'discount_type_id' => 10, 'points_amount' => null, 'image_path' => null],
-            ['id' => 3, 'prize_name' => '1000 Points Bundle', 'rarity_item' => 'legendary', 'reward_type' => 'points', 'icon_key' => 'points-stack', 'discount_type_id' => null, 'points_amount' => 1000, 'image_path' => null],
+            // === Legendary (2.50%) ===
+            ['id' => 2, 'prize_name' => 'Rp100.000 Cash Voucher', 'rarity_item' => 'legendary', 'reward_type' => 'discount', 'icon_key' => 'cash', 'discount_type_id' => 13, 'points_amount' => null],
+            ['id' => 3, 'prize_name' => '1000 Points Bundle', 'rarity_item' => 'legendary', 'reward_type' => 'points', 'icon_key' => 'points-stack', 'discount_type_id' => null, 'points_amount' => 1000],
 
-            // === Epic ===
-            ['id' => 4, 'prize_name' => '50% Off Discord Nitro', 'rarity_item' => 'epic', 'reward_type' => 'discount', 'icon_key' => 'discord', 'discount_type_id' => 6, 'points_amount' => null, 'image_path' => null],
-            ['id' => 5, 'prize_name' => '20% Off PSN', 'rarity_item' => 'epic', 'reward_type' => 'discount', 'icon_key' => 'playstation', 'discount_type_id' => 4, 'points_amount' => null, 'image_path' => null],
-            ['id' => 6, 'prize_name' => '500 Points Stack', 'rarity_item' => 'epic', 'reward_type' => 'points', 'icon_key' => 'points-stack', 'discount_type_id' => null, 'points_amount' => 500, 'image_path' => null],
+            // === Epic (7.00%) ===
+            ['id' => 4, 'prize_name' => '50% Off Discord Nitro', 'rarity_item' => 'epic', 'reward_type' => 'discount', 'icon_key' => 'discord', 'discount_type_id' => 6, 'points_amount' => null],
+            ['id' => 5, 'prize_name' => 'Rp30.000 Off Netflix', 'rarity_item' => 'epic', 'reward_type' => 'discount', 'icon_key' => 'netflix', 'discount_type_id' => 3, 'points_amount' => null],
+            ['id' => 6, 'prize_name' => '300 Points Stack', 'rarity_item' => 'epic', 'reward_type' => 'points', 'icon_key' => 'points-stack', 'discount_type_id' => null, 'points_amount' => 300],
 
-            // === Rare ===
-            ['id' => 7, 'prize_name' => 'Rp75.000 Welcome Bonus', 'rarity_item' => 'rare', 'reward_type' => 'discount', 'icon_key' => 'cash', 'discount_type_id' => 5, 'points_amount' => null, 'image_path' => null],
-            ['id' => 8, 'prize_name' => 'Rp30.000 Off Netflix', 'rarity_item' => 'rare', 'reward_type' => 'discount', 'icon_key' => 'netflix', 'discount_type_id' => 3, 'points_amount' => null, 'image_path' => null],
-            ['id' => 9, 'prize_name' => '15% Off Xbox', 'rarity_item' => 'rare', 'reward_type' => 'discount', 'icon_key' => 'xbox', 'discount_type_id' => 8, 'points_amount' => null, 'image_path' => null],
-            ['id' => 10, 'prize_name' => 'Free Spin Token', 'rarity_item' => 'rare', 'reward_type' => 'free_spin', 'icon_key' => 'free-spin', 'discount_type_id' => null, 'points_amount' => null, 'image_path' => null],
+            // === Rare (15.00%) ===
+            ['id' => 7, 'prize_name' => '20% Off PSN', 'rarity_item' => 'rare', 'reward_type' => 'discount', 'icon_key' => 'playstation', 'discount_type_id' => 4, 'points_amount' => null],
+            ['id' => 8, 'prize_name' => '15% Off Xbox', 'rarity_item' => 'rare', 'reward_type' => 'discount', 'icon_key' => 'xbox', 'discount_type_id' => 8, 'points_amount' => null],
+            ['id' => 9, 'prize_name' => 'Free Spin Token', 'rarity_item' => 'rare', 'reward_type' => 'free_spin', 'icon_key' => 'free-spin', 'discount_type_id' => null, 'points_amount' => null],
+            ['id' => 10, 'prize_name' => '200 Points', 'rarity_item' => 'rare', 'reward_type' => 'points', 'icon_key' => 'points-coin', 'discount_type_id' => null, 'points_amount' => 200],
 
-            // === Uncommon ===
-            ['id' => 11, 'prize_name' => '10% Off Storewide', 'rarity_item' => 'uncommon', 'reward_type' => 'discount', 'icon_key' => 'voucher', 'discount_type_id' => 1, 'points_amount' => null, 'image_path' => null],
-            ['id' => 12, 'prize_name' => '5% Off Steam', 'rarity_item' => 'uncommon', 'reward_type' => 'discount', 'icon_key' => 'steam', 'discount_type_id' => 2, 'points_amount' => null, 'image_path' => null],
-            ['id' => 13, 'prize_name' => 'Rp15.000 Off Valorant', 'rarity_item' => 'uncommon', 'reward_type' => 'discount', 'icon_key' => 'valorant', 'discount_type_id' => 7, 'points_amount' => null, 'image_path' => null],
-            ['id' => 14, 'prize_name' => '200 Points', 'rarity_item' => 'uncommon', 'reward_type' => 'points', 'icon_key' => 'points-coin', 'discount_type_id' => null, 'points_amount' => 200, 'image_path' => null],
+            // === Uncommon (25.00%) ===
+            // Welcome Bonus is a one-time sweetener — capped to a single win per user.
+            ['id' => 11, 'prize_name' => 'Rp75.000 Welcome Bonus', 'rarity_item' => 'uncommon', 'reward_type' => 'discount', 'icon_key' => 'cash', 'discount_type_id' => 5, 'points_amount' => null, 'max_per_user' => 1],
+            ['id' => 12, 'prize_name' => '10% Off Storewide', 'rarity_item' => 'uncommon', 'reward_type' => 'discount', 'icon_key' => 'voucher', 'discount_type_id' => 1, 'points_amount' => null],
+            ['id' => 13, 'prize_name' => '5% Off Steam', 'rarity_item' => 'uncommon', 'reward_type' => 'discount', 'icon_key' => 'steam', 'discount_type_id' => 2, 'points_amount' => null],
+            ['id' => 14, 'prize_name' => 'Rp15.000 Off Valorant', 'rarity_item' => 'uncommon', 'reward_type' => 'discount', 'icon_key' => 'valorant', 'discount_type_id' => 7, 'points_amount' => null],
+            ['id' => 15, 'prize_name' => '100 Points', 'rarity_item' => 'uncommon', 'reward_type' => 'points', 'icon_key' => 'points-coin', 'discount_type_id' => null, 'points_amount' => 100],
 
-            // === Common ===
-            ['id' => 15, 'prize_name' => '100 Points', 'rarity_item' => 'common', 'reward_type' => 'points', 'icon_key' => 'points-coin', 'discount_type_id' => null, 'points_amount' => 100, 'image_path' => null],
-            ['id' => 16, 'prize_name' => '50 Points', 'rarity_item' => 'common', 'reward_type' => 'points', 'icon_key' => 'points-coin', 'discount_type_id' => null, 'points_amount' => 50, 'image_path' => null],
-            ['id' => 17, 'prize_name' => '50 Points', 'rarity_item' => 'common', 'reward_type' => 'points', 'icon_key' => 'points-coin', 'discount_type_id' => null, 'points_amount' => 50, 'image_path' => null],
-            ['id' => 18, 'prize_name' => '25 Points', 'rarity_item' => 'common', 'reward_type' => 'points', 'icon_key' => 'points-coin', 'discount_type_id' => null, 'points_amount' => 25, 'image_path' => null],
+            // === Common (50.00%) ===
+            ['id' => 16, 'prize_name' => '50 Points', 'rarity_item' => 'common', 'reward_type' => 'points', 'icon_key' => 'points-coin', 'discount_type_id' => null, 'points_amount' => 50],
+            ['id' => 17, 'prize_name' => '50 Points', 'rarity_item' => 'common', 'reward_type' => 'points', 'icon_key' => 'points-coin', 'discount_type_id' => null, 'points_amount' => 50],
+            ['id' => 18, 'prize_name' => '25 Points', 'rarity_item' => 'common', 'reward_type' => 'points', 'icon_key' => 'points-coin', 'discount_type_id' => null, 'points_amount' => 25],
+            ['id' => 19, 'prize_name' => '10 Points', 'rarity_item' => 'common', 'reward_type' => 'points', 'icon_key' => 'points-coin', 'discount_type_id' => null, 'points_amount' => 10],
 
             // === Filler (still common rarity, just a no-prize slot) ===
-            ['id' => 19, 'prize_name' => 'Better Luck Next Time', 'rarity_item' => 'common', 'reward_type' => 'nothing', 'icon_key' => 'nothing', 'discount_type_id' => null, 'points_amount' => null, 'image_path' => null],
-        ];
+            ['id' => 20, 'prize_name' => 'Better Luck Next Time', 'rarity_item' => 'common', 'reward_type' => 'nothing', 'icon_key' => 'nothing', 'discount_type_id' => null, 'points_amount' => null],
+        ]);
 
         DB::table('gacha_pools')->insert($rows);
     }
@@ -824,9 +894,9 @@ class DatabaseSeeder extends Seeder
 
         // Look up a few discount type ids defensively — they only exist after
         // seedDiscountTypes has run, which it has by this point.
-        $steam5 = DB::table('discount_types')->where('id', 2)->value('id');     // 5% Off Steam
-        $netflix30k = DB::table('discount_types')->where('id', 3)->value('id'); // Rp30.000 Off Netflix
-        $whale = DB::table('discount_types')->where('id', 9)->value('id');      // Whale Discount
+        $steam5 = DB::table('discount_types')->where('id', 2)->value('id');      // 5% Off Steam
+        $netflix30k = DB::table('discount_types')->where('id', 3)->value('id');  // Rp30.000 Off Netflix
+        $steamWallet = DB::table('discount_types')->where('id', 12)->value('id'); // Free Steam Wallet Rp250.000
 
         DB::table('referral_tiers')->upsert([
             [
@@ -891,7 +961,7 @@ class DatabaseSeeder extends Seeder
                 'title' => 'Hall of Fame',
                 'description' => 'Twenty-five paying friends. You\'re carrying us.',
                 'points_reward' => 10000,
-                'discount_type_id' => $whale,
+                'discount_type_id' => $steamWallet,
                 'free_spins_reward' => 10,
                 'icon' => 'crown',
                 'sort_order' => 5,

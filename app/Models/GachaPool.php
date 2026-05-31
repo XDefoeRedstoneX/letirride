@@ -18,6 +18,7 @@ class GachaPool extends Model
         'rarity_item',
         'reward_type',
         'icon_key',
+        'max_per_user',
         'points_amount',
         'image_path',
     ];
@@ -26,6 +27,7 @@ class GachaPool extends Model
     {
         return [
             'points_amount' => 'integer',
+            'max_per_user' => 'integer',
         ];
     }
 
