@@ -508,6 +508,11 @@ class CheckoutController extends Controller
                     'topup_status' => 'processing',
                     'fulfilled_at' => now(),
                 ]);
+
+            // Referral payout: dispatched inside the same transaction so a failure
+            // rolls back the order-flip. ReferralService is idempotent against
+            // duplicate webhook callbacks via the reward-row unique index.
+            app(\App\Services\ReferralService::class)->onPaidOrder($locked);
         });
 
         try {

@@ -8,10 +8,14 @@ use App\Http\Controllers\Admin\GachaRarityChanceController as AdminGachaRarityCh
 use App\Http\Controllers\Admin\NewsController as AdminNewsController;
 use App\Http\Controllers\Admin\OrderController as AdminOrderController;
 use App\Http\Controllers\Admin\ProductController as AdminProductController;
+use App\Http\Controllers\Admin\ReferralController as AdminReferralController;
+use App\Http\Controllers\Admin\ReferralTierController as AdminReferralTierController;
 use App\Http\Controllers\Admin\TicketController as AdminTicketController;
 use App\Http\Controllers\Admin\UserController as AdminUserController;
+use App\Http\Controllers\Admin\FaqController as AdminFaqController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CartController;
+use App\Http\Controllers\FaqController;
 use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\FavoriteController;
 use App\Http\Controllers\GachaBoosterController;
@@ -19,6 +23,7 @@ use App\Http\Controllers\GachaController;
 use App\Http\Controllers\GachaPaymentController;
 use App\Http\Controllers\InventoryController;
 use App\Http\Controllers\PointController;
+use App\Http\Controllers\ReferralController;
 use App\Http\Controllers\StoreController;
 use App\Http\Controllers\TransactionController;
 use App\Http\Middleware\EnsureUserIsAdmin;
@@ -29,6 +34,8 @@ Route::get('/', [StoreController::class, 'showStore'])->name('home');
 Route::redirect('/all-products', '/')->name('all-products');
 Route::post('/login', [AuthController::class, 'logAuth'])->name('logAuth');
 Route::post('/register', [AuthController::class, 'regAuth'])->name('regAuth');
+Route::get('/auth/google', [AuthController::class, 'googleRedirect'])->name('auth.google');
+Route::get('/auth/google/callback', [AuthController::class, 'googleCallback'])->name('auth.google.callback');
 
 // Guest-accessible pages
 Route::get('/point-shop', [PointController::class, 'index'])->name('point-shop');
@@ -87,6 +94,12 @@ Route::middleware('auth')->group(function () {
     Route::get('/transactions', [TransactionController::class, 'index'])->name('transactions');
     Route::post('/transactions/{order}/cancel', [TransactionController::class, 'cancel'])->name('transactions.cancel');
 
+    // Referrals (share + claim)
+    Route::get('/referrals', [ReferralController::class, 'show'])->name('referrals');
+    Route::post('/referrals/claim', [ReferralController::class, 'claim'])
+        ->middleware('throttle:10,1')
+        ->name('referrals.claim');
+
     // Forgot Password
     Route::get('/forgot-password', [AuthController::class, 'showForgot'])->name('forgot-password');
 });
@@ -129,6 +142,16 @@ Route::prefix('admin')
         Route::patch('/gacha-icons/{gachaIcon}', [AdminGachaIconController::class, 'update'])->name('admin.gacha-icons.update');
         Route::delete('/gacha-icons/{gachaIcon}', [AdminGachaIconController::class, 'destroy'])->name('admin.gacha-icons.destroy');
 
+        Route::get('/referrals', [AdminReferralController::class, 'index'])->name('admin.referrals');
+        Route::patch('/referrals/config', [AdminReferralController::class, 'updateConfig'])->name('admin.referrals.config');
+        Route::post('/referrals/{referral}/void', [AdminReferralController::class, 'void'])->name('admin.referrals.void');
+
+        Route::get('/referral-tiers', [AdminReferralTierController::class, 'index'])->name('admin.referral-tiers');
+        Route::post('/referral-tiers', [AdminReferralTierController::class, 'store'])->name('admin.referral-tiers.store');
+        Route::patch('/referral-tiers/{tier}', [AdminReferralTierController::class, 'update'])->name('admin.referral-tiers.update');
+        Route::delete('/referral-tiers/{tier}', [AdminReferralTierController::class, 'destroy'])->name('admin.referral-tiers.destroy');
+        Route::post('/referral-tiers/backfill', [AdminReferralTierController::class, 'backfill'])->name('admin.referral-tiers.backfill');
+
         Route::get('/tickets', [AdminTicketController::class, 'index'])->name('admin.tickets');
         Route::patch('/tickets/{ticket}/status', [AdminTicketController::class, 'updateStatus'])->name('admin.tickets.status');
 
@@ -138,13 +161,18 @@ Route::prefix('admin')
 
         // UI-only pages (static views with dummy data)
         Route::get('/point-shop', fn () => view('admin.point-shop'))->name('admin.point-shop');
-        Route::get('/faqs', fn () => view('admin.faqs'))->name('admin.faqs');
+
+        // FAQs (DB-backed CRUD)
+        Route::get('/faqs', [AdminFaqController::class, 'index'])->name('admin.faqs');
+        Route::post('/faqs', [AdminFaqController::class, 'store'])->name('admin.faqs.store');
+        Route::patch('/faqs/{faq}', [AdminFaqController::class, 'update'])->name('admin.faqs.update');
+        Route::delete('/faqs/{faq}', [AdminFaqController::class, 'destroy'])->name('admin.faqs.destroy');
     });
 
 // Static pages (no auth required)
 Route::get('/terms', fn () => view('pages.terms-of-service'))->name('terms-of-service');
 Route::get('/privacy', fn () => view('pages.privacy-policy'))->name('privacy-policy');
 Route::get('/about', fn () => view('pages.about'))->name('about');
-Route::get('/faq', fn () => view('pages.faq'))->name('faq');
+Route::get('/faq', [FaqController::class, 'index'])->name('faq');
 Route::get('/contact', fn () => view('pages.contact'))->name('contact');
 Route::get('/tickets', fn () => view('pages.tickets'))->name('tickets');

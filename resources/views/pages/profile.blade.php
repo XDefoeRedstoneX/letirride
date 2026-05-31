@@ -116,6 +116,21 @@
                 <p x-show="deleteError" x-text="deleteError" style="font-family:var(--font-sans);font-size:13px;color:#ef4444;margin-top:10px;"></p>
             </div>
 
+            {{-- Refer Friends --}}
+            <a href="{{ route('referrals') }}" class="px-card" style="padding:22px;display:flex;align-items:center;justify-content:space-between;gap:16px;text-decoration:none;border-color:rgba(245,158,11,0.35);background:rgba(245,158,11,0.06);">
+                <div style="display:flex;align-items:center;gap:16px;min-width:0;">
+                    <div style="width:48px;height:48px;background:rgba(245,158,11,0.12);border:2px solid rgba(245,158,11,0.3);display:flex;align-items:center;justify-content:center;color:var(--gold);flex-shrink:0;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="square" class="pixel-render"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 11h-6"/><path d="M19 8v6"/></svg>
+                    </div>
+                    <div style="min-width:0;">
+                        <p style="font-family:var(--px);font-size:6px;letter-spacing:0.12em;color:var(--gold);text-transform:uppercase;">EARN POINTS</p>
+                        <h3 style="font-family:var(--font-sans);font-size:15px;font-weight:800;color:var(--foreground);margin-top:4px;">Refer Friends</h3>
+                        <p style="font-family:var(--font-sans);font-size:11px;color:var(--text-dim);margin-top:2px;">Share your code &middot; earn when friends shop</p>
+                    </div>
+                </div>
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="square" class="pixel-render" style="color:var(--gold);flex-shrink:0;"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+            </a>
+
             {{-- Legal Links --}}
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-6" style="padding-bottom:40px;">
                 <a href="{{ route('terms-of-service') }}" class="px-card" style="padding:20px;display:flex;align-items:center;justify-content:space-between;text-decoration:none;">
@@ -137,7 +152,6 @@
                     </div>
                 </a>
             </div>
-
         </div>
     </div>
 
