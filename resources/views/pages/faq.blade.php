@@ -19,14 +19,20 @@
                 <template x-for="(category, catIndex) in [...new Set(filteredFaqs.map(f => f.category))]" :key="catIndex">
                     <div style="display:flex;flex-direction:column;gap:10px;">
                         <h2 style="font-family:var(--px);font-size:8px;letter-spacing:0.12em;color:var(--gold);margin-left:4px;" x-text="category"></h2>
-                        <template x-for="(faq, index) in filteredFaqs.filter(f => f.category === category)" :key="index">
+                        <template x-for="(faq, index) in filteredFaqs.filter(f => f.category === category)" :key="faq.id">
                             <div class="px-card" style="padding:0;overflow:hidden;" x-data="{ open: false }">
-                                <button @click="open = !open" style="width:100%;padding:18px 20px;display:flex;align-items:center;justify-content:space-between;text-align:left;cursor:pointer;background:none;border:none;">
-                                    <span style="font-family:var(--font-sans);font-size:13px;font-weight:800;color:#e8f0ff;" x-text="faq.question"></span>
+                                <button @click="open = !open" style="width:100%;padding:18px 20px;display:flex;align-items:center;gap:12px;justify-content:space-between;text-align:left;cursor:pointer;background:none;border:none;">
+                                    <div style="display:flex;align-items:flex-start;gap:10px;">
+                                        <span style="margin-top:2px;padding:2px 6px;background:rgba(245,158,11,0.15);color:var(--gold);font-family:var(--px);font-size:7px;border-radius:4px;flex-shrink:0;">Q</span>
+                                        <span style="font-family:var(--font-sans);font-size:13px;font-weight:800;color:#e8f0ff;" x-text="faq.question"></span>
+                                    </div>
                                     <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="square" class="pixel-render" style="color:var(--text-dim);flex-shrink:0;transition:transform 0.2s;" :style="open ? 'transform:rotate(180deg)' : ''"><path d="m6 9 6 6 6-6"/></svg>
                                 </button>
                                 <div x-show="open" x-collapse x-transition>
-                                    <div style="padding:0 20px 18px;font-family:var(--font-sans);font-size:13px;color:var(--text-dim);line-height:1.7;" x-text="faq.answer"></div>
+                                    <div style="padding:0 20px 18px;display:flex;align-items:flex-start;gap:10px;">
+                                        <span style="margin-top:2px;padding:2px 6px;background:rgba(90,122,170,0.15);color:var(--text-dim);font-family:var(--px);font-size:7px;border-radius:4px;flex-shrink:0;">A</span>
+                                        <span style="font-family:var(--font-sans);font-size:13px;color:var(--text-dim);line-height:1.7;" x-text="faq.answer"></span>
+                                    </div>
                                 </div>
                             </div>
                         </template>
@@ -55,36 +61,14 @@
     function faqPage() {
         return {
             search: '',
-            faqs: [
-                { category: 'General', question: 'What does your website sell?', answer: 'We sell digital products such as vouchers for games (e.g. Steam), subscriptions (e.g. Netflix), and similar items.' },
-                { category: 'General', question: 'How do I receive my purchase?', answer: 'After payment, your product and purchase receipt will be delivered to your email.' },
-                { category: 'Gacha System', question: 'What is the gacha feature?', answer: 'It\u2019s a randomized system where you can obtain discounts for products available in our store.' },
-                { category: 'Gacha System', question: 'Are the gacha results guaranteed?', answer: 'No. All results are random, and there is no guarantee of receiving high discounts.' },
-                { category: 'Gacha System', question: 'Can I exchange my discount for cash?', answer: 'No. Discounts are non-transferable and cannot be converted to money.' },
-                { category: 'Gacha System', question: 'Do discounts expire?', answer: 'Yes, some discounts may have expiration dates or limited usage conditions.' },
-                { category: 'Gacha System', question: 'Can I use multiple discounts at once?', answer: 'This depends on the promotion rules, but typically only one discount can be applied per purchase.' },
-                { category: 'Payments & Orders', question: 'What payment methods do you accept?', answer: 'We support QRIS and bank transfers.' },
-                { category: 'Payments & Orders', question: 'My payment went through but I didn\u2019t receive my code. What should I do?', answer: 'Contact support with your order details. We\u2019ll resolve it as quickly as possible.' },
-                { category: 'Points System', question: 'What are points?', answer: 'Points are a reward currency earned through purchases that can be redeemed for discounts and rewards in the Points Shop.' },
-                { category: 'Points System', question: 'How do I earn points?', answer: 'You earn points automatically when making eligible purchases.' },
-                { category: 'Points System', question: 'How do I use my points?', answer: 'Redeem your points in the Points Shop for discounts or special offers.' },
-                { category: 'Points System', question: 'Do points expire?', answer: 'No, points are retained until spent or account termination.' },
-                { category: 'Points System', question: 'Can I convert points into cash?', answer: 'No. Points have no monetary value and cannot be withdrawn.' },
-                { category: 'Points System', question: 'Can I transfer points to another account?', answer: 'No. Points are tied to your account.' },
-                { category: 'Points System', question: 'What happens to my points if I get a refund?', answer: 'Points may be returned depending on the situation, handled case-by-case.' },
-                { category: 'Refunds', question: 'Can I get a refund?', answer: 'Generally no—digital goods cannot be returned. Exceptions for invalid or undelivered products.' },
-                { category: 'Account & Security', question: 'Do I need an account to buy?', answer: 'Some features require an account, especially for tracking purchases and rewards.' },
-                { category: 'Account & Security', question: 'What happens if I lose access to my account?', answer: 'Contact support immediately for recovery assistance.' },
-                { category: 'Account & Security', question: 'I forgot my password. How do I change it?', answer: 'Click "Forgot Password" on the Sign In page. We\'ll send a reset link to your email. If logged in, go to Profile > Settings > Change Password.' },
-                { category: 'Technical Issues', question: 'The voucher code doesn\u2019t work. What should I do?', answer: 'Contact support with proof, and we will verify and replace it if necessary.' },
-                { category: 'Fair Use', question: 'Can I create multiple accounts to get more gacha rewards?', answer: 'No. This is considered abuse and may result in account suspension.' },
-                { category: 'Fair Use', question: 'Can I exploit promotions or farm points?', answer: 'No. This may result in suspension or termination of your account.' },
-            ],
+            faqs: @json($faqs),
             get filteredFaqs() {
+                const q = this.search.toLowerCase();
+                if (!q) return this.faqs;
                 return this.faqs.filter(f =>
-                    f.question.toLowerCase().includes(this.search.toLowerCase()) ||
-                    f.answer.toLowerCase().includes(this.search.toLowerCase()) ||
-                    f.category.toLowerCase().includes(this.search.toLowerCase())
+                    f.question.toLowerCase().includes(q) ||
+                    f.answer.toLowerCase().includes(q) ||
+                    f.category.toLowerCase().includes(q)
                 );
             }
         };

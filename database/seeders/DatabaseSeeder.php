@@ -29,7 +29,7 @@ class DatabaseSeeder extends Seeder
 
         $this->seedCategories();
         $this->seedSubcategories();
-        $this->seedProducts();
+        $this->seedProducts();;
         $this->seedProductKeys();
         $this->seedDiscountTypes();
         $this->seedUserDiscounts();
@@ -45,11 +45,6 @@ class DatabaseSeeder extends Seeder
         $this->seedCartItems($now);
         $this->seedReferrals($now);
         $this->seedReferralConfig($now);
-        $this->seedReferralTiers($now);
-
-        $this->call([
-            DemoDataSeeder::class,
-        ]);
     }
 
     private function seedUsers($now): void
@@ -184,32 +179,32 @@ class DatabaseSeeder extends Seeder
             ['id' => 2, 'category_id' => 2, 'subcategory_id' => 2, 'type' => 'voucher', 'name' => 'Steam Wallet Rp750.000', 'description' => 'Adds Rp750.000 to Steam', 'price' => 750000.00, 'point_multiplier' => 2.00, 'is_active' => true, 'image' => 'steam-wallet.png'],
             ['id' => 3, 'category_id' => 5, 'subcategory_id' => 10, 'type' => 'voucher', 'name' => 'Netflix 1 Month (HD)', 'description' => 'Standard 1 Month', 'price' => 249000.00, 'point_multiplier' => 1.00, 'is_active' => true, 'image' => 'netflix.png'],
             ['id' => 4, 'category_id' => 5, 'subcategory_id' => 11, 'type' => 'voucher', 'name' => 'Spotify 3 Months', 'description' => 'Premium Code', 'price' => 449000.00, 'point_multiplier' => 1.50, 'is_active' => true, 'image' => 'spotify.png'],
-            ['id' => 5, 'category_id' => 2, 'subcategory_id' => 3, 'type' => 'voucher', 'name' => 'PSN Rp400.000', 'description' => 'PS Store Credit', 'price' => 400000.00, 'point_multiplier' => 1.50, 'is_active' => true, 'image' => 'google-play.png'],
+            ['id' => 5, 'category_id' => 2, 'subcategory_id' => 3, 'type' => 'voucher', 'name' => 'PSN Rp400.000', 'description' => 'PS Store Credit', 'price' => 400000.00, 'point_multiplier' => 1.50, 'is_active' => true, 'image' => 'playstation.png'],
             ['id' => 9, 'category_id' => 5, 'subcategory_id' => 12, 'type' => 'voucher', 'name' => 'Discord Nitro 1 Year', 'description' => 'Full Nitro', 'price' => 1499000.00, 'point_multiplier' => 2.00, 'is_active' => true, 'image' => 'discord.png'],
-            ['id' => 10, 'category_id' => 5, 'subcategory_id' => 13, 'type' => 'voucher', 'name' => 'Xbox Game Pass 1 Month', 'description' => 'Ultimate Pass', 'price' => 259000.00, 'point_multiplier' => 1.25, 'is_active' => true, 'image' => 'steam-wallet.png'],
-            ['id' => 11, 'category_id' => 2, 'subcategory_id' => 4, 'type' => 'voucher', 'name' => 'Nintendo EShop $10', 'description' => '$10 Gift Card for Nintendo EShop', 'price' => 158000.00, 'point_multiplier' => 1.25, 'is_active' => true, 'image' => 'steam-wallet.png'],
-            ['id' => 12, 'category_id' => 2, 'subcategory_id' => 4, 'type' => 'voucher', 'name' => 'Nintendo EShop $20', 'description' => '$20 Gift Card for Nintendo EShop', 'price' => 314000.00, 'point_multiplier' => 1.25, 'is_active' => true, 'image' => 'steam-wallet.png'],
-            ['id' => 13, 'category_id' => 4, 'subcategory_id' => 8, 'type' => 'voucher', 'name' => 'Roblox Gift Card Rp.50000', 'description' => 'Rp.50000 Gift card for Robux', 'price' => 50000.00, 'point_multiplier' => 1.25, 'is_active' => true, 'image' => 'steam-wallet.png'],
-            ['id' => 14, 'category_id' => 4, 'subcategory_id' => 8, 'type' => 'voucher', 'name' => 'Roblox Gift Card Rp.100000', 'description' => 'Rp.100000 Gift card for Robux', 'price' => 100000.00, 'point_multiplier' => 1.25, 'is_active' => true, 'image' => 'steam-wallet.png'],
-            ['id' => 15, 'category_id' => 4, 'subcategory_id' => 8, 'type' => 'voucher', 'name' => 'Roblox Gift Card Rp.500000', 'description' => 'Rp.500000 Gift card for Robux', 'price' => 500000.00, 'point_multiplier' => 1.25, 'is_active' => true, 'image' => 'steam-wallet.png'],
-            ['id' => 16, 'category_id' => 3, 'subcategory_id' => 7, 'type' => 'voucher', 'name' => 'Fortnite V-Bucks 1000', 'description' => 'Adds 1000 V-Bucks', 'price' => 100000.00, 'point_multiplier' => 1.25, 'is_active' => true, 'image' => 'steam-wallet.png'],
-            ['id' => 17, 'category_id' => 3, 'subcategory_id' => 7, 'type' => 'voucher', 'name' => 'Fortnite V-Bucks 2500', 'description' => 'Adds 2500 V-Bucks', 'price' => 250000.00, 'point_multiplier' => 1.25, 'is_active' => true, 'image' => 'steam-wallet.png'],
-            ['id' => 18, 'category_id' => 3, 'subcategory_id' => 7, 'type' => 'voucher', 'name' => 'Fortnite V-Bucks 5000', 'description' => 'Adds 5000 V-Bucks', 'price' => 400000.00, 'point_multiplier' => 1.25, 'is_active' => true, 'image' => 'steam-wallet.png'],
-            ['id' => 19, 'category_id' => 3, 'subcategory_id' => 7, 'type' => 'voucher', 'name' => 'Fortnite V-Bucks 12500', 'description' => 'Adds 12500 V-Bucks', 'price' => 800000.00, 'point_multiplier' => 1.25, 'is_active' => true, 'image' => 'steam-wallet.png'],
+            ['id' => 10, 'category_id' => 5, 'subcategory_id' => 13, 'type' => 'voucher', 'name' => 'Xbox Game Pass 1 Month', 'description' => 'Ultimate Pass', 'price' => 259000.00, 'point_multiplier' => 1.25, 'is_active' => true, 'image' => 'xbox.png'],
+            ['id' => 11, 'category_id' => 2, 'subcategory_id' => 4, 'type' => 'voucher', 'name' => 'Nintendo EShop $10', 'description' => '$10 Gift Card for Nintendo EShop', 'price' => 158000.00, 'point_multiplier' => 1.25, 'is_active' => true, 'image' => 'nintendo.png'],
+            ['id' => 12, 'category_id' => 2, 'subcategory_id' => 4, 'type' => 'voucher', 'name' => 'Nintendo EShop $20', 'description' => '$20 Gift Card for Nintendo EShop', 'price' => 314000.00, 'point_multiplier' => 1.25, 'is_active' => true, 'image' => 'nintendo.png'],
+            ['id' => 13, 'category_id' => 4, 'subcategory_id' => 8, 'type' => 'voucher', 'name' => 'Roblox Gift Card Rp.50000', 'description' => 'Rp.50000 Gift card for Robux', 'price' => 50000.00, 'point_multiplier' => 1.25, 'is_active' => true, 'image' => 'roblox.png'],
+            ['id' => 14, 'category_id' => 4, 'subcategory_id' => 8, 'type' => 'voucher', 'name' => 'Roblox Gift Card Rp.100000', 'description' => 'Rp.100000 Gift card for Robux', 'price' => 100000.00, 'point_multiplier' => 1.25, 'is_active' => true, 'image' => 'roblox.png'],
+            ['id' => 15, 'category_id' => 4, 'subcategory_id' => 8, 'type' => 'voucher', 'name' => 'Roblox Gift Card Rp.500000', 'description' => 'Rp.500000 Gift card for Robux', 'price' => 500000.00, 'point_multiplier' => 1.25, 'is_active' => true, 'image' => 'roblox.png'],
+            ['id' => 16, 'category_id' => 3, 'subcategory_id' => 7, 'type' => 'voucher', 'name' => 'Fortnite V-Bucks 1000', 'description' => 'Adds 1000 V-Bucks', 'price' => 100000.00, 'point_multiplier' => 1.25, 'is_active' => true, 'image' => 'fortnite.png'],
+            ['id' => 17, 'category_id' => 3, 'subcategory_id' => 7, 'type' => 'voucher', 'name' => 'Fortnite V-Bucks 2500', 'description' => 'Adds 2500 V-Bucks', 'price' => 250000.00, 'point_multiplier' => 1.25, 'is_active' => true, 'image' => 'fortnite.png'],
+            ['id' => 18, 'category_id' => 3, 'subcategory_id' => 7, 'type' => 'voucher', 'name' => 'Fortnite V-Bucks 5000', 'description' => 'Adds 5000 V-Bucks', 'price' => 400000.00, 'point_multiplier' => 1.25, 'is_active' => true, 'image' => 'fortnite.png'],
+            ['id' => 19, 'category_id' => 3, 'subcategory_id' => 7, 'type' => 'voucher', 'name' => 'Fortnite V-Bucks 12500', 'description' => 'Adds 12500 V-Bucks', 'price' => 800000.00, 'point_multiplier' => 1.25, 'is_active' => true, 'image' => 'fortnite.png'],
             ['id' => 20, 'category_id' => 5, 'subcategory_id' => 14, 'type' => 'voucher', 'name' => 'Youtube Premium Individual', 'description' => '1 Month Premium for 1 User', 'price' => 65000.00, 'point_multiplier' => 1.25, 'is_active' => true, 'image' => 'youtube.png'],
             ['id' => 21, 'category_id' => 5, 'subcategory_id' => 14, 'type' => 'voucher', 'name' => 'Youtube Premium Family', 'description' => '1 Month Premium for up to 5 Users', 'price' => 130000.00, 'point_multiplier' => 1.25, 'is_active' => true, 'image' => 'youtube.png'],
-            ['id' => 22, 'category_id' => 5, 'subcategory_id' => 15, 'type' => 'voucher', 'name' => 'Canva Pro', 'description' => '1 Month Pro for 1 User', 'price' => 90000.00, 'point_multiplier' => 1.25, 'is_active' => true, 'image' => 'steam-wallet.png'],
-            ['id' => 23, 'category_id' => 5, 'subcategory_id' => 16, 'type' => 'voucher', 'name' => 'Chatgpt Go', 'description' => '1 Month Go tier', 'price' => 75000.00, 'point_multiplier' => 1.25, 'is_active' => true, 'image' => 'steam-wallet.png'],
-            ['id' => 24, 'category_id' => 5, 'subcategory_id' => 16, 'type' => 'voucher', 'name' => 'Chatgpt Plus', 'description' => '1 Month Plus tier', 'price' => 300000.00, 'point_multiplier' => 1.25, 'is_active' => true, 'image' => 'steam-wallet.png'],
-            ['id' => 25, 'category_id' => 5, 'subcategory_id' => 16, 'type' => 'voucher', 'name' => 'Chatgpt Pro', 'description' => '1 Month Pro tier', 'price' => 1500000.00, 'point_multiplier' => 1.25, 'is_active' => true, 'image' => 'steam-wallet.png'],
-            ['id' => 26, 'category_id' => 5, 'subcategory_id' => 17, 'type' => 'voucher', 'name' => 'Adobe Creative Cloud Pro', 'description' => '1 Month Pro Subscription', 'price' => 500000.00, 'point_multiplier' => 1.25, 'is_active' => true, 'image' => 'steam-wallet.png'],
+            ['id' => 22, 'category_id' => 5, 'subcategory_id' => 15, 'type' => 'voucher', 'name' => 'Canva Pro', 'description' => '1 Month Pro for 1 User', 'price' => 90000.00, 'point_multiplier' => 1.25, 'is_active' => true, 'image' => 'canva.png'],
+            ['id' => 23, 'category_id' => 5, 'subcategory_id' => 16, 'type' => 'voucher', 'name' => 'Chatgpt Go', 'description' => '1 Month Go tier', 'price' => 75000.00, 'point_multiplier' => 1.25, 'is_active' => true, 'image' => 'chatgpt.png'],
+            ['id' => 24, 'category_id' => 5, 'subcategory_id' => 16, 'type' => 'voucher', 'name' => 'Chatgpt Plus', 'description' => '1 Month Plus tier', 'price' => 300000.00, 'point_multiplier' => 1.25, 'is_active' => true, 'image' => 'chatgpt.png'],
+            ['id' => 25, 'category_id' => 5, 'subcategory_id' => 16, 'type' => 'voucher', 'name' => 'Chatgpt Pro', 'description' => '1 Month Pro tier', 'price' => 1500000.00, 'point_multiplier' => 1.25, 'is_active' => true, 'image' => 'chatgpt.png'],
+            ['id' => 26, 'category_id' => 5, 'subcategory_id' => 17, 'type' => 'voucher', 'name' => 'Adobe Creative Cloud Pro', 'description' => '1 Month Pro Subscription', 'price' => 500000.00, 'point_multiplier' => 1.25, 'is_active' => true, 'image' => 'adobe.png'],
             ['id' => 27, 'category_id' => 1, 'subcategory_id' => 1, 'type' => 'voucher', 'name' => 'Pragmata', 'description' => 'Steam code for Pragmata', 'price' => 750000.00, 'point_multiplier' => 1.25, 'is_active' => true, 'image' => 'steam-wallet.png'],
             ['id' => 28, 'category_id' => 1, 'subcategory_id' => 1, 'type' => 'voucher', 'name' => 'Resident Evil Requiem', 'description' => 'Steam code for Resident Evil Requiem', 'price' => 900000.00, 'point_multiplier' => 1.25, 'is_active' => true, 'image' => 'steam-wallet.png'],
 
             // ===== DIRECT TOP-UP products (buyer inputs Player ID) =====
-            ['id' => 6, 'category_id' => 3, 'subcategory_id' => 5, 'type' => 'direct_topup', 'name' => '1000 Valorant Points', 'description' => 'Riot Games VP — requires Riot ID', 'price' => 160000.00, 'point_multiplier' => 1.00, 'is_active' => true, 'image' => 'steam-wallet.png'],
-            ['id' => 7, 'category_id' => 3, 'subcategory_id' => 6, 'type' => 'direct_topup', 'name' => '500 ML Diamonds', 'description' => 'Mobile Legends — requires Player ID & Zone ID', 'price' => 150000.00, 'point_multiplier' => 1.00, 'is_active' => true, 'image' => 'google-play.png'],
-            ['id' => 8, 'category_id' => 5, 'subcategory_id' => 9, 'type' => 'direct_topup', 'name' => 'Welkin Moon', 'description' => 'Genshin Impact — requires UID', 'price' => 79000.00, 'point_multiplier' => 0.50, 'is_active' => true, 'image' => 'youtube.png'],
+            ['id' => 6, 'category_id' => 3, 'subcategory_id' => 5, 'type' => 'direct_topup', 'name' => '1000 Valorant Points', 'description' => 'Riot Games VP Ã¢â‚¬â€ requires Riot ID', 'price' => 160000.00, 'point_multiplier' => 1.00, 'is_active' => true, 'image' => 'valorant.png'],
+            ['id' => 7, 'category_id' => 3, 'subcategory_id' => 6, 'type' => 'direct_topup', 'name' => '500 ML Diamonds', 'description' => 'Mobile Legends Ã¢â‚¬â€ requires Player ID & Zone ID', 'price' => 150000.00, 'point_multiplier' => 1.00, 'is_active' => true, 'image' => 'mobile-legends.png'],
+            ['id' => 8, 'category_id' => 5, 'subcategory_id' => 9, 'type' => 'direct_topup', 'name' => 'Welkin Moon', 'description' => 'Genshin Impact Ã¢â‚¬â€ requires UID', 'price' => 79000.00, 'point_multiplier' => 0.50, 'is_active' => true, 'image' => 'youtube.png'],
         ];
 
         if (! $hasType) {
@@ -229,43 +224,49 @@ class DatabaseSeeder extends Seeder
             return;
         }
 
-        $hasOrderId = Schema::hasColumn('product_keys', 'order_id');
+        $hasOrderId    = Schema::hasColumn('product_keys', 'order_id');
+        $hasReservedId = Schema::hasColumn('product_keys', 'reserved_for_order_id');
 
-        $rows = [
-            ['id' => 1, 'product_id' => 1, 'key_code' => 'STM-1234-ABCD-5678', 'status' => 'available'],
-            ['id' => 2, 'product_id' => 1, 'key_code' => 'STM-9876-WXYZ-1234', 'status' => 'sold'],
-            ['id' => 3, 'product_id' => 3, 'key_code' => 'NF-AAAA-BBBB-CCCC', 'status' => 'available'],
-            ['id' => 4, 'product_id' => 4, 'key_code' => 'SPO-QWER-TYUI-OPAS', 'status' => 'sold'],
-            ['id' => 5, 'product_id' => 5, 'key_code' => 'PSN-ZZZZ-XXXX-YYYY', 'status' => 'sold'],
-            ['id' => 6, 'product_id' => 6, 'key_code' => 'VAL-1111-2222-3333', 'status' => 'available'],
-            ['id' => 7, 'product_id' => 7, 'key_code' => 'ML-9999-8888-7777', 'status' => 'available'],
-            ['id' => 8, 'product_id' => 8, 'key_code' => 'GEN-5555-4444-3333', 'status' => 'available'],
-            ['id' => 9, 'product_id' => 9, 'key_code' => 'DIS-0000-1111-2222', 'status' => 'available'],
-            ['id' => 10, 'product_id' => 10, 'key_code' => 'XBX-ABAB-CDCD-EFEF', 'status' => 'available'],
-        ];
+        // Voucher-type products only Ã¢â‚¬â€ direct_topup products (6, 7, 8) use Player ID, not keys
+        $voucherProductIds = [1, 2, 3, 4, 5, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28];
 
-        if ($hasOrderId) {
-            $rows = array_map(function (array $row) {
-                $row['order_id'] = null;
+        $rows  = [];
+        $keyId = 1;
 
-                return $row;
-            }, $rows);
+        foreach ($voucherProductIds as $productId) {
+            for ($seq = 1; $seq <= 30; $seq++) {
+                $hash = strtoupper(substr(md5("p{$productId}-k{$seq}"), 0, 12));
+                $keyCode = sprintf('P%03d-%s-%s-%s', $productId,
+                    substr($hash, 0, 4), substr($hash, 4, 4), substr($hash, 8, 4));
+
+                $row = [
+                    'id'         => $keyId++,
+                    'product_id' => $productId,
+                    'key_code'   => $keyCode,
+                    'status'     => 'available',
+                ];
+
+                if ($hasOrderId) {
+                    $row['order_id'] = null;
+                }
+                if ($hasReservedId) {
+                    $row['reserved_for_order_id'] = null;
+                }
+
+                $rows[] = $row;
+            }
         }
 
         $updateColumns = ['product_id', 'key_code', 'status'];
         if ($hasOrderId) {
             $updateColumns[] = 'order_id';
         }
+        if ($hasReservedId) {
+            $updateColumns[] = 'reserved_for_order_id';
+        }
 
-        DB::table('product_keys')->upsert($rows, ['id'], $updateColumns);
-
-        if ($hasOrderId) {
-            if (DB::table('orders')->where('id', 1)->exists()) {
-                DB::table('product_keys')->where('id', 2)->update(['order_id' => 1]);
-            }
-            if (DB::table('orders')->where('id', 3)->exists()) {
-                DB::table('product_keys')->where('id', 4)->update(['order_id' => 3]);
-            }
+        foreach (array_chunk($rows, 100) as $chunk) {
+            DB::table('product_keys')->upsert($chunk, ['id'], $updateColumns);
         }
     }
 
@@ -277,7 +278,7 @@ class DatabaseSeeder extends Seeder
 
         $hasSubcategoryTarget = Schema::hasColumn('discount_types', 'target_subcategory_id');
 
-        // Brand-targeted vouchers pin to a subcategory (Steam, Netflix, PSN, …);
+        // Brand-targeted vouchers pin to a subcategory (Steam, Netflix, PSN, Ã¢â‚¬Â¦);
         // category-only vouchers stay on target_category_id; storewide leaves both null.
         $rows = [
             ['id' => 1,  'name' => '10% Off All',            'type' => 'percent', 'value' => 10.00,    'target_category_id' => null, 'target_subcategory_id' => null],
@@ -388,34 +389,34 @@ class DatabaseSeeder extends Seeder
 
         $rows = [
             // === Grand Prize ===
-            ['id' => 1, 'prize_name' => 'Whale Status', 'rarity_item' => 'grand_prize', 'reward_type' => 'discount', 'discount_type_id' => 9, 'points_amount' => null, 'image_path' => null],
+            ['id' => 1, 'prize_name' => 'Whale Status', 'rarity_item' => 'grand_prize', 'reward_type' => 'discount', 'discount_type_id' => 9, 'points_amount' => null, 'image_path' => 'jackpot.svg'],
 
             // === Legendary ===
-            ['id' => 2, 'prize_name' => 'Free Welkin Moon', 'rarity_item' => 'legendary', 'reward_type' => 'discount', 'discount_type_id' => 10, 'points_amount' => null, 'image_path' => null],
-            ['id' => 3, 'prize_name' => '1000 Points Bundle', 'rarity_item' => 'legendary', 'reward_type' => 'points', 'discount_type_id' => null, 'points_amount' => 1000, 'image_path' => null],
+            ['id' => 2, 'prize_name' => 'Free Welkin Moon', 'rarity_item' => 'legendary', 'reward_type' => 'discount', 'discount_type_id' => 10, 'points_amount' => null, 'image_path' => 'voucher.svg'],
+            ['id' => 3, 'prize_name' => '1000 Points Bundle', 'rarity_item' => 'legendary', 'reward_type' => 'points', 'discount_type_id' => null, 'points_amount' => 1000, 'image_path' => 'gacha-points-bundle.png'],
 
             // === Epic ===
-            ['id' => 4, 'prize_name' => '50% Off Discord Nitro', 'rarity_item' => 'epic', 'reward_type' => 'discount', 'discount_type_id' => 6, 'points_amount' => null, 'image_path' => null],
-            ['id' => 5, 'prize_name' => '20% Off PSN', 'rarity_item' => 'epic', 'reward_type' => 'discount', 'discount_type_id' => 4, 'points_amount' => null, 'image_path' => null],
-            ['id' => 6, 'prize_name' => '500 Points Stack', 'rarity_item' => 'epic', 'reward_type' => 'points', 'discount_type_id' => null, 'points_amount' => 500, 'image_path' => null],
+            ['id' => 4, 'prize_name' => '50% Off Discord Nitro', 'rarity_item' => 'epic', 'reward_type' => 'discount', 'discount_type_id' => 6, 'points_amount' => null, 'image_path' => 'voucher.svg'],
+            ['id' => 5, 'prize_name' => '20% Off PSN', 'rarity_item' => 'epic', 'reward_type' => 'discount', 'discount_type_id' => 4, 'points_amount' => null, 'image_path' => 'voucher.svg'],
+            ['id' => 6, 'prize_name' => '500 Points Stack', 'rarity_item' => 'epic', 'reward_type' => 'points', 'discount_type_id' => null, 'points_amount' => 500, 'image_path' => 'points.svg'],
 
             // === Rare ===
-            ['id' => 7, 'prize_name' => 'Rp75.000 Welcome Bonus', 'rarity_item' => 'rare', 'reward_type' => 'discount', 'discount_type_id' => 5, 'points_amount' => null, 'image_path' => null],
-            ['id' => 8, 'prize_name' => 'Rp30.000 Off Netflix', 'rarity_item' => 'rare', 'reward_type' => 'discount', 'discount_type_id' => 3, 'points_amount' => null, 'image_path' => null],
-            ['id' => 9, 'prize_name' => '15% Off Xbox', 'rarity_item' => 'rare', 'reward_type' => 'discount', 'discount_type_id' => 8, 'points_amount' => null, 'image_path' => null],
-            ['id' => 10, 'prize_name' => 'Free Spin Token', 'rarity_item' => 'rare', 'reward_type' => 'free_spin', 'discount_type_id' => null, 'points_amount' => null, 'image_path' => null],
+            ['id' => 7, 'prize_name' => 'Rp75.000 Welcome Bonus', 'rarity_item' => 'rare', 'reward_type' => 'discount', 'discount_type_id' => 5, 'points_amount' => null, 'image_path' => 'voucher.svg'],
+            ['id' => 8, 'prize_name' => 'Rp30.000 Off Netflix', 'rarity_item' => 'rare', 'reward_type' => 'discount', 'discount_type_id' => 3, 'points_amount' => null, 'image_path' => 'voucher.svg'],
+            ['id' => 9, 'prize_name' => '15% Off Xbox', 'rarity_item' => 'rare', 'reward_type' => 'discount', 'discount_type_id' => 8, 'points_amount' => null, 'image_path' => 'voucher.svg'],
+            ['id' => 10, 'prize_name' => 'Free Spin Token', 'rarity_item' => 'rare', 'reward_type' => 'free_spin', 'discount_type_id' => null, 'points_amount' => null, 'image_path' => 'voucher.svg'],
 
             // === Uncommon ===
-            ['id' => 11, 'prize_name' => '10% Off Storewide', 'rarity_item' => 'uncommon', 'reward_type' => 'discount', 'discount_type_id' => 1, 'points_amount' => null, 'image_path' => null],
-            ['id' => 12, 'prize_name' => '5% Off Steam', 'rarity_item' => 'uncommon', 'reward_type' => 'discount', 'discount_type_id' => 2, 'points_amount' => null, 'image_path' => null],
-            ['id' => 13, 'prize_name' => 'Rp15.000 Off Valorant', 'rarity_item' => 'uncommon', 'reward_type' => 'discount', 'discount_type_id' => 7, 'points_amount' => null, 'image_path' => null],
-            ['id' => 14, 'prize_name' => '200 Points', 'rarity_item' => 'uncommon', 'reward_type' => 'points', 'discount_type_id' => null, 'points_amount' => 200, 'image_path' => null],
+            ['id' => 11, 'prize_name' => '10% Off Storewide', 'rarity_item' => 'uncommon', 'reward_type' => 'discount', 'discount_type_id' => 1, 'points_amount' => null, 'image_path' => 'voucher.svg'],
+            ['id' => 12, 'prize_name' => '5% Off Steam', 'rarity_item' => 'uncommon', 'reward_type' => 'discount', 'discount_type_id' => 2, 'points_amount' => null, 'image_path' => 'voucher.svg'],
+            ['id' => 13, 'prize_name' => 'Rp15.000 Off Valorant', 'rarity_item' => 'uncommon', 'reward_type' => 'discount', 'discount_type_id' => 7, 'points_amount' => null, 'image_path' => 'voucher.svg'],
+            ['id' => 14, 'prize_name' => '200 Points', 'rarity_item' => 'uncommon', 'reward_type' => 'points', 'discount_type_id' => null, 'points_amount' => 200, 'image_path' => 'points.svg'],
 
             // === Common ===
-            ['id' => 15, 'prize_name' => '100 Points', 'rarity_item' => 'common', 'reward_type' => 'points', 'discount_type_id' => null, 'points_amount' => 100, 'image_path' => null],
-            ['id' => 16, 'prize_name' => '50 Points', 'rarity_item' => 'common', 'reward_type' => 'points', 'discount_type_id' => null, 'points_amount' => 50, 'image_path' => null],
-            ['id' => 17, 'prize_name' => '50 Points', 'rarity_item' => 'common', 'reward_type' => 'points', 'discount_type_id' => null, 'points_amount' => 50, 'image_path' => null],
-            ['id' => 18, 'prize_name' => '25 Points', 'rarity_item' => 'common', 'reward_type' => 'points', 'discount_type_id' => null, 'points_amount' => 25, 'image_path' => null],
+            ['id' => 15, 'prize_name' => '100 Points', 'rarity_item' => 'common', 'reward_type' => 'points', 'discount_type_id' => null, 'points_amount' => 100, 'image_path' => 'points.svg'],
+            ['id' => 16, 'prize_name' => '50 Points', 'rarity_item' => 'common', 'reward_type' => 'points', 'discount_type_id' => null, 'points_amount' => 50, 'image_path' => 'points.svg'],
+            ['id' => 17, 'prize_name' => '50 Points', 'rarity_item' => 'common', 'reward_type' => 'points', 'discount_type_id' => null, 'points_amount' => 50, 'image_path' => 'points.svg'],
+            ['id' => 18, 'prize_name' => '25 Points', 'rarity_item' => 'common', 'reward_type' => 'points', 'discount_type_id' => null, 'points_amount' => 25, 'image_path' => 'points.svg'],
 
             // === Filler (still common rarity, just a no-prize slot) ===
             ['id' => 19, 'prize_name' => 'Better Luck Next Time', 'rarity_item' => 'common', 'reward_type' => 'nothing', 'discount_type_id' => null, 'points_amount' => null, 'image_path' => null],
@@ -539,11 +540,11 @@ class DatabaseSeeder extends Seeder
             ['id' => 2, 'user_id' => 5, 'type' => 'technical', 'message' => 'My PSN key says it is already used.', 'status' => 'resolved'],
             ['id' => 3, 'user_id' => 8, 'type' => 'general', 'message' => 'When is the next gacha event?', 'status' => 'resolved'],
             ['id' => 4, 'user_id' => 1, 'type' => 'technical', 'message' => 'Cannot login using Google.', 'status' => 'open'],
-            ['id' => 5, 'user_id' => 3, 'type' => 'billing', 'message' => 'Discount code didn’t apply at checkout.', 'status' => 'open'],
+            ['id' => 5, 'user_id' => 3, 'type' => 'billing', 'message' => 'Discount code didnÃ¢â‚¬â„¢t apply at checkout.', 'status' => 'open'],
             ['id' => 6, 'user_id' => 6, 'type' => 'general', 'message' => 'Do you sell Amazon gift cards?', 'status' => 'resolved'],
             ['id' => 7, 'user_id' => 9, 'type' => 'technical', 'message' => 'Website loads slowly on mobile.', 'status' => 'open'],
             ['id' => 8, 'user_id' => 10, 'type' => 'billing', 'message' => 'Refund request for order INV-2024-009.', 'status' => 'open'],
-            ['id' => 9, 'user_id' => 7, 'type' => 'technical', 'message' => 'Didn’t get my verification email.', 'status' => 'resolved'],
+            ['id' => 9, 'user_id' => 7, 'type' => 'technical', 'message' => 'DidnÃ¢â‚¬â„¢t get my verification email.', 'status' => 'resolved'],
             ['id' => 10, 'user_id' => 4, 'type' => 'admin', 'message' => 'Test ticket from admin account.', 'status' => 'resolved'],
         ];
 
@@ -611,7 +612,7 @@ class DatabaseSeeder extends Seeder
                 'point_cost' => 500,
                 'reward_type' => 'discount_code',
                 'discount_type_id' => 5,
-                'img' => null,
+                'img' => 'point-shop-steam-discount.png',
                 'is_active' => true,
             ],
             [
@@ -621,7 +622,7 @@ class DatabaseSeeder extends Seeder
                 'point_cost' => 5000,
                 'reward_type' => 'discount_code',
                 'discount_type_id' => 9,
-                'img' => null,
+                'img' => 'point-shop-fortnite-discount.png',
                 'is_active' => true,
             ],
             [
@@ -631,7 +632,7 @@ class DatabaseSeeder extends Seeder
                 'point_cost' => 1000,
                 'reward_type' => 'discount_code',
                 'discount_type_id' => 10,
-                'img' => null,
+                'img' => 'point-shop-chatgpt-discount.png',
                 'is_active' => true,
             ],
         ], ['id'], ['name', 'description', 'point_cost', 'reward_type', 'discount_type_id', 'img', 'is_active']);

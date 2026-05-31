@@ -113,7 +113,7 @@
     {{-- 8-Piece Pixel Frame Modal --}}
     <div @click.away="open = false"
          class="px-frame"
-         style="max-width: 440px; width: 100%;"
+         style="max-width: 440px; width: 100%; max-height: calc(100vh - 32px);"
          x-show="open"
          x-transition:enter="transition ease-out duration-200"
          x-transition:enter-start="opacity-0 scale-95"
@@ -128,33 +128,33 @@
         {{-- Content inside the frame --}}
         <div class="px-frame-content">
             {{-- Modern Tab Header --}}
-            <div class="p-6 pb-0">
+            <div class="p-4 pb-0">
                 <div class="flex p-1 bg-foreground/5 rounded-2xl w-full">
                     <button @click="tab = 'login'"
                             :class="tab === 'login' ? 'bg-background shadow-sm text-foreground' : 'text-muted-foreground hover:text-foreground'"
-                            class="flex-1 py-3 text-sm font-bold rounded-xl transition-all">
+                            class="flex-1 py-2 text-sm font-bold rounded-xl transition-all">
                         Login
                     </button>
                     <button @click="tab = 'signup'"
                             :class="tab === 'signup' ? 'bg-background shadow-sm text-foreground' : 'text-muted-foreground hover:text-foreground'"
-                            class="flex-1 py-3 text-sm font-bold rounded-xl transition-all">
+                            class="flex-1 py-2 text-sm font-bold rounded-xl transition-all">
                         Sign Up
                     </button>
                 </div>
             </div>
 
-            <div class="p-6">
+            <div class="p-4">
                 {{-- Login Form --}}
-                <form x-show="tab === 'login'" x-ref="loginForm" @submit.prevent="submitLogin" method="POST" action="{{ route('logAuth') }}" class="space-y-4">
+                <form x-show="tab === 'login'" x-ref="loginForm" @submit.prevent="submitLogin" method="POST" action="{{ route('logAuth') }}" class="space-y-3">
                     @csrf
-                    <div class="space-y-2">
+                    <div class="space-y-1">
                         <label class="text-xs font-black text-muted-foreground uppercase tracking-widest">Email</label>
-                        <input type="email" name="email" x-model="email" required class="w-full px-4 py-3 bg-background border-2 border-input rounded-xl focus:ring-4 focus:ring-primary/20 outline-none transition-all font-bold text-sm" placeholder="name@email.com">
+                        <input type="email" name="email" x-model="email" required class="w-full px-3 py-2 bg-background border-2 border-input rounded-xl focus:ring-4 focus:ring-primary/20 outline-none transition-all font-bold text-sm" placeholder="name@email.com">
                     </div>
-                    <div class="space-y-2">
+                    <div class="space-y-1">
                         <label class="text-xs font-black text-muted-foreground uppercase tracking-widest">Password</label>
                         <div class="relative">
-                            <input :type="showPassword ? 'text' : 'password'" name="password" x-model="password" required class="w-full px-4 py-3 pr-10 bg-background border-2 border-input rounded-xl focus:ring-4 focus:ring-primary/20 outline-none transition-all font-bold text-sm" placeholder="••••••••">
+                            <input :type="showPassword ? 'text' : 'password'" name="password" x-model="password" required class="w-full px-3 py-2 pr-10 bg-background border-2 border-input rounded-xl focus:ring-4 focus:ring-primary/20 outline-none transition-all font-bold text-sm" placeholder="••••••••">
                             <button type="button" @click="showPassword = !showPassword" class="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-primary transition-colors">
                                 <svg x-show="!showPassword" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
                                 <svg x-show="showPassword" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><line x1="2" x2="22" y1="2" y2="22"/></svg>
@@ -163,7 +163,7 @@
                     </div>
 
                     {{-- Pixelated Login Button --}}
-                    <button type="submit" :disabled="loginLoading" class="modal-btn-primary" style="padding: 16px; width: 100%; font-size: 8px;">
+                    <button type="submit" :disabled="loginLoading" class="modal-btn-primary" style="padding: 12px; width: 100%; font-size: 8px;">
                         <span x-text="loginLoading ? 'LOGGING IN...' : 'LOGIN NOW'"></span>
                     </button>
 
@@ -171,20 +171,20 @@
                 </form>
 
                 {{-- Signup Form --}}
-                <form x-show="tab === 'signup'" x-ref="signupForm" @submit.prevent="submitSignup" method="POST" action="{{ route('regAuth') }}" class="space-y-4">
+                <form x-show="tab === 'signup'" x-ref="signupForm" @submit.prevent="submitSignup" method="POST" action="{{ route('regAuth') }}" class="space-y-3">
                     @csrf
-                    <div class="space-y-2">
+                    <div class="space-y-1">
                         <label class="text-xs font-black text-muted-foreground uppercase tracking-widest">Username</label>
-                        <input type="text" name="name" x-model="username" required class="w-full px-4 py-3 bg-background border-2 border-input rounded-xl focus:ring-4 focus:ring-primary/20 outline-none transition-all font-bold text-sm" placeholder="PixelWalker">
+                        <input type="text" name="name" x-model="username" required class="w-full px-3 py-2 bg-background border-2 border-input rounded-xl focus:ring-4 focus:ring-primary/20 outline-none transition-all font-bold text-sm" placeholder="PixelWalker">
                     </div>
-                    <div class="space-y-2">
+                    <div class="space-y-1">
                         <label class="text-xs font-black text-muted-foreground uppercase tracking-widest">Email</label>
-                        <input type="email" name="email" x-model="email" required class="w-full px-4 py-3 bg-background border-2 border-input rounded-xl focus:ring-4 focus:ring-primary/20 outline-none transition-all font-bold text-sm" placeholder="name@email.com">
+                        <input type="email" name="email" x-model="email" required class="w-full px-3 py-2 bg-background border-2 border-input rounded-xl focus:ring-4 focus:ring-primary/20 outline-none transition-all font-bold text-sm" placeholder="name@email.com">
                     </div>
-                    <div class="space-y-2">
+                    <div class="space-y-1">
                         <label class="text-xs font-black text-muted-foreground uppercase tracking-widest">Password</label>
                         <div class="relative">
-                            <input :type="showSignupPassword ? 'text' : 'password'" name="password" x-model="password" @input="checkPasswordStrength(password)" required class="w-full px-4 py-3 pr-10 bg-background border-2 border-input rounded-xl focus:ring-4 focus:ring-primary/20 outline-none transition-all font-bold text-sm" placeholder="Min. 8 characters">
+                            <input :type="showSignupPassword ? 'text' : 'password'" name="password" x-model="password" @input="checkPasswordStrength(password)" required class="w-full px-3 py-2 pr-10 bg-background border-2 border-input rounded-xl focus:ring-4 focus:ring-primary/20 outline-none transition-all font-bold text-sm" placeholder="Min. 8 characters">
                             <button type="button" @click="showSignupPassword = !showSignupPassword" class="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-primary transition-colors">
                                 <svg x-show="!showSignupPassword" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
                                 <svg x-show="showSignupPassword" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><line x1="2" x2="22" y1="2" y2="22"/></svg>
@@ -217,14 +217,14 @@
                     </div>
 
                     {{-- TOS & Privacy (only on signup) --}}
-                    <div class="space-y-3">
-                        <div class="flex items-start gap-3">
+                    <div class="space-y-2">
+                        <div class="flex items-start gap-2">
                             <input type="checkbox" id="signup-tos" x-model="acceptTos" required class="w-4 h-4 mt-0.5 rounded border-border text-primary focus:ring-primary/50 bg-background">
                             <label for="signup-tos" class="text-xs font-bold text-muted-foreground uppercase tracking-widest leading-tight">
                                 I agree to the <a href="{{ route('terms-of-service') }}" class="text-primary hover:underline" target="_blank">Terms of Service</a>
                             </label>
                         </div>
-                        <div class="flex items-start gap-3">
+                        <div class="flex items-start gap-2">
                             <input type="checkbox" id="signup-pp" required class="w-4 h-4 mt-0.5 rounded border-border text-primary focus:ring-primary/50 bg-background">
                             <label for="signup-pp" class="text-xs font-bold text-muted-foreground uppercase tracking-widest leading-tight">
                                 I accept the <a href="{{ route('privacy-policy') }}" class="text-primary hover:underline" target="_blank">Privacy Policy</a>
@@ -233,14 +233,37 @@
                     </div>
 
                     {{-- Pixelated Create Account Button --}}
-                    <button type="submit" :disabled="signupLoading || !acceptTos" class="modal-btn-primary" style="padding: 16px; width: 100%; font-size: 8px;">
+                    <button type="submit" :disabled="signupLoading || !acceptTos" class="modal-btn-primary" style="padding: 12px; width: 100%; font-size: 8px;">
                         <span x-text="signupLoading ? 'CREATING...' : 'CREATE ACCOUNT'"></span>
                     </button>
 
                     <p x-show="signupError" x-text="signupError" class="text-sm text-red-500 text-center"></p>
                 </form>
 
-                <div class="mt-6 text-center">
+                {{-- Divider --}}
+                <div class="relative my-3">
+                    <div class="absolute inset-0 flex items-center">
+                        <div class="w-full border-t-2 border-input"></div>
+                    </div>
+                    <div class="relative flex justify-center">
+                        <span class="bg-background px-3 text-xs font-black text-muted-foreground uppercase tracking-widest">or</span>
+                    </div>
+                </div>
+
+                {{-- Google OAuth --}}
+                <a href="{{ route('auth.google') }}"
+                   class="flex items-center justify-center gap-3 w-full px-4 py-2 bg-background border-2 border-input rounded-xl font-bold text-sm hover:border-primary/50 hover:bg-primary/5 transition-all">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 48 48">
+                        <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+                        <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+                        <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+                        <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.36-8.16 2.36-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+                        <path fill="none" d="M0 0h48v48H0z"/>
+                    </svg>
+                    <span>Continue with Google</span>
+                </a>
+
+                <div class="mt-3 text-center">
                     <p class="text-xs text-muted-foreground">
                         By logging in, you agree to our Terms & Conditions.
                     </p>
