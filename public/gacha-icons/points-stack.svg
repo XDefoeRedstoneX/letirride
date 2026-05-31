@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="Points Stack coin">
+  <defs>
+    <radialGradient id="g962a940e" cx="38%" cy="32%" r="72%">
+      <stop offset="0%" stop-color="#f9c060"/>
+      <stop offset="100%" stop-color="#f59e0b"/>
+    </radialGradient>
+  </defs>
+  <g opacity="1">
+  <circle cx="24" cy="40" r="20" fill="#b07208"/>
+  <circle cx="24" cy="40" r="16" fill="#f59e0b"/>
+  <circle cx="40" cy="38" r="20" fill="#b07208"/>
+  <circle cx="40" cy="38" r="16" fill="url(#g962a940e)"/>  <circle cx="32" cy="32" r="29" fill="#b07208"/>
+  <circle cx="32" cy="32" r="29" fill="none" stroke="#b07208" stroke-width="2" stroke-dasharray="2.6 2.6"/>
+  <circle cx="32" cy="32" r="24" fill="url(#g962a940e)"/>
+  <circle cx="32" cy="32" r="24" fill="none" stroke="#ffffff" stroke-width="1.5" opacity="0.35"/>
+  <ellipse cx="24" cy="22" rx="11" ry="6" fill="#ffffff" opacity="0.22"/>
+  <text x="32" y="33" text-anchor="middle" dominant-baseline="central"
+        font-family="Arial, Helvetica, sans-serif" font-weight="800"
+        font-size="31" fill="#ffffff">P</text>
+  </g>
+</svg>

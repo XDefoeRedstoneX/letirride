@@ -17,6 +17,7 @@ class GachaPool extends Model
         'discount_type_id',
         'rarity_item',
         'reward_type',
+        'icon_key',
         'points_amount',
         'image_path',
     ];
@@ -31,5 +32,14 @@ class GachaPool extends Model
     public function discountType(): BelongsTo
     {
         return $this->belongsTo(DiscountType::class);
+    }
+
+    /**
+     * The catalog coin chosen for this prize (if any). Matched on the icon's
+     * string `key` rather than an id, so keys can be the stable reference.
+     */
+    public function icon(): BelongsTo
+    {
+        return $this->belongsTo(GachaIcon::class, 'icon_key', 'key');
     }
 }

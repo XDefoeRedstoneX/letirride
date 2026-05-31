@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="Spotify coin">
+  <defs>
+    <radialGradient id="g9aeab829" cx="38%" cy="32%" r="72%">
+      <stop offset="0%" stop-color="#6cd290"/>
+      <stop offset="100%" stop-color="#1db954"/>
+    </radialGradient>
+  </defs>
+  <g opacity="1">
+  <circle cx="32" cy="32" r="29" fill="#15853c"/>
+  <circle cx="32" cy="32" r="29" fill="none" stroke="#15853c" stroke-width="2" stroke-dasharray="2.6 2.6"/>
+  <circle cx="32" cy="32" r="24" fill="url(#g9aeab829)"/>
+  <circle cx="32" cy="32" r="24" fill="none" stroke="#ffffff" stroke-width="1.5" opacity="0.35"/>
+  <ellipse cx="24" cy="22" rx="11" ry="6" fill="#ffffff" opacity="0.22"/>
+  <text x="32" y="33" text-anchor="middle" dominant-baseline="central"
+        font-family="Arial, Helvetica, sans-serif" font-weight="800"
+        font-size="31" fill="#ffffff">S</text>
+  </g>
+</svg>

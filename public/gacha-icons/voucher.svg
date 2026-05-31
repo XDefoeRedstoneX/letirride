@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="Voucher coin">
+  <defs>
+    <radialGradient id="g25a8ce08" cx="38%" cy="32%" r="72%">
+      <stop offset="0%" stop-color="#f1ce5e"/>
+      <stop offset="100%" stop-color="#eab308"/>
+    </radialGradient>
+  </defs>
+  <g opacity="1">
+  <circle cx="32" cy="32" r="29" fill="#a88106"/>
+  <circle cx="32" cy="32" r="29" fill="none" stroke="#a88106" stroke-width="2" stroke-dasharray="2.6 2.6"/>
+  <circle cx="32" cy="32" r="24" fill="url(#g25a8ce08)"/>
+  <circle cx="32" cy="32" r="24" fill="none" stroke="#ffffff" stroke-width="1.5" opacity="0.35"/>
+  <ellipse cx="24" cy="22" rx="11" ry="6" fill="#ffffff" opacity="0.22"/>
+  <text x="32" y="33" text-anchor="middle" dominant-baseline="central"
+        font-family="Arial, Helvetica, sans-serif" font-weight="800"
+        font-size="33" fill="#ffffff">%</text>
+  </g>
+</svg>
