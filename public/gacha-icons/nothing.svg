@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="No Prize coin">
+  <defs>
+    <radialGradient id="g3e47b750" cx="38%" cy="32%" r="72%">
+      <stop offset="0%" stop-color="#bfc3cb"/>
+      <stop offset="100%" stop-color="#9ca3af"/>
+    </radialGradient>
+  </defs>
+  <g opacity="0.55">
+  <circle cx="32" cy="32" r="29" fill="#70757e"/>
+  <circle cx="32" cy="32" r="29" fill="none" stroke="#70757e" stroke-width="2" stroke-dasharray="2.6 2.6"/>
+  <circle cx="32" cy="32" r="24" fill="url(#g3e47b750)"/>
+  <circle cx="32" cy="32" r="24" fill="none" stroke="#ffffff" stroke-width="1.5" opacity="0.35"/>
+  <ellipse cx="24" cy="22" rx="11" ry="6" fill="#ffffff" opacity="0.22"/>
+  <text x="32" y="33" text-anchor="middle" dominant-baseline="central"
+        font-family="Arial, Helvetica, sans-serif" font-weight="800"
+        font-size="33" fill="#ffffff">✕</text>
+  </g>
+</svg>

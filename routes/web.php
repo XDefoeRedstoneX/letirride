@@ -3,6 +3,7 @@
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\GachaBoosterController as AdminGachaBoosterController;
 use App\Http\Controllers\Admin\GachaController as AdminGachaController;
+use App\Http\Controllers\Admin\GachaIconController as AdminGachaIconController;
 use App\Http\Controllers\Admin\GachaRarityChanceController as AdminGachaRarityChanceController;
 use App\Http\Controllers\Admin\NewsController as AdminNewsController;
 use App\Http\Controllers\Admin\OrderController as AdminOrderController;
@@ -123,6 +124,11 @@ Route::prefix('admin')
         Route::post('/gacha-boosters', [AdminGachaBoosterController::class, 'store'])->name('admin.gacha-boosters.store');
         Route::patch('/gacha-boosters/{booster}', [AdminGachaBoosterController::class, 'update'])->name('admin.gacha-boosters.update');
         Route::delete('/gacha-boosters/{booster}', [AdminGachaBoosterController::class, 'destroy'])->name('admin.gacha-boosters.destroy');
+
+        Route::get('/gacha-icons', [AdminGachaIconController::class, 'index'])->name('admin.gacha-icons');
+        Route::post('/gacha-icons', [AdminGachaIconController::class, 'store'])->name('admin.gacha-icons.store');
+        Route::patch('/gacha-icons/{gachaIcon}', [AdminGachaIconController::class, 'update'])->name('admin.gacha-icons.update');
+        Route::delete('/gacha-icons/{gachaIcon}', [AdminGachaIconController::class, 'destroy'])->name('admin.gacha-icons.destroy');
 
         Route::get('/tickets', [AdminTicketController::class, 'index'])->name('admin.tickets');
         Route::patch('/tickets/{ticket}/status', [AdminTicketController::class, 'updateStatus'])->name('admin.tickets.status');
