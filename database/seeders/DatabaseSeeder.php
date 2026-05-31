@@ -285,17 +285,20 @@ class DatabaseSeeder extends Seeder
         // Brand-targeted vouchers pin to a subcategory (Steam, Netflix, PSN, …);
         // category-only vouchers stay on target_category_id; storewide leaves both null.
         $rows = [
-            ['id' => 1,  'name' => '10% Off All',            'type' => 'percent', 'value' => 10.00,    'target_category_id' => null, 'target_subcategory_id' => null],
-            ['id' => 2,  'name' => '5% Off Steam',           'type' => 'percent', 'value' => 5.00,     'target_category_id' => null, 'target_subcategory_id' => 2],   // Steam
-            ['id' => 3,  'name' => 'Rp30.000 Off Netflix',   'type' => 'fixed',   'value' => 30000.00, 'target_category_id' => null, 'target_subcategory_id' => 10],  // Netflix
-            ['id' => 4,  'name' => '20% Off PSN',            'type' => 'percent', 'value' => 20.00,    'target_category_id' => null, 'target_subcategory_id' => 3],   // PlayStation
-            ['id' => 5,  'name' => 'Rp75.000 Welcome Bonus', 'type' => 'fixed',   'value' => 75000.00, 'target_category_id' => null, 'target_subcategory_id' => null],
-            ['id' => 6,  'name' => 'Half Price Discord',     'type' => 'percent', 'value' => 50.00,    'target_category_id' => null, 'target_subcategory_id' => 12],  // Discord
-            ['id' => 7,  'name' => 'Rp15.000 Off Valorant',  'type' => 'fixed',   'value' => 15000.00, 'target_category_id' => null, 'target_subcategory_id' => 5],   // Valorant
-            ['id' => 8,  'name' => '15% Off Xbox',           'type' => 'percent', 'value' => 15.00,    'target_category_id' => null, 'target_subcategory_id' => 13],  // Xbox
-            ['id' => 9,  'name' => 'Whale Discount',         'type' => 'percent', 'value' => 25.00,    'target_category_id' => null, 'target_subcategory_id' => null],
-            ['id' => 10, 'name' => 'Free Welkin',            'type' => 'fixed',   'value' => 79000.00, 'target_category_id' => null, 'target_subcategory_id' => 9],   // Genshin
-            ['id' => 11, 'name' => '20% Off All Subscriptions', 'type' => 'percent', 'value' => 20.00, 'target_category_id' => 5,    'target_subcategory_id' => null], // category-level
+            ['id' => 1,  'name' => '10% Off All',               'type' => 'percent', 'value' => 10.00,    'target_category_id' => null, 'target_subcategory_id' => null],
+            ['id' => 2,  'name' => '5% Off Steam',              'type' => 'percent', 'value' => 5.00,     'target_category_id' => null, 'target_subcategory_id' => 2],   // Steam
+            ['id' => 3,  'name' => 'Rp30.000 Off Netflix',      'type' => 'fixed',   'value' => 30000.00, 'target_category_id' => null, 'target_subcategory_id' => 10],  // Netflix
+            ['id' => 4,  'name' => '20% Off PSN',               'type' => 'percent', 'value' => 20.00,    'target_category_id' => null, 'target_subcategory_id' => 3],   // PlayStation
+            ['id' => 5,  'name' => 'Rp75.000 Welcome Bonus',    'type' => 'fixed',   'value' => 75000.00, 'target_category_id' => null, 'target_subcategory_id' => null],
+            ['id' => 6,  'name' => 'Half Price Discord',        'type' => 'percent', 'value' => 50.00,    'target_category_id' => null, 'target_subcategory_id' => 12],  // Discord
+            ['id' => 7,  'name' => 'Rp15.000 Off Valorant',     'type' => 'fixed',   'value' => 15000.00, 'target_category_id' => null, 'target_subcategory_id' => 5],   // Valorant
+            ['id' => 8,  'name' => '15% Off Xbox',              'type' => 'percent', 'value' => 15.00,    'target_category_id' => null, 'target_subcategory_id' => 13],  // Xbox
+            ['id' => 9,  'name' => 'Whale Discount',            'type' => 'percent', 'value' => 25.00,    'target_category_id' => null, 'target_subcategory_id' => null],
+            ['id' => 10, 'name' => 'Free Welkin',               'type' => 'fixed',   'value' => 79000.00, 'target_category_id' => null, 'target_subcategory_id' => 9],   // Genshin
+            ['id' => 11, 'name' => '20% Off All Subscriptions', 'type' => 'percent', 'value' => 20.00,    'target_category_id' => 5,    'target_subcategory_id' => null], // Subscriptions category
+            ['id' => 12, 'name' => '20% Off Steam',             'type' => 'percent', 'value' => 20.00,    'target_category_id' => null, 'target_subcategory_id' => 2],   // Steam — point shop
+            ['id' => 13, 'name' => '25% Off Fortnite V-Bucks',  'type' => 'percent', 'value' => 25.00,    'target_category_id' => null, 'target_subcategory_id' => 7],   // Fortnite — point shop
+            ['id' => 14, 'name' => '10% Off ChatGPT',           'type' => 'percent', 'value' => 10.00,    'target_category_id' => null, 'target_subcategory_id' => 16],  // OpenAI — point shop
         ];
 
         if (! $hasSubcategoryTarget) {
@@ -615,7 +618,7 @@ class DatabaseSeeder extends Seeder
                 'description' => 'Get 20% off all Steam products and wallet top-ups.',
                 'point_cost' => 500,
                 'reward_type' => 'discount_code',
-                'discount_type_id' => 5,
+                'discount_type_id' => 12,
                 'img' => null,
                 'is_active' => true,
             ],
@@ -625,7 +628,7 @@ class DatabaseSeeder extends Seeder
                 'description' => 'Receive 25% off every Fortnite V-Bucks package.',
                 'point_cost' => 5000,
                 'reward_type' => 'discount_code',
-                'discount_type_id' => 9,
+                'discount_type_id' => 13,
                 'img' => null,
                 'is_active' => true,
             ],
@@ -635,7 +638,7 @@ class DatabaseSeeder extends Seeder
                 'description' => 'Enjoy 10% off all ChatGPT subscription plans.',
                 'point_cost' => 1000,
                 'reward_type' => 'discount_code',
-                'discount_type_id' => 10,
+                'discount_type_id' => 14,
                 'img' => null,
                 'is_active' => true,
             ],
