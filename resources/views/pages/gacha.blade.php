@@ -284,8 +284,33 @@
             miniPityCounter: {{ (int) ($pity['mini_pity_counter'] ?? 0) }},
 
             init() {
+                // Shuffle the carousel order so the idle drift interleaves rarities
+                // (the backend sorts highest-rarity-first, which otherwise parks the
+                // idle view on grand/legendary and never reaches uncommon/common).
+                // Spin/reveal looks up the winner by id, so order is purely cosmetic.
+                this.items = this.shuffle(this.items.slice());
+
+                // Drive the idle drift across one FULL set width so every prize scrolls
+                // past before the loop repeats; keep per-card speed constant (~3.2s each).
+                const cardStride = 176; // 160px card + 16px gap, matches reveal math
+                const stride = this.items.length * cardStride;
+                this.$nextTick(() => {
+                    if (this.$refs.carousel) {
+                        this.$refs.carousel.style.setProperty('--gacha-idle-stride', stride + 'px');
+                        this.$refs.carousel.style.setProperty('--gacha-idle-duration', (this.items.length * 3.2) + 's');
+                    }
+                });
+
                 // Make sure the carousel is in the idle-loop class on first paint.
                 this.animationClass = 'gacha-idle-loop';
+            },
+
+            shuffle(arr) {
+                for (let i = arr.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [arr[i], arr[j]] = [arr[j], arr[i]];
+                }
+                return arr;
             },
 
             rarityDisplayName(rarity) {

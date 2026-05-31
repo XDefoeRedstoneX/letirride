@@ -414,10 +414,12 @@ button,
   to   { transform: translateX(-880px); }
 }
 
-/* Slow drift while the user has not pulled yet — slowly reveals every prize. */
+/* Slow drift while the user has not pulled yet — scrolls one FULL set width
+   (set via --gacha-idle-stride in JS) so every prize, every rarity, is revealed
+   before the seamless loop repeats. */
 @keyframes gacha-idle-drift {
   from { transform: translateX(0); }
-  to   { transform: translateX(-880px); }
+  to   { transform: translateX(calc(-1 * var(--gacha-idle-stride, 880px))); }
 }
 
 @keyframes gacha-decelerate {
@@ -426,7 +428,7 @@ button,
 }
 
 .gacha-idle-loop {
-  animation: gacha-idle-drift 30s linear infinite;
+  animation: gacha-idle-drift var(--gacha-idle-duration, 40s) linear infinite;
 }
 
 .gacha-spinning {
@@ -3179,6 +3181,66 @@ button,
   font-family: var(--font-sans);
   font-size: 11px;
   color: var(--text-dim);
+}
+
+/* At-a-glance milestone checkmark table */
+.referral-tier-table-wrap {
+  overflow-x: auto;
+  margin-bottom: 18px;
+  border: 2px solid var(--dark-line);
+  border-radius: 4px;
+}
+
+.referral-tier-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--font-sans);
+}
+
+.referral-tier-table thead th {
+  text-align: left;
+  font-family: var(--px);
+  font-size: 7px;
+  letter-spacing: 0.12em;
+  color: var(--text-dim);
+  padding: 10px 14px;
+  background: rgba(255, 255, 255, 0.03);
+  border-bottom: 2px solid var(--dark-line);
+  white-space: nowrap;
+}
+
+.referral-tier-table-row td {
+  padding: 11px 14px;
+  font-size: 12px;
+  color: #e8f0ff;
+  border-bottom: 1px solid var(--dark-line);
+  vertical-align: middle;
+}
+
+.referral-tier-table-row:last-child td { border-bottom: none; }
+
+.referral-tier-table-title { font-weight: 800; }
+.referral-tier-table-friends { font-weight: 800; color: var(--gold); width: 64px; }
+.referral-tier-table-reward { color: var(--text-dim); font-size: 11px; }
+.referral-tier-table-status { text-align: right; width: 72px; }
+
+.referral-tier-table-row-locked td { opacity: 0.55; }
+.referral-tier-table-row-next { background: rgba(245, 158, 11, 0.06); }
+.referral-tier-table-row-unlocked .referral-tier-table-title { color: #22c55e; }
+
+.referral-tier-check {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.referral-tier-check-on { color: #22c55e; }
+.referral-tier-check-off { color: var(--text-dim); }
+.referral-tier-check-next {
+  font-family: var(--px);
+  font-size: 8px;
+  letter-spacing: 0.06em;
+  color: var(--gold);
+  font-weight: 800;
 }
 
 .referral-tier-list {
