@@ -8,6 +8,7 @@ use App\Http\Controllers\Admin\NewsController as AdminNewsController;
 use App\Http\Controllers\Admin\OrderController as AdminOrderController;
 use App\Http\Controllers\Admin\ProductController as AdminProductController;
 use App\Http\Controllers\Admin\ReferralController as AdminReferralController;
+use App\Http\Controllers\Admin\ReferralTierController as AdminReferralTierController;
 use App\Http\Controllers\Admin\TicketController as AdminTicketController;
 use App\Http\Controllers\Admin\UserController as AdminUserController;
 use App\Http\Controllers\Admin\FaqController as AdminFaqController;
@@ -138,6 +139,12 @@ Route::prefix('admin')
         Route::get('/referrals', [AdminReferralController::class, 'index'])->name('admin.referrals');
         Route::patch('/referrals/config', [AdminReferralController::class, 'updateConfig'])->name('admin.referrals.config');
         Route::post('/referrals/{referral}/void', [AdminReferralController::class, 'void'])->name('admin.referrals.void');
+
+        Route::get('/referral-tiers', [AdminReferralTierController::class, 'index'])->name('admin.referral-tiers');
+        Route::post('/referral-tiers', [AdminReferralTierController::class, 'store'])->name('admin.referral-tiers.store');
+        Route::patch('/referral-tiers/{tier}', [AdminReferralTierController::class, 'update'])->name('admin.referral-tiers.update');
+        Route::delete('/referral-tiers/{tier}', [AdminReferralTierController::class, 'destroy'])->name('admin.referral-tiers.destroy');
+        Route::post('/referral-tiers/backfill', [AdminReferralTierController::class, 'backfill'])->name('admin.referral-tiers.backfill');
 
         Route::get('/tickets', [AdminTicketController::class, 'index'])->name('admin.tickets');
         Route::patch('/tickets/{ticket}/status', [AdminTicketController::class, 'updateStatus'])->name('admin.tickets.status');

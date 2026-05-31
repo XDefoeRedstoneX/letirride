@@ -26,6 +26,56 @@
                     <p class="referral-share-hint">When a friend signs up with your code and completes their first purchase, you earn <strong>{{ number_format($config->referrer_first_purchase_pts) }} points</strong>. They get <strong>{{ number_format($config->referee_welcome_points) }} points</strong> for using your code.</p>
                 </div>
 
+                {{-- How it works --}}
+                <div class="referral-how-card" x-data="{ open: true }">
+                    <button type="button" class="referral-how-toggle" @click="open = !open">
+                        <span class="referral-section-title" style="margin:0;">HOW IT WORKS</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="square" :style="open ? 'transform: rotate(180deg)' : ''" style="transition:transform 0.2s;color:var(--gold);"><path d="m6 9 6 6 6-6"/></svg>
+                    </button>
+                    <div x-show="open" x-transition.opacity>
+                        <ol class="referral-how-steps">
+                            <li class="referral-how-step">
+                                <span class="referral-how-step-num">1</span>
+                                <div class="referral-how-step-body">
+                                    <h4 class="referral-how-step-title">Share your code</h4>
+                                    <p class="referral-how-step-desc">Send friends your referral code or share link. Anyone who hasn't bought from Ridly yet can use it.</p>
+                                </div>
+                            </li>
+                            <li class="referral-how-step">
+                                <span class="referral-how-step-num">2</span>
+                                <div class="referral-how-step-body">
+                                    <h4 class="referral-how-step-title">They join with your code</h4>
+                                    <p class="referral-how-step-desc">Your friend gets <strong>{{ number_format($config->referee_welcome_points) }} bonus points</strong> the moment they apply it &mdash; before their first purchase.</p>
+                                </div>
+                            </li>
+                            <li class="referral-how-step">
+                                <span class="referral-how-step-num">3</span>
+                                <div class="referral-how-step-body">
+                                    <h4 class="referral-how-step-title">They make their first purchase</h4>
+                                    <p class="referral-how-step-desc">You earn <strong>{{ number_format($config->referrer_first_purchase_pts) }} points</strong>, paid automatically once their order is confirmed.</p>
+                                </div>
+                            </li>
+                            @if ($config->commission_percent > 0)
+                                <li class="referral-how-step">
+                                    <span class="referral-how-step-num">4</span>
+                                    <div class="referral-how-step-body">
+                                        <h4 class="referral-how-step-title">Keep earning on every order</h4>
+                                        <p class="referral-how-step-desc">After their first purchase you collect <strong>{{ rtrim(rtrim(number_format($config->commission_percent, 2), '0'), '.') }}%</strong> of each future order as points (up to {{ number_format($config->commission_per_order_cap) }} pts per order, {{ number_format($config->commission_lifetime_cap) }} pts lifetime per friend).</p>
+                                    </div>
+                                </li>
+                            @endif
+                            <li class="referral-how-step">
+                                <span class="referral-how-step-num">{{ $config->commission_percent > 0 ? '5' : '4' }}</span>
+                                <div class="referral-how-step-body">
+                                    <h4 class="referral-how-step-title">Climb the milestones</h4>
+                                    <p class="referral-how-step-desc">Every time more friends complete a first purchase you unlock <strong>milestone tiers</strong> below &mdash; extra points, discount vouchers, and free gacha spins, granted automatically.</p>
+                                </div>
+                            </li>
+                        </ol>
+                        <p class="referral-how-fineprint">A code can only be claimed before your friend's first purchase, and each friend counts once. Self-referrals don't qualify.</p>
+                    </div>
+                </div>
+
                 {{-- Stats --}}
                 <div class="referral-stats-row">
                     <div class="referral-stat">
@@ -41,6 +91,100 @@
                         <p class="referral-stat-value">{{ number_format($earnedPoints) }}</p>
                     </div>
                 </div>
+
+                {{-- Milestone Progression --}}
+                @if ($tiers->isNotEmpty())
+                    <div class="referral-progression-card">
+                        <div class="referral-progression-header">
+                            <div>
+                                <h3 class="referral-section-title">REWARD MILESTONES</h3>
+                                <p class="referral-section-sub">Hit a tier when that many friends complete a first purchase &mdash; rewards apply automatically.</p>
+                            </div>
+                            <div class="referral-progression-summary">
+                                <span class="referral-progression-summary-value">{{ $unlockedCount }} / {{ $tiers->count() }}</span>
+                                <span class="referral-progression-summary-label">UNLOCKED</span>
+                            </div>
+                        </div>
+
+                        @if ($nextTier)
+                            @php
+                                $remaining = max(0, $nextTier->threshold - $paidReferrals);
+                                $progressPct = $nextTier->threshold > 0 ? min(100, ($paidReferrals / $nextTier->threshold) * 100) : 100;
+                            @endphp
+                            <div class="referral-progression-track">
+                                <div class="referral-progression-track-meta">
+                                    <span>NEXT: <strong>{{ $nextTier->title }}</strong></span>
+                                    <span>{{ $paidReferrals }} / {{ $nextTier->threshold }} FRIENDS</span>
+                                </div>
+                                <div class="referral-progression-track-bar">
+                                    <div class="referral-progression-track-fill" style="width: {{ $progressPct }}%;"></div>
+                                </div>
+                                <p class="referral-progression-track-hint">
+                                    @if ($remaining > 0)
+                                        {{ $remaining }} more paid {{ $remaining === 1 ? 'referral' : 'referrals' }} to unlock.
+                                    @else
+                                        Waiting on your friend's purchase to finalize this tier.
+                                    @endif
+                                </p>
+                            </div>
+                        @endif
+
+                        <div class="referral-tier-list">
+                            @foreach ($tiers as $tier)
+                                @php
+                                    $isUnlocked = $grantedTiers->has($tier->id);
+                                    $isNext = $nextTier && $nextTier->id === $tier->id;
+                                    $grantedAt = $isUnlocked ? optional($grantedTiers[$tier->id]->created_at)->format('Y-m-d') : null;
+                                    $cardClass = $isUnlocked ? 'unlocked' : ($isNext ? 'next' : 'locked');
+                                @endphp
+                                <div class="referral-tier-card referral-tier-card-{{ $cardClass }}">
+                                    <div class="referral-tier-card-head">
+                                        <span class="referral-tier-threshold">{{ $tier->threshold }}</span>
+                                        <div class="referral-tier-card-title-block">
+                                            <h4 class="referral-tier-title">{{ $tier->title }}</h4>
+                                            @if ($tier->description)
+                                                <p class="referral-tier-desc">{{ $tier->description }}</p>
+                                            @endif
+                                        </div>
+                                        <div class="referral-tier-state">
+                                            @if ($isUnlocked)
+                                                <span class="referral-tier-state-badge referral-tier-state-unlocked">
+                                                    UNLOCKED
+                                                </span>
+                                                @if ($grantedAt)
+                                                    <span class="referral-tier-state-date">{{ $grantedAt }}</span>
+                                                @endif
+                                            @elseif ($isNext)
+                                                <span class="referral-tier-state-badge referral-tier-state-next">
+                                                    IN PROGRESS
+                                                </span>
+                                            @else
+                                                <span class="referral-tier-state-badge referral-tier-state-locked">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="square"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                                                    LOCKED
+                                                </span>
+                                            @endif
+                                        </div>
+                                    </div>
+                                    <div class="referral-tier-rewards">
+                                        @if ($tier->points_reward > 0)
+                                            <span class="referral-tier-reward-chip referral-tier-reward-points">+{{ number_format($tier->points_reward) }} PTS</span>
+                                        @endif
+                                        @if ($tier->discountType)
+                                            <span class="referral-tier-reward-chip referral-tier-reward-discount">{{ strtoupper($tier->discountType->name) }}</span>
+                                        @endif
+                                        @if ($tier->free_spins_reward > 0)
+                                            <span class="referral-tier-reward-chip referral-tier-reward-spin">{{ $tier->free_spins_reward }}× FREE SPIN</span>
+                                        @endif
+                                        @if (! $tier->hasReward())
+                                            <span class="referral-tier-reward-chip referral-tier-reward-cosmetic">PRESTIGE</span>
+                                        @endif
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
+                @endif
 
                 {{-- Claim a code (only if not yet referred AND no paid orders) --}}
                 @if ($canClaim)
