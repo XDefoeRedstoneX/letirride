@@ -26,6 +26,56 @@
                     <p class="referral-share-hint">When a friend signs up with your code and completes their first purchase, you earn <strong>{{ number_format($config->referrer_first_purchase_pts) }} points</strong>. They get <strong>{{ number_format($config->referee_welcome_points) }} points</strong> for using your code.</p>
                 </div>
 
+                {{-- How it works --}}
+                <div class="referral-how-card" x-data="{ open: true }">
+                    <button type="button" class="referral-how-toggle" @click="open = !open">
+                        <span class="referral-section-title" style="margin:0;">HOW IT WORKS</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="square" :style="open ? 'transform: rotate(180deg)' : ''" style="transition:transform 0.2s;color:var(--gold);"><path d="m6 9 6 6 6-6"/></svg>
+                    </button>
+                    <div x-show="open" x-transition.opacity>
+                        <ol class="referral-how-steps">
+                            <li class="referral-how-step">
+                                <span class="referral-how-step-num">1</span>
+                                <div class="referral-how-step-body">
+                                    <h4 class="referral-how-step-title">Share your code</h4>
+                                    <p class="referral-how-step-desc">Send friends your referral code or share link. Anyone who hasn't bought from Ridly yet can use it.</p>
+                                </div>
+                            </li>
+                            <li class="referral-how-step">
+                                <span class="referral-how-step-num">2</span>
+                                <div class="referral-how-step-body">
+                                    <h4 class="referral-how-step-title">They join with your code</h4>
+                                    <p class="referral-how-step-desc">Your friend gets <strong>{{ number_format($config->referee_welcome_points) }} bonus points</strong> the moment they apply it &mdash; before their first purchase.</p>
+                                </div>
+                            </li>
+                            <li class="referral-how-step">
+                                <span class="referral-how-step-num">3</span>
+                                <div class="referral-how-step-body">
+                                    <h4 class="referral-how-step-title">They make their first purchase</h4>
+                                    <p class="referral-how-step-desc">You earn <strong>{{ number_format($config->referrer_first_purchase_pts) }} points</strong>, paid automatically once their order is confirmed.</p>
+                                </div>
+                            </li>
+                            @if ($config->commission_percent > 0)
+                                <li class="referral-how-step">
+                                    <span class="referral-how-step-num">4</span>
+                                    <div class="referral-how-step-body">
+                                        <h4 class="referral-how-step-title">Keep earning on every order</h4>
+                                        <p class="referral-how-step-desc">After their first purchase you collect <strong>{{ rtrim(rtrim(number_format($config->commission_percent, 2), '0'), '.') }}%</strong> of each future order as points (up to {{ number_format($config->commission_per_order_cap) }} pts per order, {{ number_format($config->commission_lifetime_cap) }} pts lifetime per friend).</p>
+                                    </div>
+                                </li>
+                            @endif
+                            <li class="referral-how-step">
+                                <span class="referral-how-step-num">{{ $config->commission_percent > 0 ? '5' : '4' }}</span>
+                                <div class="referral-how-step-body">
+                                    <h4 class="referral-how-step-title">Climb the milestones</h4>
+                                    <p class="referral-how-step-desc">Every time more friends complete a first purchase you unlock <strong>milestone tiers</strong> below &mdash; extra points, discount vouchers, and free gacha spins, granted automatically.</p>
+                                </div>
+                            </li>
+                        </ol>
+                        <p class="referral-how-fineprint">A code can only be claimed before your friend's first purchase, and each friend counts once. Self-referrals don't qualify.</p>
+                    </div>
+                </div>
+
                 {{-- Stats --}}
                 <div class="referral-stats-row">
                     <div class="referral-stat">
