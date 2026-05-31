@@ -206,13 +206,15 @@ class GachaController extends Controller
     public static function resolveImageFor(GachaPool $prize): string
     {
         if ($prize->image_path) {
-            return $prize->image_path;
+            return str_starts_with($prize->image_path, '/')
+                ? $prize->image_path
+                : '/gacha-assets/' . $prize->image_path;
         }
 
         return match ($prize->rarity_item) {
-            'grand_prize', 'legendary' => '/gacha-assets/jackpot.png',
-            'epic', 'rare' => '/gacha-assets/voucher.png',
-            'uncommon' => '/gacha-assets/points.png',
+            'grand_prize', 'legendary' => '/gacha-assets/jackpot.svg',
+            'epic', 'rare' => '/gacha-assets/voucher.svg',
+            'uncommon' => '/gacha-assets/points.svg',
             default => '/alt/logo.png',
         };
     }

@@ -26,7 +26,7 @@ class PointController extends Controller
                 'description' => $item->description,
                 'point_cost' => $item->point_cost,
                 'reward_type' => $item->reward_type,
-                'image' => $item->img ?: '/gacha-assets/voucher.png',
+                'image' => $item->img ? '/point-shop-assets/' . $item->img : '/gacha-assets/voucher.svg',
                 'discount_name' => $item->discountType?->name ?? '',
             ]);
 

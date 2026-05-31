@@ -7,6 +7,7 @@ $baseDir = dirname($vendorDir);
 
 return array(
     'App\\Http\\Controllers\\Admin\\DashboardController' => $baseDir . '/app/Http/Controllers/Admin/DashboardController.php',
+    'App\\Http\\Controllers\\Admin\\FaqController' => $baseDir . '/app/Http/Controllers/Admin/FaqController.php',
     'App\\Http\\Controllers\\Admin\\GachaBoosterController' => $baseDir . '/app/Http/Controllers/Admin/GachaBoosterController.php',
     'App\\Http\\Controllers\\Admin\\GachaController' => $baseDir . '/app/Http/Controllers/Admin/GachaController.php',
     'App\\Http\\Controllers\\Admin\\GachaRarityChanceController' => $baseDir . '/app/Http/Controllers/Admin/GachaRarityChanceController.php',
@@ -20,6 +21,7 @@ return array(
     'App\\Http\\Controllers\\CartController' => $baseDir . '/app/Http/Controllers/CartController.php',
     'App\\Http\\Controllers\\CheckoutController' => $baseDir . '/app/Http/Controllers/CheckoutController.php',
     'App\\Http\\Controllers\\Controller' => $baseDir . '/app/Http/Controllers/Controller.php',
+    'App\\Http\\Controllers\\FaqController' => $baseDir . '/app/Http/Controllers/FaqController.php',
     'App\\Http\\Controllers\\FavoriteController' => $baseDir . '/app/Http/Controllers/FavoriteController.php',
     'App\\Http\\Controllers\\GachaBoosterController' => $baseDir . '/app/Http/Controllers/GachaBoosterController.php',
     'App\\Http\\Controllers\\GachaController' => $baseDir . '/app/Http/Controllers/GachaController.php',
@@ -194,6 +196,7 @@ return array(
     'Database\\Factories\\UserFactory' => $baseDir . '/database/factories/UserFactory.php',
     'Database\\Seeders\\DatabaseSeeder' => $baseDir . '/database/seeders/DatabaseSeeder.php',
     'Database\\Seeders\\DemoDataSeeder' => $baseDir . '/database/seeders/DemoDataSeeder.php',
+    'Database\\Seeders\\FaqSeeder' => $baseDir . '/database/seeders/FaqSeeder.php',
     'Database\\Seeders\\TestAccountSeeder' => $baseDir . '/database/seeders/TestAccountSeeder.php',
     'Database\\Seeders\\UserSeeder' => $baseDir . '/database/seeders/UserSeeder.php',
     'DeepCopy\\DeepCopy' => $vendorDir . '/myclabs/deep-copy/src/DeepCopy/DeepCopy.php',
