@@ -1,5 +1,7 @@
 <?php
 
+use App\Models\Referral;
+use App\Models\ReferralReward;
 use App\Models\ReferralTier;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -22,19 +24,34 @@ function tierRow(int $id, int $threshold, string $title, int $points): ReferralT
     ]);
 }
 
-it('renders the milestone checkmark table when tiers exist', function () {
+it('self-heals: backfills milestones a user already qualified for but never received', function () {
     tierRow(1, 1, 'First Catch', 200);
     tierRow(2, 3, 'Triple Threat', 500);
 
-    $user = User::factory()->create();
+    $alice = User::factory()->create();
+    $bob = User::factory()->create(['referred_by' => $alice->id]);
 
-    $response = $this->actingAs($user)->get(route('referrals'));
+    // A referral that has already crossed Tier 1's threshold, but no milestone
+    // reward row exists yet (mirrors an old account or a manual seed).
+    Referral::create([
+        'referrer_id' => $alice->id,
+        'referred_user_id' => $bob->id,
+        'status' => 'first_purchase_rewarded',
+        'first_purchase_rewarded_at' => now(),
+        'total_commission_paid' => 0,
+    ]);
 
-    $response->assertOk();
-    $response->assertSee('REWARD MILESTONES', false);
-    $response->assertSee('referral-tier-table', false);
-    $response->assertSee('First Catch', false);
-    $response->assertSee('Triple Threat', false);
+    expect(ReferralReward::where('recipient_id', $alice->id)
+        ->where('kind', ReferralReward::KIND_MILESTONE)
+        ->count())->toBe(0);
+
+    $this->actingAs($alice)->get(route('referrals'))->assertOk();
+
+    // After visiting the page, the missed Tier 1 reward exists.
+    expect(ReferralReward::where('recipient_id', $alice->id)
+        ->where('kind', ReferralReward::KIND_MILESTONE)
+        ->where('tier_id', 1)
+        ->exists())->toBeTrue();
 });
 
 it('hides the milestone section entirely when no tiers are configured', function () {
@@ -43,5 +60,5 @@ it('hides the milestone section entirely when no tiers are configured', function
     $response = $this->actingAs($user)->get(route('referrals'));
 
     $response->assertOk();
-    $response->assertDontSee('referral-tier-table', false);
+    $response->assertDontSee('REWARD MILESTONES', false);
 });
