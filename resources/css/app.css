@@ -1302,31 +1302,26 @@ button,
 }
 
 .hero-frame-grid {
-  display: grid;
-  grid-template-columns: var(--frame-size) 1fr var(--frame-size);
-  grid-template-rows: var(--frame-size) 1fr var(--frame-size);
-  aspect-ratio: 3.5 / 1;
+  position: relative;
   width: 100%;
 }
 
-.hero-frame-grid .px-frame-tl,
-.hero-frame-grid .px-frame-tr,
-.hero-frame-grid .px-frame-bl,
-.hero-frame-grid .px-frame-br,
-.hero-frame-grid .px-frame-t,
-.hero-frame-grid .px-frame-b,
-.hero-frame-grid .px-frame-l,
-.hero-frame-grid .px-frame-r {
-  image-rendering: pixelated;
+.hero-frame-img {
+  width: 100%;
+  height: auto;
+  display: block;
+  image-rendering: auto; /* let it scale nicely on modern screens, or use pixelated if preferred */
 }
 
 .hero-frame-content {
-  background: var(--background);
-  grid-area: 2 / 2;
-  position: relative;
+  position: absolute;
+  top: 5.2174%;
+  bottom: 5.2174%;
+  left: 3.75%;
+  right: 3.75%;
   overflow: hidden;
-  min-width: 0;
-  min-height: 0;
+  /* Dark background fallback behind images */
+  background: var(--background, #000);
 }
 
 .hero-news-img {
@@ -1334,26 +1329,8 @@ button,
   inset: 0;
   width: 100%;
   height: 100%;
-  object-fit: contain;
+  object-fit: cover; /* to cover the inner area */
   display: block;
-}
-
-.hero-frameplate {
-  display: flex;
-  justify-content: center;
-  margin-top: calc(var(--frame-size) * -1);
-  /* Math to mount on the bottom edge */
-  position: relative;
-  z-index: 4;
-}
-
-.hero-frameplate img {
-  height: 80px;
-  /* 4x scale of native 20px height */
-  image-rendering: pixelated;
-  image-rendering: crisp-edges;
-  filter: drop-shadow(0 8px 0 rgba(0, 0, 0, 0.5));
-  /* add shadow to look mounted */
 }
 
 /* ── Page Layout ──────────────────────────────────────────────── */
