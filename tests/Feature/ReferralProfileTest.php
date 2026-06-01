@@ -29,6 +29,31 @@ it('renders the user\'s own referral code on the page', function () {
     $response->assertSee('MYCODE123', false);
 });
 
+it('shows the how-it-works explainer with the configured reward values', function () {
+    $user = User::factory()->create();
+
+    $response = $this->actingAs($user)->get(route('referrals'));
+
+    $response->assertOk();
+    $response->assertSee('HOW IT WORKS', false);
+    $response->assertSee('They join with your code', false);
+    $response->assertSee('They make their first purchase', false);
+    $response->assertSee('Climb the milestones', false);
+    // Commission disabled by default → that step must NOT appear.
+    $response->assertDontSee('Keep earning on every order', false);
+});
+
+it('includes the commission step only when commission is enabled', function () {
+    ReferralConfig::current()->update(['commission_percent' => 2.5]);
+    $user = User::factory()->create();
+
+    $response = $this->actingAs($user)->get(route('referrals'));
+
+    $response->assertOk();
+    $response->assertSee('Keep earning on every order', false);
+    $response->assertSee('2.5%', false);
+});
+
 it('shows the claim form when the user has no referrer and no paid orders', function () {
     $user = User::factory()->create();
     $response = $this->actingAs($user)->get(route('referrals'));

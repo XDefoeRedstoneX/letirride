@@ -670,6 +670,7 @@ class ComposerStaticInitc57754c93ae34ac3b9b716a0fd2f2149
 
     public static $classMap = array (
         'App\\Http\\Controllers\\Admin\\DashboardController' => __DIR__ . '/../..' . '/app/Http/Controllers/Admin/DashboardController.php',
+        'App\\Http\\Controllers\\Admin\\FaqController' => __DIR__ . '/../..' . '/app/Http/Controllers/Admin/FaqController.php',
         'App\\Http\\Controllers\\Admin\\GachaBoosterController' => __DIR__ . '/../..' . '/app/Http/Controllers/Admin/GachaBoosterController.php',
         'App\\Http\\Controllers\\Admin\\GachaController' => __DIR__ . '/../..' . '/app/Http/Controllers/Admin/GachaController.php',
         'App\\Http\\Controllers\\Admin\\GachaRarityChanceController' => __DIR__ . '/../..' . '/app/Http/Controllers/Admin/GachaRarityChanceController.php',
@@ -683,6 +684,7 @@ class ComposerStaticInitc57754c93ae34ac3b9b716a0fd2f2149
         'App\\Http\\Controllers\\CartController' => __DIR__ . '/../..' . '/app/Http/Controllers/CartController.php',
         'App\\Http\\Controllers\\CheckoutController' => __DIR__ . '/../..' . '/app/Http/Controllers/CheckoutController.php',
         'App\\Http\\Controllers\\Controller' => __DIR__ . '/../..' . '/app/Http/Controllers/Controller.php',
+        'App\\Http\\Controllers\\FaqController' => __DIR__ . '/../..' . '/app/Http/Controllers/FaqController.php',
         'App\\Http\\Controllers\\FavoriteController' => __DIR__ . '/../..' . '/app/Http/Controllers/FavoriteController.php',
         'App\\Http\\Controllers\\GachaBoosterController' => __DIR__ . '/../..' . '/app/Http/Controllers/GachaBoosterController.php',
         'App\\Http\\Controllers\\GachaController' => __DIR__ . '/../..' . '/app/Http/Controllers/GachaController.php',
@@ -857,6 +859,7 @@ class ComposerStaticInitc57754c93ae34ac3b9b716a0fd2f2149
         'Database\\Factories\\UserFactory' => __DIR__ . '/../..' . '/database/factories/UserFactory.php',
         'Database\\Seeders\\DatabaseSeeder' => __DIR__ . '/../..' . '/database/seeders/DatabaseSeeder.php',
         'Database\\Seeders\\DemoDataSeeder' => __DIR__ . '/../..' . '/database/seeders/DemoDataSeeder.php',
+        'Database\\Seeders\\FaqSeeder' => __DIR__ . '/../..' . '/database/seeders/FaqSeeder.php',
         'Database\\Seeders\\TestAccountSeeder' => __DIR__ . '/../..' . '/database/seeders/TestAccountSeeder.php',
         'Database\\Seeders\\UserSeeder' => __DIR__ . '/../..' . '/database/seeders/UserSeeder.php',
         'DeepCopy\\DeepCopy' => __DIR__ . '/..' . '/myclabs/deep-copy/src/DeepCopy/DeepCopy.php',

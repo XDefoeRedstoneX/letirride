@@ -29,6 +29,7 @@ class User extends Authenticatable
         'referral_code',
         'referred_by',
         'profile_picture',
+        'referrals_last_seen_at',
     ];
 
     /**
@@ -131,6 +132,7 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'points_balance' => 'integer',
+            'referrals_last_seen_at' => 'datetime',
         ];
     }
 }

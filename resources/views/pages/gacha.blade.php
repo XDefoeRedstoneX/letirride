@@ -32,12 +32,14 @@
                             <div class="gacha-track-set">
                                 <template x-for="item in items" :key="i + '-' + item.id">
                                     <div class="gacha-card"
-                                         :style="'border-color:' + rarityColor(item.rarity) + ';'">
+                                         :class="'gacha-rarity-' + item.rarity"
+                                         :style="'border-color:' + rarityColor(item.rarity) + '; --rarity-color:' + rarityColor(item.rarity) + ';'">
                                         <div class="gacha-card-img">
-                                            <img :src="item.image" class="w-full h-full object-contain pixel-render" />
+                                            <img :src="item.image" class="w-full h-full object-contain pixel-render" :alt="item.name" x-on:error="$el.src = '/gacha-icons/coin.svg'" />
                                         </div>
                                         <p class="gacha-card-name" x-text="item.name"></p>
                                         <span class="px-badge gacha-card-badge" :style="'color:' + rarityColor(item.rarity) + ';border-color:' + rarityColor(item.rarity) + '40;background:' + rarityColor(item.rarity) + '15;'" x-text="item.rarity"></span>
+                                        <span class="gacha-card-rarity-wedge" aria-hidden="true"></span>
                                     </div>
                                 </template>
                             </div>
@@ -141,9 +143,12 @@
 
                 {{-- Result Modal --}}
                 <div x-show="showResult" class="px-modal-overlay" x-transition>
-                    <div class="px-modal-box gacha-result-box">
+                    <div class="px-modal-box gacha-result-box"
+                         :class="winner ? 'gacha-rarity-' + winner.rarity : ''"
+                         :style="winner ? '--rarity-color:' + rarityColor(winner.rarity) + ';' : ''">
                         <div class="gacha-result-img">
-                            <img :src="winner ? winner.image : ''" class="w-full h-full object-contain pixel-render animate-bounce" />
+                            <img :src="winner ? winner.image : ''" class="w-full h-full object-contain pixel-render animate-bounce" :alt="winner ? winner.name : ''" x-on:error="$el.src = '/gacha-icons/coin.svg'" />
+                            <span class="gacha-card-rarity-wedge" aria-hidden="true"></span>
                         </div>
                         <p class="gacha-result-rarity" :style="'color:' + (winner ? rarityColor(winner.rarity) : 'var(--gold)')" x-text="winner ? winner.rarity.toUpperCase() : ''"></p>
                         <h2 class="gacha-result-name" x-text="winner ? winner.name : ''"></h2>
@@ -279,8 +284,33 @@
             miniPityCounter: {{ (int) ($pity['mini_pity_counter'] ?? 0) }},
 
             init() {
+                // Shuffle the carousel order so the idle drift interleaves rarities
+                // (the backend sorts highest-rarity-first, which otherwise parks the
+                // idle view on grand/legendary and never reaches uncommon/common).
+                // Spin/reveal looks up the winner by id, so order is purely cosmetic.
+                this.items = this.shuffle(this.items.slice());
+
+                // Drive the idle drift across one FULL set width so every prize scrolls
+                // past before the loop repeats; keep per-card speed constant (~3.2s each).
+                const cardStride = 176; // 160px card + 16px gap, matches reveal math
+                const stride = this.items.length * cardStride;
+                this.$nextTick(() => {
+                    if (this.$refs.carousel) {
+                        this.$refs.carousel.style.setProperty('--gacha-idle-stride', stride + 'px');
+                        this.$refs.carousel.style.setProperty('--gacha-idle-duration', (this.items.length * 3.2) + 's');
+                    }
+                });
+
                 // Make sure the carousel is in the idle-loop class on first paint.
                 this.animationClass = 'gacha-idle-loop';
+            },
+
+            shuffle(arr) {
+                for (let i = arr.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [arr[i], arr[j]] = [arr[j], arr[i]];
+                }
+                return arr;
             },
 
             rarityDisplayName(rarity) {

@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\GachaHistory;
 use App\Models\GachaPool;
 use App\Models\GachaRarityChance;
 use App\Models\User;
@@ -48,6 +49,7 @@ class GachaRollService
 
         $pityTriggered = $this->resolvePityTrigger($state);
         $pool = $this->eligiblePool($pityTriggered);
+        $pool = $this->removeCappedPrizes($pool, $user);
 
         if ($pool->isEmpty()) {
             throw new RuntimeException('Gacha pool is empty for the resolved roll context.');
@@ -282,6 +284,37 @@ class GachaRollService
         }
 
         return $pool;
+    }
+
+    /**
+     * Drop prizes the user has already won up to their per-prize `max_per_user`
+     * cap (e.g. the one-time Welcome Bonus). Counts prior wins from history.
+     * Falls back to the unfiltered pool if every prize ends up capped, so a roll
+     * can always resolve.
+     *
+     * @param  Collection<int, GachaPool>  $pool
+     * @return Collection<int, GachaPool>
+     */
+    private function removeCappedPrizes(Collection $pool, User $user): Collection
+    {
+        $capped = $pool->filter(fn (GachaPool $p) => $p->max_per_user !== null);
+
+        if ($capped->isEmpty()) {
+            return $pool;
+        }
+
+        $wins = GachaHistory::where('user_id', $user->id)
+            ->whereIn('gacha_pool_id', $capped->pluck('id'))
+            ->selectRaw('gacha_pool_id, COUNT(*) as c')
+            ->groupBy('gacha_pool_id')
+            ->pluck('c', 'gacha_pool_id');
+
+        $filtered = $pool->reject(function (GachaPool $p) use ($wins) {
+            return $p->max_per_user !== null
+                && (int) ($wins[$p->id] ?? 0) >= $p->max_per_user;
+        })->values();
+
+        return $filtered->isEmpty() ? $pool : $filtered;
     }
 
     /**

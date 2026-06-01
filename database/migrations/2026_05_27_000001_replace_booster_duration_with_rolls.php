@@ -27,22 +27,15 @@ return new class extends Migration
         }
 
         if (Schema::hasTable('user_active_boosters')) {
-            if (Schema::hasColumn('user_active_boosters', 'expires_at')) {
-                // Ensure a standalone user_id index exists before dropping the composite one,
-                // because MySQL won't drop an index that is the sole covering index for a FK.
-                try {
-                    DB::statement('CREATE INDEX user_active_boosters_user_id_index ON user_active_boosters (user_id)');
-                } catch (\Throwable) {}
-                try {
-                    DB::statement('DROP INDEX user_active_boosters_user_id_expires_at_index ON user_active_boosters');
-                } catch (\Throwable) {}
-
-                Schema::table('user_active_boosters', function (Blueprint $table) {
-                    $table->dropColumn('expires_at');
-                });
-            }
-
             Schema::table('user_active_boosters', function (Blueprint $table) {
+                if (Schema::hasColumn('user_active_boosters', 'expires_at')) {
+                    try {
+                        $table->dropIndex(['user_id', 'expires_at']);
+                    } catch (\Throwable) {
+                        // Index name varies by driver; ignore if absent.
+                    }
+                    $table->dropColumn('expires_at');
+                }
                 if (Schema::hasColumn('user_active_boosters', 'activated_at')) {
                     $table->dropColumn('activated_at');
                 }

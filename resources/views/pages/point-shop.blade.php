@@ -27,8 +27,8 @@
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                     <template x-for="(item, index) in items" :key="item.id">
                         <div class="px-card" style="padding:20px;display:flex;flex-direction:column;gap:14px;">
-                            <div style="aspect-ratio:1;background:var(--dark-card2);border:2px solid var(--dark-line);display:flex;align-items:center;justify-content:center;position:relative;">
-                                <img :src="item.image" style="max-width:80px;max-height:80px;object-fit:contain;image-rendering:pixelated;" />
+                              <div style="aspect-ratio:1;background:var(--dark-card2);border:2px solid var(--dark-line);display:flex;align-items:center;justify-content:center;position:relative;padding:12px;">
+                                  <img :src="item.image" style="width:100%;height:100%;object-fit:contain;image-rendering:pixelated;" />
                                 <span class="px-badge px-badge-gold" style="position:absolute;top:8px;right:8px;" x-text="item.reward_type"></span>
                             </div>
                             <div style="display:flex;flex-direction:column;gap:4px;">

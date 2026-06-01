@@ -67,7 +67,12 @@
                                         </td>
                                         <td style="padding:12px 16px;">
                                             <div style="display:flex;align-items:center;gap:10px;">
-                                                <img src="{{ $row->image_path ?: '/alt/logo.png' }}" alt="" style="width:32px;height:32px;object-fit:contain;" class="pixel-render" />
+                                                @include('partials.gacha-icon-tile', [
+                                                    'iconSrc' => $row->image_path ?: \App\Support\GachaIconCatalog::fallbackPath(),
+                                                    'rarity' => $rarity,
+                                                    'label' => $pool?->prize_name ?? 'Prize',
+                                                    'size' => 36,
+                                                ])
                                                 <div>
                                                     <p style="font-family:var(--font-sans);font-size:12px;font-weight:800;color:#e8f0ff;">{{ $pool?->prize_name ?? '—' }}</p>
                                                     @if($pool?->discountType?->name)

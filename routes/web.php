@@ -3,11 +3,13 @@
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\GachaBoosterController as AdminGachaBoosterController;
 use App\Http\Controllers\Admin\GachaController as AdminGachaController;
+use App\Http\Controllers\Admin\GachaIconController as AdminGachaIconController;
 use App\Http\Controllers\Admin\GachaRarityChanceController as AdminGachaRarityChanceController;
 use App\Http\Controllers\Admin\NewsController as AdminNewsController;
 use App\Http\Controllers\Admin\OrderController as AdminOrderController;
 use App\Http\Controllers\Admin\ProductController as AdminProductController;
 use App\Http\Controllers\Admin\ReferralController as AdminReferralController;
+use App\Http\Controllers\Admin\ReferralTierController as AdminReferralTierController;
 use App\Http\Controllers\Admin\TicketController as AdminTicketController;
 use App\Http\Controllers\Admin\UserController as AdminUserController;
 use App\Http\Controllers\Admin\FaqController as AdminFaqController;
@@ -135,9 +137,20 @@ Route::prefix('admin')
         Route::patch('/gacha-boosters/{booster}', [AdminGachaBoosterController::class, 'update'])->name('admin.gacha-boosters.update');
         Route::delete('/gacha-boosters/{booster}', [AdminGachaBoosterController::class, 'destroy'])->name('admin.gacha-boosters.destroy');
 
+        Route::get('/gacha-icons', [AdminGachaIconController::class, 'index'])->name('admin.gacha-icons');
+        Route::post('/gacha-icons', [AdminGachaIconController::class, 'store'])->name('admin.gacha-icons.store');
+        Route::patch('/gacha-icons/{gachaIcon}', [AdminGachaIconController::class, 'update'])->name('admin.gacha-icons.update');
+        Route::delete('/gacha-icons/{gachaIcon}', [AdminGachaIconController::class, 'destroy'])->name('admin.gacha-icons.destroy');
+
         Route::get('/referrals', [AdminReferralController::class, 'index'])->name('admin.referrals');
         Route::patch('/referrals/config', [AdminReferralController::class, 'updateConfig'])->name('admin.referrals.config');
         Route::post('/referrals/{referral}/void', [AdminReferralController::class, 'void'])->name('admin.referrals.void');
+
+        Route::get('/referral-tiers', [AdminReferralTierController::class, 'index'])->name('admin.referral-tiers');
+        Route::post('/referral-tiers', [AdminReferralTierController::class, 'store'])->name('admin.referral-tiers.store');
+        Route::patch('/referral-tiers/{tier}', [AdminReferralTierController::class, 'update'])->name('admin.referral-tiers.update');
+        Route::delete('/referral-tiers/{tier}', [AdminReferralTierController::class, 'destroy'])->name('admin.referral-tiers.destroy');
+        Route::post('/referral-tiers/backfill', [AdminReferralTierController::class, 'backfill'])->name('admin.referral-tiers.backfill');
 
         Route::get('/tickets', [AdminTicketController::class, 'index'])->name('admin.tickets');
         Route::patch('/tickets/{ticket}/status', [AdminTicketController::class, 'updateStatus'])->name('admin.tickets.status');
