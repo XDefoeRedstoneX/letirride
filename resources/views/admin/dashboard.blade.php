@@ -106,8 +106,8 @@
     {{-- ================================================================ --}}
     {{-- WIDGET GRID — flat, dense, drag-reorderable, resizable           --}}
     {{-- ================================================================ --}}
-    {{-- Safelist: keep dynamic col-span utilities in the Tailwind v4 build --}}
-    <span class="hidden lg:col-span-1 lg:col-span-2 lg:col-span-3"></span>
+    {{-- Safelist: keep dynamic utilities (col-span, swatch ring, toggle align) in the Tailwind v4 build --}}
+    <span class="hidden lg:col-span-1 lg:col-span-2 lg:col-span-3 ring-2 ring-offset-1 ring-primary justify-start justify-end"></span>
     <div id="dashboard-grid"
          :class="reorderMode ? 'reorder-active' : ''"
          class="grid grid-cols-1 lg:grid-cols-3 gap-6 grid-flow-row-dense items-start">
@@ -255,22 +255,54 @@
                                     class="px-2 py-1 rounded text-[8px] font-black uppercase tracking-widest border transition-all">Bar</button>
                         </div>
                     </div>
-                    <div class="flex items-center gap-2 opacity-40 pointer-events-none select-none">
-                        <span class="text-[8px] font-black text-muted-foreground uppercase tracking-widest">Color</span>
-                        <div class="flex gap-1.5">
-                            <div class="w-3.5 h-3.5 rounded-full bg-violet-500 ring-2 ring-offset-1 ring-violet-500/70"></div>
-                            <div class="w-3.5 h-3.5 rounded-full bg-blue-500"></div>
-                            <div class="w-3.5 h-3.5 rounded-full bg-teal-500"></div>
-                            <div class="w-3.5 h-3.5 rounded-full bg-amber-500"></div>
-                            <div class="w-3.5 h-3.5 rounded-full bg-rose-500"></div>
+                    {{-- Metric --}}
+                    <div class="flex items-center gap-2">
+                        <span class="text-[8px] font-black text-muted-foreground uppercase tracking-widest">Metric</span>
+                        <div class="flex gap-1">
+                            <button @click="setWidgetConfig('revenue_trend','metric','revenue')"
+                                    :class="getWidgetConfig('revenue_trend','metric','revenue')==='revenue' ? 'bg-primary/15 text-primary border-primary/30' : 'bg-foreground/5 text-muted-foreground border-border hover:bg-foreground/10 hover:text-foreground'"
+                                    class="px-2 py-1 rounded text-[8px] font-black uppercase tracking-widest border transition-all">Revenue</button>
+                            <button @click="setWidgetConfig('revenue_trend','metric','orders')"
+                                    :class="getWidgetConfig('revenue_trend','metric','revenue')==='orders' ? 'bg-primary/15 text-primary border-primary/30' : 'bg-foreground/5 text-muted-foreground border-border hover:bg-foreground/10 hover:text-foreground'"
+                                    class="px-2 py-1 rounded text-[8px] font-black uppercase tracking-widest border transition-all">Orders</button>
                         </div>
                     </div>
-                    <div class="flex items-center gap-2 opacity-40 pointer-events-none select-none">
-                        <span class="text-[8px] font-black text-muted-foreground uppercase tracking-widest">Fill</span>
-                        <div class="w-8 h-4 rounded-full bg-primary/30 flex items-center px-0.5"><div class="w-3 h-3 rounded-full bg-primary shadow"></div></div>
+                    {{-- Color (line only) --}}
+                    <div class="flex items-center gap-2" x-show="getWidgetConfig('revenue_trend','type','line')==='line'">
+                        <span class="text-[8px] font-black text-muted-foreground uppercase tracking-widest">Color</span>
+                        <div class="flex gap-1.5">
+                            <template x-for="c in ['violet','blue','teal','amber','rose']" :key="c">
+                                <button @click="setWidgetConfig('revenue_trend','color',c)"
+                                        :class="[{ violet:'bg-violet-500', blue:'bg-blue-500', teal:'bg-teal-500', amber:'bg-amber-500', rose:'bg-rose-500' }[c], getWidgetConfig('revenue_trend','color','violet')===c ? 'ring-2 ring-offset-1 ring-primary' : '']"
+                                        class="w-3.5 h-3.5 rounded-full transition-all"></button>
+                            </template>
+                        </div>
                     </div>
+                    {{-- Fill (line only) --}}
+                    <div class="flex items-center gap-2" x-show="getWidgetConfig('revenue_trend','type','line')==='line'">
+                        <span class="text-[8px] font-black text-muted-foreground uppercase tracking-widest">Fill</span>
+                        <button @click="setWidgetConfig('revenue_trend','fill', !getWidgetConfig('revenue_trend','fill',true))"
+                                :class="getWidgetConfig('revenue_trend','fill',true) ? 'bg-primary/30 justify-end' : 'bg-foreground/10 justify-start'"
+                                class="w-8 h-4 rounded-full flex items-center px-0.5 transition-all">
+                            <div class="w-3 h-3 rounded-full bg-primary shadow"></div>
+                        </button>
+                    </div>
+                    {{-- Smooth (line only) --}}
+                    <div class="flex items-center gap-2" x-show="getWidgetConfig('revenue_trend','type','line')==='line'">
+                        <span class="text-[8px] font-black text-muted-foreground uppercase tracking-widest">Smooth</span>
+                        <button @click="setWidgetConfig('revenue_trend','tension', !getWidgetConfig('revenue_trend','tension',true))"
+                                :class="getWidgetConfig('revenue_trend','tension',true) ? 'bg-primary/30 justify-end' : 'bg-foreground/10 justify-start'"
+                                class="w-8 h-4 rounded-full flex items-center px-0.5 transition-all">
+                            <div class="w-3 h-3 rounded-full bg-primary shadow"></div>
+                        </button>
+                    </div>
+                    {{-- Reset --}}
+                    <button @click="resetWidget('revenue_trend')"
+                            class="ml-auto flex items-center gap-1 px-2 py-1 rounded text-[8px] font-black uppercase tracking-widest text-muted-foreground hover:text-red-500 hover:bg-red-500/5 border border-transparent hover:border-red-500/20 transition-all">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg>
+                        Reset
+                    </button>
                 </div>
-                <p class="text-[8px] font-bold text-muted-foreground/40 uppercase tracking-widest mt-2.5">Color & fill options coming soon</p>
             </div>
             <div class="p-6 pb-4">
                 <canvas id="revenueChart" class="max-h-[220px]"></canvas>
@@ -309,6 +341,12 @@
                                     class="px-2 py-1 rounded text-[8px] font-black uppercase tracking-widest border transition-all">Bar</button>
                         </div>
                     </div>
+                    {{-- Reset --}}
+                    <button @click="resetWidget('order_status')"
+                            class="ml-auto flex items-center gap-1 px-2 py-1 rounded text-[8px] font-black uppercase tracking-widest text-muted-foreground hover:text-red-500 hover:bg-red-500/5 border border-transparent hover:border-red-500/20 transition-all">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg>
+                        Reset
+                    </button>
                 </div>
             </div>
             <div class="p-6 flex flex-col items-center gap-5">
@@ -378,16 +416,23 @@
                                     class="px-2 py-1 rounded text-[8px] font-black uppercase tracking-widest border transition-all">V-Bar</button>
                         </div>
                     </div>
-                    <div class="flex items-center gap-2 opacity-40 pointer-events-none select-none">
+                    <div class="flex items-center gap-2">
                         <span class="text-[8px] font-black text-muted-foreground uppercase tracking-widest">Show Top</span>
                         <div class="flex gap-1">
-                            <span class="px-2 py-1 rounded text-[8px] font-black uppercase tracking-widest bg-foreground/5 text-muted-foreground border border-border">3</span>
-                            <span class="px-2 py-1 rounded text-[8px] font-black uppercase tracking-widest bg-primary/15 text-primary border border-primary/30">5</span>
-                            <span class="px-2 py-1 rounded text-[8px] font-black uppercase tracking-widest bg-foreground/5 text-muted-foreground border border-border">10</span>
+                            <template x-for="n in [3,5,10]" :key="n">
+                                <button @click="setWidgetConfig('top_products','topN',n)"
+                                        :class="getWidgetConfig('top_products','topN',5)===n ? 'bg-primary/15 text-primary border-primary/30' : 'bg-foreground/5 text-muted-foreground border-border hover:bg-foreground/10 hover:text-foreground'"
+                                        class="px-2 py-1 rounded text-[8px] font-black uppercase tracking-widest border transition-all" x-text="n"></button>
+                            </template>
                         </div>
                     </div>
+                    {{-- Reset --}}
+                    <button @click="resetWidget('top_products')"
+                            class="ml-auto flex items-center gap-1 px-2 py-1 rounded text-[8px] font-black uppercase tracking-widest text-muted-foreground hover:text-red-500 hover:bg-red-500/5 border border-transparent hover:border-red-500/20 transition-all">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg>
+                        Reset
+                    </button>
                 </div>
-                <p class="text-[8px] font-bold text-muted-foreground/40 uppercase tracking-widest mt-2.5">Show Top N selector coming soon</p>
             </div>
             @if(count($supportingData['topProducts']) > 0)
                 <div class="p-5"><canvas id="topProductsChart" class="max-h-[200px]"></canvas></div>
@@ -429,6 +474,12 @@
                                     class="px-2 py-1 rounded text-[8px] font-black uppercase tracking-widest border transition-all">V-Bar</button>
                         </div>
                     </div>
+                    {{-- Reset --}}
+                    <button @click="resetWidget('category_revenue')"
+                            class="ml-auto flex items-center gap-1 px-2 py-1 rounded text-[8px] font-black uppercase tracking-widest text-muted-foreground hover:text-red-500 hover:bg-red-500/5 border border-transparent hover:border-red-500/20 transition-all">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg>
+                        Reset
+                    </button>
                 </div>
             </div>
             @if(count($supportingData['categoryRevenue']) > 0)
@@ -468,22 +519,42 @@
                                     class="px-2 py-1 rounded text-[8px] font-black uppercase tracking-widest border transition-all">Bar</button>
                         </div>
                     </div>
-                    <div class="flex items-center gap-2 opacity-40 pointer-events-none select-none">
+                    {{-- Color (line only) --}}
+                    <div class="flex items-center gap-2" x-show="getWidgetConfig('user_growth','type','line')==='line'">
                         <span class="text-[8px] font-black text-muted-foreground uppercase tracking-widest">Color</span>
                         <div class="flex gap-1.5">
-                            <div class="w-3.5 h-3.5 rounded-full bg-violet-500 ring-2 ring-offset-1 ring-violet-500/70"></div>
-                            <div class="w-3.5 h-3.5 rounded-full bg-blue-500"></div>
-                            <div class="w-3.5 h-3.5 rounded-full bg-teal-500"></div>
-                            <div class="w-3.5 h-3.5 rounded-full bg-amber-500"></div>
-                            <div class="w-3.5 h-3.5 rounded-full bg-rose-500"></div>
+                            <template x-for="c in ['violet','blue','teal','amber','rose']" :key="c">
+                                <button @click="setWidgetConfig('user_growth','color',c)"
+                                        :class="[{ violet:'bg-violet-500', blue:'bg-blue-500', teal:'bg-teal-500', amber:'bg-amber-500', rose:'bg-rose-500' }[c], getWidgetConfig('user_growth','color','violet')===c ? 'ring-2 ring-offset-1 ring-primary' : '']"
+                                        class="w-3.5 h-3.5 rounded-full transition-all"></button>
+                            </template>
                         </div>
                     </div>
-                    <div class="flex items-center gap-2 opacity-40 pointer-events-none select-none">
+                    {{-- Fill (line only) --}}
+                    <div class="flex items-center gap-2" x-show="getWidgetConfig('user_growth','type','line')==='line'">
                         <span class="text-[8px] font-black text-muted-foreground uppercase tracking-widest">Fill</span>
-                        <div class="w-8 h-4 rounded-full bg-primary/30 flex items-center px-0.5"><div class="w-3 h-3 rounded-full bg-primary shadow"></div></div>
+                        <button @click="setWidgetConfig('user_growth','fill', !getWidgetConfig('user_growth','fill',true))"
+                                :class="getWidgetConfig('user_growth','fill',true) ? 'bg-primary/30 justify-end' : 'bg-foreground/10 justify-start'"
+                                class="w-8 h-4 rounded-full flex items-center px-0.5 transition-all">
+                            <div class="w-3 h-3 rounded-full bg-primary shadow"></div>
+                        </button>
                     </div>
+                    {{-- Smooth (line only) --}}
+                    <div class="flex items-center gap-2" x-show="getWidgetConfig('user_growth','type','line')==='line'">
+                        <span class="text-[8px] font-black text-muted-foreground uppercase tracking-widest">Smooth</span>
+                        <button @click="setWidgetConfig('user_growth','tension', !getWidgetConfig('user_growth','tension',true))"
+                                :class="getWidgetConfig('user_growth','tension',true) ? 'bg-primary/30 justify-end' : 'bg-foreground/10 justify-start'"
+                                class="w-8 h-4 rounded-full flex items-center px-0.5 transition-all">
+                            <div class="w-3 h-3 rounded-full bg-primary shadow"></div>
+                        </button>
+                    </div>
+                    {{-- Reset --}}
+                    <button @click="resetWidget('user_growth')"
+                            class="ml-auto flex items-center gap-1 px-2 py-1 rounded text-[8px] font-black uppercase tracking-widest text-muted-foreground hover:text-red-500 hover:bg-red-500/5 border border-transparent hover:border-red-500/20 transition-all">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg>
+                        Reset
+                    </button>
                 </div>
-                <p class="text-[8px] font-bold text-muted-foreground/40 uppercase tracking-widest mt-2.5">Color & fill options coming soon</p>
             </div>
             <div class="p-5"><canvas id="userGrowthChart" class="max-h-[200px]"></canvas></div>
         </div>
@@ -801,6 +872,7 @@
     window._dashData = {
         labels:   @json($chartData['labels']),
         revenue:  @json($chartData['revenue']),
+        orders:   @json($chartData['orders']),
         users:    @json($chartData['users']),
         status:   @json($chartData['status']),
         products: @json($supportingData['topProducts']),
@@ -808,35 +880,53 @@
     };
     window._dashCharts = {};
 
+    // ── Color palette presets (rgb triplets) ───────────────────────────
+    const PALETTE = {
+        violet: '139,92,246', blue: '59,130,246', teal: '20,184,166',
+        amber:  '245,158,11', rose: '244,63,94',
+    };
+
     // ── Builder: Revenue Trend ─────────────────────────────────────────
-    function buildRevenueChart(type) {
+    function buildRevenueChart(cfg) {
+        cfg = cfg || {};
         const el = document.getElementById('revenueChart');
         if (!el) return;
-        const { labels, revenue } = window._dashData;
-        const isLine = type !== 'bar';
+        const { labels, revenue, orders } = window._dashData;
+        const type    = cfg.type ?? 'line';
+        const metric  = cfg.metric ?? 'revenue';
+        const isLine  = type !== 'bar';
+        const fill    = cfg.fill !== false;            // default on
+        const tension = cfg.tension === false ? 0 : 0.4; // smooth default on
+        const rgb     = PALETTE[cfg.color] ?? PALETTE.violet;
+        const isRev   = metric !== 'orders';
+        const series  = isRev ? revenue : orders;
         window._dashCharts['revenue_trend'] = new Chart(el, {
             type: isLine ? 'line' : 'bar',
-            data: { labels, datasets: [{ label: 'Revenue', data: revenue,
-                borderColor: 'rgb(139,92,246)',
-                backgroundColor: isLine ? 'rgba(139,92,246,0.08)' : 'rgba(139,92,246,0.75)',
+            data: { labels, datasets: [{ label: isRev ? 'Revenue' : 'Orders', data: series,
+                borderColor: `rgb(${rgb})`,
+                backgroundColor: isLine ? `rgba(${rgb},0.08)` : `rgba(${rgb},0.75)`,
                 ...(isLine
-                    ? { fill: true, tension: 0.4, borderWidth: 2, pointRadius: labels.length <= 14 ? 3 : 0, pointHoverRadius: 5, pointBackgroundColor: 'rgb(139,92,246)' }
+                    ? { fill, tension, borderWidth: 2, pointRadius: labels.length <= 14 ? 3 : 0, pointHoverRadius: 5, pointBackgroundColor: `rgb(${rgb})` }
                     : { borderRadius: 4, borderSkipped: false, borderWidth: 0 }),
             }]},
             options: {
                 responsive: true, maintainAspectRatio: true,
                 interaction: { mode: 'index', intersect: false },
-                plugins: { legend: { display: false }, tooltip: { ...tip, callbacks: { label: ctx => ' Rp ' + ctx.parsed.y.toLocaleString('id-ID') } } },
+                plugins: { legend: { display: false }, tooltip: { ...tip, callbacks: { label: ctx =>
+                    isRev ? ' Rp ' + ctx.parsed.y.toLocaleString('id-ID')
+                          : ' ' + ctx.parsed.y + ' order' + (ctx.parsed.y !== 1 ? 's' : '') } } },
                 scales: {
                     x: { grid: { color: grid }, border: { color: 'transparent' }, ticks: { color: tick, font: { size: 9, weight: '700' }, maxTicksLimit: 8, maxRotation: 0 } },
-                    y: { grid: { color: grid }, border: { color: 'transparent' }, ticks: { color: tick, font: { size: 9, weight: '700' }, callback: rpFmt } },
+                    y: { grid: { color: grid }, border: { color: 'transparent' }, ticks: { color: tick, font: { size: 9, weight: '700' }, ...(isRev ? { callback: rpFmt } : { precision: 0 }) } },
                 },
             },
         });
     }
 
     // ── Builder: Order Status ──────────────────────────────────────────
-    function buildStatusChart(type) {
+    function buildStatusChart(cfg) {
+        cfg = cfg || {};
+        const type = cfg.type ?? 'doughnut';
         const { status } = window._dashData;
         const statusData = [status.paid, status.pending, status.failed];
         const statusColors = ['rgba(34,197,94,0.85)', 'rgba(245,158,11,0.85)', 'rgba(239,68,68,0.85)'];
@@ -871,12 +961,18 @@
     }
 
     // ── Builder: Top Products ──────────────────────────────────────────
-    function buildTopProductsChart(type) {
+    function buildTopProductsChart(cfg) {
+        cfg = cfg || {};
         const el = document.getElementById('topProductsChart');
         if (!el) return;
-        const { products } = window._dashData;
+        const type = cfg.type ?? 'hbar';
+        const n    = cfg.topN ?? 5;
+        const products = window._dashData.products.slice(0, n);
         if (!products.length) return;
-        const colors = ['rgba(139,92,246,0.8)','rgba(59,130,246,0.8)','rgba(20,184,166,0.8)','rgba(34,197,94,0.8)','rgba(245,158,11,0.8)'];
+        const colors = [
+            'rgba(139,92,246,0.8)','rgba(59,130,246,0.8)','rgba(20,184,166,0.8)','rgba(34,197,94,0.8)','rgba(245,158,11,0.8)',
+            'rgba(244,63,94,0.8)','rgba(168,85,247,0.8)','rgba(14,165,233,0.8)','rgba(132,204,22,0.8)','rgba(249,115,22,0.8)',
+        ];
         const isH = type !== 'vbar';
         window._dashCharts['top_products'] = new Chart(el, {
             type: 'bar',
@@ -901,7 +997,9 @@
     }
 
     // ── Builder: By Category ───────────────────────────────────────────
-    function buildCategoryChart(type) {
+    function buildCategoryChart(cfg) {
+        cfg = cfg || {};
+        const type = cfg.type ?? 'hbar';
         const el = document.getElementById('categoryChart');
         if (!el) return;
         const { cats } = window._dashData;
@@ -942,18 +1040,23 @@
     }
 
     // ── Builder: User Growth ───────────────────────────────────────────
-    function buildUserGrowthChart(type) {
+    function buildUserGrowthChart(cfg) {
+        cfg = cfg || {};
         const el = document.getElementById('userGrowthChart');
         if (!el) return;
         const { labels, users } = window._dashData;
-        const isLine = type !== 'bar';
+        const type    = cfg.type ?? 'line';
+        const isLine  = type !== 'bar';
+        const fill    = cfg.fill !== false;
+        const tension = cfg.tension === false ? 0 : 0.4;
+        const rgb     = PALETTE[cfg.color] ?? PALETTE.violet;
         window._dashCharts['user_growth'] = new Chart(el, {
             type: isLine ? 'line' : 'bar',
             data: { labels, datasets: [{ label: 'New Users', data: users,
-                borderColor: 'rgb(168,85,247)',
-                backgroundColor: isLine ? 'rgba(168,85,247,0.08)' : 'rgba(168,85,247,0.75)',
+                borderColor: `rgb(${rgb})`,
+                backgroundColor: isLine ? `rgba(${rgb},0.08)` : `rgba(${rgb},0.75)`,
                 ...(isLine
-                    ? { fill: true, tension: 0.4, borderWidth: 2, pointRadius: labels.length <= 14 ? 3 : 0, pointHoverRadius: 5, pointBackgroundColor: 'rgb(168,85,247)' }
+                    ? { fill, tension, borderWidth: 2, pointRadius: labels.length <= 14 ? 3 : 0, pointHoverRadius: 5, pointBackgroundColor: `rgb(${rgb})` }
                     : { borderRadius: 4, borderSkipped: false, borderWidth: 0 }),
             }]},
             options: {
@@ -970,14 +1073,15 @@
 
     // ── Global rebuild dispatcher ──────────────────────────────────────
     window.rebuildChart = function (id, config) {
+        config = config || {};
         const existing = window._dashCharts[id];
         if (existing) { existing.destroy(); delete window._dashCharts[id]; }
         switch (id) {
-            case 'revenue_trend':    buildRevenueChart(config.type ?? 'line');     break;
-            case 'order_status':     buildStatusChart(config.type ?? 'doughnut');  break;
-            case 'top_products':     buildTopProductsChart(config.type ?? 'hbar'); break;
-            case 'category_revenue': buildCategoryChart(config.type ?? 'hbar');    break;
-            case 'user_growth':      buildUserGrowthChart(config.type ?? 'line');  break;
+            case 'revenue_trend':    buildRevenueChart(config);     break;
+            case 'order_status':     buildStatusChart(config);      break;
+            case 'top_products':     buildTopProductsChart(config); break;
+            case 'category_revenue': buildCategoryChart(config);    break;
+            case 'user_growth':      buildUserGrowthChart(config);  break;
         }
     };
 
@@ -985,11 +1089,11 @@
     const _saved = JSON.parse(localStorage.getItem('ridly_dashboard_v1') || '{}');
     const _cfg   = id => _saved[id]?.config ?? {};
 
-    buildRevenueChart(   _cfg('revenue_trend').type    ?? 'line');
-    buildStatusChart(    _cfg('order_status').type     ?? 'doughnut');
-    buildTopProductsChart(_cfg('top_products').type    ?? 'hbar');
-    buildCategoryChart(  _cfg('category_revenue').type ?? 'hbar');
-    buildUserGrowthChart(_cfg('user_growth').type      ?? 'line');
+    buildRevenueChart(   _cfg('revenue_trend'));
+    buildStatusChart(    _cfg('order_status'));
+    buildTopProductsChart(_cfg('top_products'));
+    buildCategoryChart(  _cfg('category_revenue'));
+    buildUserGrowthChart(_cfg('user_growth'));
 })();
 </script>
 
@@ -1025,11 +1129,11 @@ function dashboardManager() {
 
     const DEFAULTS = {
         kpi_cards:         { visible: true, config: { span: 3 } },
-        revenue_trend:     { visible: true, config: { type: 'line',     span: 2 } },
+        revenue_trend:     { visible: true, config: { type: 'line',     span: 2, color: 'violet', fill: true, tension: true, metric: 'revenue' } },
         order_status:      { visible: true, config: { type: 'doughnut', span: 1 } },
-        top_products:      { visible: true, config: { type: 'hbar',     span: 1 } },
+        top_products:      { visible: true, config: { type: 'hbar',     span: 1, topN: 5 } },
         category_revenue:  { visible: true, config: { type: 'hbar',     span: 1 } },
-        user_growth:       { visible: true, config: { type: 'line',     span: 1 } },
+        user_growth:       { visible: true, config: { type: 'line',     span: 1, color: 'violet', fill: true, tension: true } },
         recent_orders:     { visible: true, config: { span: 2 } },
         sidebar_attention: { visible: true, config: { span: 1 } },
         sidebar_quicknav:  { visible: true, config: { span: 1 } },
@@ -1164,6 +1268,14 @@ function dashboardManager() {
                 'lg:col-span-2': n === 2,
                 'lg:col-span-3': n === 3,
             };
+        },
+
+        // Reset a single widget's appearance/data options to its defaults
+        resetWidget(id) {
+            if (!DEFAULTS[id]) return;
+            this.widgets[id] = JSON.parse(JSON.stringify(DEFAULTS[id]));
+            this.save();
+            if (window.rebuildChart) window.rebuildChart(id, this.widgets[id].config);
         },
 
         isConfigOpen(id) {
