@@ -82,13 +82,23 @@ class CartController extends Controller
             ]);
         }
 
-        $cartItem = CartItem::where('user_id', Auth::id())
-            ->where('product_id', $product->id)
-            ->first();
+        if ($type === 'direct_topup') {
+            // Each direct top-up add is an independent purchase with its own credentials.
+            CartItem::create([
+                'user_id'    => Auth::id(),
+                'product_id' => $product->id,
+                'quantity'   => 1,
+                'topup_meta' => [
+                    'player_id' => $request->input('player_id'),
+                    'zone_id'   => $request->input('zone_id'),
+                    'server_id' => $request->input('server_id'),
+                ],
+            ]);
+        } else {
+            $cartItem = CartItem::where('user_id', Auth::id())
+                ->where('product_id', $product->id)
+                ->first();
 
-        // Stockout check: voucher products require an unreserved, available key.
-        // direct_topup products have no inventory and are always purchasable.
-        if ($type === 'voucher') {
             $availableKeys = ProductKey::where('product_id', $product->id)
                 ->where('status', 'available')
                 ->whereNull('reserved_for_order_id')
@@ -103,29 +113,17 @@ class CartController extends Controller
                         : 'Only '.$availableKeys.' in stock — you already have '.$alreadyInCart.' in your cart.',
                 ], 422);
             }
-        }
 
-        $topupMeta = null;
-        if ($type === 'direct_topup') {
-            $topupMeta = [
-                'player_id' => $request->input('player_id'),
-                'zone_id' => $request->input('zone_id'),
-                'server_id' => $request->input('server_id'),
-            ];
-        }
-
-        if ($cartItem) {
-            $cartItem->increment('quantity');
-            if ($topupMeta) {
-                $cartItem->update(['topup_meta' => $topupMeta]);
+            if ($cartItem) {
+                $cartItem->increment('quantity');
+            } else {
+                CartItem::create([
+                    'user_id'    => Auth::id(),
+                    'product_id' => $product->id,
+                    'quantity'   => 1,
+                    'topup_meta' => null,
+                ]);
             }
-        } else {
-            CartItem::create([
-                'user_id' => Auth::id(),
-                'product_id' => $product->id,
-                'quantity' => 1,
-                'topup_meta' => $topupMeta,
-            ]);
         }
 
         $count = CartItem::where('user_id', Auth::id())->sum('quantity');
@@ -146,15 +144,29 @@ class CartController extends Controller
         }
 
         $request->validate([
-            'quantity' => 'required|integer|min:1|max:99',
+            'quantity'              => 'sometimes|integer|min:1|max:99',
+            'topup_meta'            => 'sometimes|nullable|array',
+            'topup_meta.player_id'  => 'required_with:topup_meta|string|max:100',
+            'topup_meta.zone_id'    => 'sometimes|nullable|string|max:50',
+            'topup_meta.server_id'  => 'sometimes|nullable|string|max:50',
         ]);
 
-        $cartItem->update(['quantity' => $request->quantity]);
+        $updates = [];
+        if ($request->has('quantity')) {
+            $updates['quantity'] = $request->quantity;
+        }
+        if ($request->has('topup_meta')) {
+            $updates['topup_meta'] = $request->input('topup_meta');
+        }
+
+        if (! empty($updates)) {
+            $cartItem->update($updates);
+        }
 
         $count = CartItem::where('user_id', Auth::id())->sum('quantity');
 
         return response()->json([
-            'message' => 'Cart updated.',
+            'message'    => 'Cart updated.',
             'cart_count' => (int) $count,
             'item_total' => (float) $cartItem->product->price * $cartItem->quantity,
         ]);

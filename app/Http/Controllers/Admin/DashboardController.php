@@ -377,7 +377,7 @@ class DashboardController extends Controller
             ->whereBetween('o.created_at', [$start, $end])
             ->groupBy('p.id', 'p.name')
             ->orderByDesc('revenue')
-            ->limit(5)
+            ->limit(10) // up to 10 so the dashboard "Show Top N" selector (3/5/10) has data
             ->get()
             ->map(fn ($r) => [
                 'name'    => Str::limit($r->name, 22, '…'),
