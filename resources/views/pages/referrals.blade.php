@@ -129,51 +129,6 @@
                             </div>
                         @endif
 
-                        {{-- At-a-glance checkmark table --}}
-                        <div class="referral-tier-table-wrap">
-                            <table class="referral-tier-table">
-                                <thead>
-                                    <tr>
-                                        <th>TIER</th>
-                                        <th>FRIENDS</th>
-                                        <th>REWARD</th>
-                                        <th style="text-align:right;">STATUS</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach ($tiers as $tier)
-                                        @php
-                                            $rowUnlocked = $grantedTiers->has($tier->id);
-                                            $rowNext = $nextTier && $nextTier->id === $tier->id;
-                                            $rowState = $rowUnlocked ? 'unlocked' : ($rowNext ? 'next' : 'locked');
-                                            $rewardBits = [];
-                                            if ($tier->points_reward > 0) { $rewardBits[] = number_format($tier->points_reward).' pts'; }
-                                            if ($tier->discountType) { $rewardBits[] = $tier->discountType->name; }
-                                            if ($tier->free_spins_reward > 0) { $rewardBits[] = $tier->free_spins_reward.'× free spin'; }
-                                        @endphp
-                                        <tr class="referral-tier-table-row referral-tier-table-row-{{ $rowState }}">
-                                            <td class="referral-tier-table-title">{{ $tier->title }}</td>
-                                            <td class="referral-tier-table-friends">{{ $tier->threshold }}</td>
-                                            <td class="referral-tier-table-reward">{{ count($rewardBits) ? implode(' + ', $rewardBits) : 'Prestige' }}</td>
-                                            <td class="referral-tier-table-status">
-                                                @if ($rowUnlocked)
-                                                    <span class="referral-tier-check referral-tier-check-on" title="Unlocked">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
-                                                    </span>
-                                                @elseif ($rowNext)
-                                                    <span class="referral-tier-check referral-tier-check-next" title="In progress">{{ $paidReferrals }}/{{ $tier->threshold }}</span>
-                                                @else
-                                                    <span class="referral-tier-check referral-tier-check-off" title="Locked">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="square"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-                                                    </span>
-                                                @endif
-                                            </td>
-                                        </tr>
-                                    @endforeach
-                                </tbody>
-                            </table>
-                        </div>
-
                         <div class="referral-tier-list">
                             @foreach ($tiers as $tier)
                                 @php
