@@ -32,6 +32,24 @@
              x-transition:leave="transition ease-in duration-75"   x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95"
              class="absolute right-0 top-full mt-1.5 w-44 bg-card border border-border rounded-xl shadow-xl z-40 py-1.5 overflow-hidden origin-top-right">
 
+            {{-- Width / size --}}
+            <div class="px-3.5 pt-1.5 pb-2">
+                <p class="text-[8px] font-black text-muted-foreground uppercase tracking-widest mb-1.5">Width</p>
+                <div class="flex gap-1">
+                    <button @click="setWidgetSpan('{{ $id }}', 1)"
+                            :class="getWidgetSpan('{{ $id }}') === 1 ? 'bg-primary/15 text-primary border-primary/30' : 'bg-foreground/5 text-muted-foreground border-border hover:bg-foreground/10 hover:text-foreground'"
+                            class="flex-1 px-1.5 py-1 rounded text-[9px] font-black uppercase tracking-widest border transition-all">⅓</button>
+                    <button @click="setWidgetSpan('{{ $id }}', 2)"
+                            :class="getWidgetSpan('{{ $id }}') === 2 ? 'bg-primary/15 text-primary border-primary/30' : 'bg-foreground/5 text-muted-foreground border-border hover:bg-foreground/10 hover:text-foreground'"
+                            class="flex-1 px-1.5 py-1 rounded text-[9px] font-black uppercase tracking-widest border transition-all">⅔</button>
+                    <button @click="setWidgetSpan('{{ $id }}', 3)"
+                            :class="getWidgetSpan('{{ $id }}') === 3 ? 'bg-primary/15 text-primary border-primary/30' : 'bg-foreground/5 text-muted-foreground border-border hover:bg-foreground/10 hover:text-foreground'"
+                            class="flex-1 px-1.5 py-1 rounded text-[8px] font-black uppercase tracking-widest border transition-all">Full</button>
+                </div>
+            </div>
+
+            <div class="h-px bg-border mx-3 my-1"></div>
+
             <button @click="openChangeWidget('{{ $id }}'); open = false"
                     class="w-full flex items-center gap-2.5 px-3.5 py-2 text-left text-[9px] font-black uppercase tracking-widest hover:bg-foreground/5 transition-colors">
                 <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m16 3 4 4-4 4"/><path d="M20 7H4"/><path d="m8 21-4-4 4-4"/><path d="M4 17h16"/></svg>

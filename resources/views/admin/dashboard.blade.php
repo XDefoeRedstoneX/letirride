@@ -104,9 +104,17 @@
     </div>
 
     {{-- ================================================================ --}}
-    {{-- KPI CARDS                                                         --}}
+    {{-- WIDGET GRID — flat, dense, drag-reorderable, resizable           --}}
     {{-- ================================================================ --}}
-    <div x-show="widgetVisible('kpi_cards')"
+    {{-- Safelist: keep dynamic col-span utilities in the Tailwind v4 build --}}
+    <span class="hidden lg:col-span-1 lg:col-span-2 lg:col-span-3"></span>
+    <div id="dashboard-grid"
+         :class="reorderMode ? 'reorder-active' : ''"
+         class="grid grid-cols-1 lg:grid-cols-3 gap-6 grid-flow-row-dense items-start">
+
+    {{-- KPI CARDS --}}
+    <div data-widget-id="kpi_cards" :class="spanClass('kpi_cards')"
+         x-show="widgetVisible('kpi_cards')"
          x-transition:leave="transition ease-in duration-150"
          x-transition:leave-start="opacity-100"
          x-transition:leave-end="opacity-0">
@@ -123,6 +131,22 @@
                 </button>
                 <div x-show="open" x-cloak
                      class="absolute right-0 top-full mt-1.5 w-44 bg-card border border-border rounded-xl shadow-xl z-40 py-1.5 overflow-hidden">
+                    {{-- Width / size --}}
+                    <div class="px-3.5 pt-1.5 pb-2">
+                        <p class="text-[8px] font-black text-muted-foreground uppercase tracking-widest mb-1.5">Width</p>
+                        <div class="flex gap-1">
+                            <button @click="setWidgetSpan('kpi_cards', 1)"
+                                    :class="getWidgetSpan('kpi_cards') === 1 ? 'bg-primary/15 text-primary border-primary/30' : 'bg-foreground/5 text-muted-foreground border-border hover:bg-foreground/10 hover:text-foreground'"
+                                    class="flex-1 px-1.5 py-1 rounded text-[9px] font-black uppercase tracking-widest border transition-all">⅓</button>
+                            <button @click="setWidgetSpan('kpi_cards', 2)"
+                                    :class="getWidgetSpan('kpi_cards') === 2 ? 'bg-primary/15 text-primary border-primary/30' : 'bg-foreground/5 text-muted-foreground border-border hover:bg-foreground/10 hover:text-foreground'"
+                                    class="flex-1 px-1.5 py-1 rounded text-[9px] font-black uppercase tracking-widest border transition-all">⅔</button>
+                            <button @click="setWidgetSpan('kpi_cards', 3)"
+                                    :class="getWidgetSpan('kpi_cards') === 3 ? 'bg-primary/15 text-primary border-primary/30' : 'bg-foreground/5 text-muted-foreground border-border hover:bg-foreground/10 hover:text-foreground'"
+                                    class="flex-1 px-1.5 py-1 rounded text-[8px] font-black uppercase tracking-widest border transition-all">Full</button>
+                        </div>
+                    </div>
+                    <div class="h-px bg-border mx-3 my-1"></div>
                     <button @click="openChangeWidget('kpi_cards'); open = false"
                             class="w-full flex items-center gap-2.5 px-3.5 py-2 text-left text-[9px] font-black uppercase tracking-widest hover:bg-foreground/5 transition-colors">
                         <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m16 3 4 4-4 4"/><path d="M20 7H4"/><path d="m8 21-4-4 4-4"/><path d="M4 17h16"/></svg>
@@ -201,16 +225,10 @@
         </div>
     </div>
 
-    {{-- ================================================================ --}}
-    {{-- MAIN CHARTS: Revenue Trend + Order Status                        --}}
-    {{-- ================================================================ --}}
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6"
-         x-show="widgetVisible('revenue_trend') || widgetVisible('order_status')">
-
-        {{-- Revenue Trend (2/3) --}}
-        <div class="lg:col-span-2 bg-card border border-border rounded-2xl overflow-hidden"
-             x-show="widgetVisible('revenue_trend')"
-             x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0">
+    {{-- REVENUE TREND --}}
+    <div data-widget-id="revenue_trend" :class="spanClass('revenue_trend')" class="bg-card border border-border rounded-2xl overflow-hidden"
+         x-show="widgetVisible('revenue_trend')"
+         x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0">
             {{-- Header --}}
             <div class="px-6 py-4 border-b border-border flex items-center gap-3">
                 <h3 class="text-sm font-black uppercase tracking-widest flex items-center gap-2 flex-1 min-w-0">
@@ -259,10 +277,10 @@
             </div>
         </div>
 
-        {{-- Order Status (1/3) --}}
-        <div class="bg-card border border-border rounded-2xl overflow-hidden"
-             x-show="widgetVisible('order_status')"
-             x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0">
+    {{-- ORDER STATUS --}}
+    <div data-widget-id="order_status" :class="spanClass('order_status')" class="bg-card border border-border rounded-2xl overflow-hidden"
+         x-show="widgetVisible('order_status')"
+         x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0">
             {{-- Header --}}
             <div class="px-6 py-4 border-b border-border flex items-center gap-3">
                 <h3 class="text-sm font-black uppercase tracking-widest flex items-center gap-2 flex-1 min-w-0">
@@ -332,18 +350,11 @@
                 </div>
             </div>
         </div>
-    </div>
 
-    {{-- ================================================================ --}}
-    {{-- SUPPORTING CHARTS: Top Products + By Category + User Growth      --}}
-    {{-- ================================================================ --}}
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6"
-         x-show="widgetVisible('top_products') || widgetVisible('category_revenue') || widgetVisible('user_growth')">
-
-        {{-- Top Products --}}
-        <div class="bg-card border border-border rounded-2xl overflow-hidden"
-             x-show="widgetVisible('top_products')"
-             x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0">
+    {{-- TOP PRODUCTS --}}
+    <div data-widget-id="top_products" :class="spanClass('top_products')" class="bg-card border border-border rounded-2xl overflow-hidden"
+         x-show="widgetVisible('top_products')"
+         x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0">
             <div class="px-6 py-4 border-b border-border flex items-center gap-3">
                 <h3 class="text-sm font-black uppercase tracking-widest flex items-center gap-2 flex-1 min-w-0">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>
@@ -388,10 +399,10 @@
             @endif
         </div>
 
-        {{-- By Category --}}
-        <div class="bg-card border border-border rounded-2xl overflow-hidden"
-             x-show="widgetVisible('category_revenue')"
-             x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0">
+    {{-- BY CATEGORY --}}
+    <div data-widget-id="category_revenue" :class="spanClass('category_revenue')" class="bg-card border border-border rounded-2xl overflow-hidden"
+         x-show="widgetVisible('category_revenue')"
+         x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0">
             <div class="px-6 py-4 border-b border-border flex items-center gap-3">
                 <h3 class="text-sm font-black uppercase tracking-widest flex items-center gap-2 flex-1 min-w-0">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/></svg>
@@ -430,10 +441,10 @@
             @endif
         </div>
 
-        {{-- User Growth --}}
-        <div class="bg-card border border-border rounded-2xl overflow-hidden"
-             x-show="widgetVisible('user_growth')"
-             x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0">
+    {{-- USER GROWTH --}}
+    <div data-widget-id="user_growth" :class="spanClass('user_growth')" class="bg-card border border-border rounded-2xl overflow-hidden"
+         x-show="widgetVisible('user_growth')"
+         x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0">
             <div class="px-6 py-4 border-b border-border flex items-center gap-3">
                 <h3 class="text-sm font-black uppercase tracking-widest flex items-center gap-2 flex-1 min-w-0">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M19 8v6"/><path d="M22 11h-6"/></svg>
@@ -476,18 +487,11 @@
             </div>
             <div class="p-5"><canvas id="userGrowthChart" class="max-h-[200px]"></canvas></div>
         </div>
-    </div>
 
-    {{-- ================================================================ --}}
-    {{-- DETAIL: Recent Orders + Sidebar                                  --}}
-    {{-- ================================================================ --}}
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6"
-         x-show="widgetVisible('recent_orders') || widgetVisible('sidebar_attention') || widgetVisible('sidebar_quicknav') || widgetVisible('sidebar_snapshot')">
-
-        {{-- Recent Orders (2/3) --}}
-        <div class="lg:col-span-2 bg-card border border-border rounded-2xl overflow-hidden"
-             x-show="widgetVisible('recent_orders')"
-             x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0">
+    {{-- RECENT ORDERS --}}
+    <div data-widget-id="recent_orders" :class="spanClass('recent_orders')" class="bg-card border border-border rounded-2xl overflow-hidden"
+         x-show="widgetVisible('recent_orders')"
+         x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0">
             <div class="px-6 py-4 border-b border-border flex items-center gap-3">
                 <h3 class="text-sm font-black uppercase tracking-widest flex items-center gap-2 shrink-0">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6"/></svg>
@@ -560,14 +564,10 @@
             </div>
         </div>
 
-        {{-- Sidebar (1/3) --}}
-        <div class="flex flex-col gap-4"
-             x-show="widgetVisible('sidebar_attention') || widgetVisible('sidebar_quicknav') || widgetVisible('sidebar_snapshot')">
-
-            {{-- Needs Attention --}}
-            <div class="bg-card border border-border rounded-2xl overflow-hidden"
-                 x-show="widgetVisible('sidebar_attention')"
-                 x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0">
+        {{-- NEEDS ATTENTION --}}
+        <div data-widget-id="sidebar_attention" :class="spanClass('sidebar_attention')" class="bg-card border border-border rounded-2xl overflow-hidden"
+             x-show="widgetVisible('sidebar_attention')"
+             x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0">
                 <div class="px-5 py-3.5 border-b border-border flex items-center justify-between gap-2">
                     <p class="text-[9px] font-black text-muted-foreground uppercase tracking-widest flex items-center gap-1.5">
                         <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" x2="12" y1="9" y2="13"/><line x1="12" x2="12.01" y1="17" y2="17"/></svg>
@@ -619,10 +619,10 @@
                 </div>
             </div>
 
-            {{-- Quick Navigate --}}
-            <div class="bg-card border border-border rounded-2xl overflow-hidden"
-                 x-show="widgetVisible('sidebar_quicknav')"
-                 x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0">
+        {{-- QUICK NAVIGATE --}}
+        <div data-widget-id="sidebar_quicknav" :class="spanClass('sidebar_quicknav')" class="bg-card border border-border rounded-2xl overflow-hidden"
+             x-show="widgetVisible('sidebar_quicknav')"
+             x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0">
                 <div class="px-5 py-3.5 border-b border-border flex items-center justify-between gap-2">
                     <p class="text-[9px] font-black text-muted-foreground uppercase tracking-widest flex items-center gap-1.5">
                         <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
@@ -650,10 +650,10 @@
                 </div>
             </div>
 
-            {{-- Store Snapshot --}}
-            <div class="bg-card border border-border rounded-2xl p-5 space-y-4"
-                 x-show="widgetVisible('sidebar_snapshot')"
-                 x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0">
+        {{-- STORE SNAPSHOT --}}
+        <div data-widget-id="sidebar_snapshot" :class="spanClass('sidebar_snapshot')" class="bg-card border border-border rounded-2xl p-5 space-y-4"
+             x-show="widgetVisible('sidebar_snapshot')"
+             x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0">
                 <div class="flex items-center justify-between gap-2">
                     <p class="text-[9px] font-black text-muted-foreground uppercase tracking-widest">Store Snapshot</p>
                     @include('admin.partials.widget-controls', ['id' => 'sidebar_snapshot', 'configurable' => false])
@@ -674,8 +674,8 @@
                     <p class="text-sm font-black tabular-nums text-green-500">Rp {{ number_format($allTimeRevenue, 0, ',', '.') }}</p>
                 </div>
             </div>
-        </div>
-    </div>
+
+    </div>{{-- end #dashboard-grid --}}
 
     {{-- ================================================================ --}}
     {{-- HIDDEN WIDGETS — Add back removed widgets                        --}}
@@ -766,6 +766,25 @@
 
 </div>{{-- end space-y-8 / dashboardManager --}}
 
+<style>
+    /* Reorder mode — visual affordance on draggable widgets */
+    #dashboard-grid.reorder-active > [data-widget-id] {
+        cursor: move;
+        outline: 2px dashed rgba(139,92,246,0.45);
+        outline-offset: 3px;
+        border-radius: 1rem;
+        transition: outline-color .15s ease;
+    }
+    #dashboard-grid.reorder-active > [data-widget-id]:hover {
+        outline-color: rgba(139,92,246,0.9);
+    }
+    /* SortableJS drag states */
+    .sortable-ghost  { opacity: .35; }
+    .sortable-chosen { outline-color: rgba(139,92,246,0.9) !important; }
+    .sortable-drag   { opacity: .9; }
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
 <script>
 (function () {
@@ -994,19 +1013,27 @@ function dashboardHeader(serverTimestamp) {
 }
 
 function dashboardManager() {
-    const LS_KEY = 'ridly_dashboard_v1';
+    const LS_KEY    = 'ridly_dashboard_v1';
+    const ORDER_KEY = 'ridly_dashboard_order_v1';
+
+    // Canonical default render order of every widget in the grid
+    const DEFAULT_ORDER = [
+        'kpi_cards', 'revenue_trend', 'order_status', 'top_products',
+        'category_revenue', 'user_growth', 'recent_orders',
+        'sidebar_attention', 'sidebar_quicknav', 'sidebar_snapshot',
+    ];
 
     const DEFAULTS = {
-        kpi_cards:         { visible: true, config: {} },
-        revenue_trend:     { visible: true, config: { type: 'line' } },
-        order_status:      { visible: true, config: { type: 'doughnut' } },
-        top_products:      { visible: true, config: { type: 'hbar' } },
-        category_revenue:  { visible: true, config: { type: 'hbar' } },
-        user_growth:       { visible: true, config: { type: 'line' } },
-        recent_orders:     { visible: true, config: {} },
-        sidebar_attention: { visible: true, config: {} },
-        sidebar_quicknav:  { visible: true, config: {} },
-        sidebar_snapshot:  { visible: true, config: {} },
+        kpi_cards:         { visible: true, config: { span: 3 } },
+        revenue_trend:     { visible: true, config: { type: 'line',     span: 2 } },
+        order_status:      { visible: true, config: { type: 'doughnut', span: 1 } },
+        top_products:      { visible: true, config: { type: 'hbar',     span: 1 } },
+        category_revenue:  { visible: true, config: { type: 'hbar',     span: 1 } },
+        user_growth:       { visible: true, config: { type: 'line',     span: 1 } },
+        recent_orders:     { visible: true, config: { span: 2 } },
+        sidebar_attention: { visible: true, config: { span: 1 } },
+        sidebar_quicknav:  { visible: true, config: { span: 1 } },
+        sidebar_snapshot:  { visible: true, config: { span: 1 } },
     };
 
     const CATALOG = [
@@ -1026,6 +1053,9 @@ function dashboardManager() {
         widgets:      {},
         configOpen:   {},
         changeTarget: null,
+        order:        [],
+        reorderMode:  false,
+        sortable:     null,
 
         init() {
             const saved = JSON.parse(localStorage.getItem(LS_KEY) || '{}');
@@ -1040,6 +1070,58 @@ function dashboardManager() {
                 }
             });
             Object.keys(this.widgets).forEach(id => { this.configOpen[id] = false; });
+
+            // Resolve saved widget order, reconciling against known widgets
+            const savedOrder = JSON.parse(localStorage.getItem(ORDER_KEY) || 'null');
+            if (Array.isArray(savedOrder)) {
+                this.order = savedOrder.filter(id => DEFAULT_ORDER.includes(id));
+                DEFAULT_ORDER.forEach(id => { if (!this.order.includes(id)) this.order.push(id); });
+            } else {
+                this.order = [...DEFAULT_ORDER];
+            }
+
+            // Apply the saved DOM order and wire up drag-and-drop once rendered
+            this.$nextTick(() => {
+                this.applyOrder();
+                this.initSortable();
+            });
+        },
+
+        // Physically reorder grid children to match this.order
+        applyOrder() {
+            const grid = document.getElementById('dashboard-grid');
+            if (!grid) return;
+            this.order.forEach(id => {
+                const el = grid.querySelector(`:scope > [data-widget-id="${id}"]`);
+                if (el) grid.appendChild(el);
+            });
+        },
+
+        saveOrder() {
+            localStorage.setItem(ORDER_KEY, JSON.stringify(this.order));
+        },
+
+        initSortable() {
+            const grid = document.getElementById('dashboard-grid');
+            if (!grid || !window.Sortable) return;
+            this.sortable = window.Sortable.create(grid, {
+                animation: 180,
+                disabled: true,                 // off until the user enters reorder mode
+                draggable: '[data-widget-id]',
+                ghostClass: 'sortable-ghost',
+                chosenClass: 'sortable-chosen',
+                dragClass: 'sortable-drag',
+                onEnd: () => {
+                    this.order = Array.from(grid.querySelectorAll(':scope > [data-widget-id]'))
+                        .map(el => el.dataset.widgetId);
+                    this.saveOrder();
+                },
+            });
+        },
+
+        toggleReorder() {
+            this.reorderMode = !this.reorderMode;
+            if (this.sortable) this.sortable.option('disabled', !this.reorderMode);
         },
 
         save() {
@@ -1060,6 +1142,28 @@ function dashboardManager() {
             this.widgets[id].config[key] = value;
             this.save();
             if (window.rebuildChart) window.rebuildChart(id, this.widgets[id].config);
+        },
+
+        // ── Widget width (column span: 1 = ⅓, 2 = ⅔, 3 = full) ──────────
+        getWidgetSpan(id) {
+            return this.widgets[id]?.config?.span ?? 1;
+        },
+
+        setWidgetSpan(id, n) {
+            if (!this.widgets[id]) return;
+            if (!this.widgets[id].config) this.widgets[id].config = {};
+            this.widgets[id].config.span = n;
+            this.save();
+            // Charts auto-resize via Chart.js ResizeObserver when the container width changes
+        },
+
+        spanClass(id) {
+            const n = this.getWidgetSpan(id);
+            return {
+                'lg:col-span-1': n === 1,
+                'lg:col-span-2': n === 2,
+                'lg:col-span-3': n === 3,
+            };
         },
 
         isConfigOpen(id) {
@@ -1104,6 +1208,7 @@ function dashboardManager() {
 
         resetLayout() {
             localStorage.removeItem(LS_KEY);
+            localStorage.removeItem(ORDER_KEY);
             window.location.reload();
         },
 
