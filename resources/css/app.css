@@ -1296,16 +1296,12 @@ button,
 .hero-section {
   position: relative;
   width: 100%;
-  min-width: 70vw;
-  max-width: 1400px; /* Increased from 900px so it can take up more space on big screens */
+  max-width: 1400px;
   margin: 0 auto;
-  padding: 16px 16px 0;
-}
-
-@media (min-width: 768px) {
-  .hero-section {
-    width: 70%; /* Enforce ~70% on desktops */
-  }
+  /* 24px side padding matches .page-inner so the news frame lines up with the
+     rest of the page at every width. No min-width:70vw — that was viewport-based
+     and forced the box wider than its parent on big screens, spilling right. */
+  padding: 16px 24px 0;
 }
 
 .hero-frame-grid {
