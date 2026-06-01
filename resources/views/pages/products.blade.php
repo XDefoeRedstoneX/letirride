@@ -32,11 +32,8 @@
 {{-- ── Hero Billboard ──────────────────────────────────────────── --}}
 <section class="hero-section" aria-label="Hero banner">
     <div class="hero-frame-grid">
-        {{-- Frame border pieces --}}
-        <div class="px-frame-tl"></div>
-        <div class="px-frame-t"></div>
-        <div class="px-frame-tr"></div>
-        <div class="px-frame-l"></div>
+        {{-- Frame border image --}}
+        <img src="{{ asset('components/frame/news.png') }}" class="hero-frame-img pixel-render" alt="Hero Frame">
 
         {{-- News slideshow inside the frame --}}
         <script>window._ridlyNews = {!! json_encode(array_values($newsImages), JSON_HEX_TAG | JSON_HEX_AMP | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) !!};</script>
@@ -57,16 +54,6 @@
                      alt="">
             </template>
         </div>
-
-        <div class="px-frame-r"></div>
-        <div class="px-frame-bl"></div>
-        <div class="px-frame-b"></div>
-        <div class="px-frame-br"></div>
-    </div>
-
-    {{-- Frameplate label below the banner --}}
-    <div class="hero-frameplate">
-        <img src="{{ asset('components/frame/frameplate.png') }}" alt="RIDLY NEWS" class="pixel-render">
     </div>
 </section>
 
@@ -113,7 +100,7 @@
                            placeholder="SEARCH PRODUCTS..."
                            class="w-full bg-card border-2 border-border rounded-xl px-12 py-3.5 text-sm font-bold text-foreground outline-none focus:border-primary focus:ring-4 focus:ring-primary/20 transition-all shadow-sm">
                 </div>
-                
+
                 <div class="flex gap-3 overflow-x-auto scrollbar-hide py-1">
                     <button @click="setFilter('All')"
                             :class="activeFilter === 'All' ? 'bg-primary text-primary-foreground border-primary' : 'bg-card text-muted-foreground border-border hover:border-primary/50 hover:text-primary'"
@@ -136,7 +123,7 @@
                 {{-- Browse By Brand (3D Coverflow) --}}
                 <div x-show="brands.length > 0" class="mb-2">
                     <div x-data="brandSlider()" x-init="initSlider()" class="relative w-full py-2" style="perspective: 1200px;">
-                        <div x-ref="slider" class="flex overflow-x-auto snap-x snap-mandatory scrollbar-hide py-4 px-[calc(50%-6rem)] sm:px-[calc(50%-7rem)] items-center" 
+                        <div x-ref="slider" class="flex overflow-x-auto snap-x snap-mandatory scrollbar-hide py-4 px-[calc(50%-6rem)] sm:px-[calc(50%-7rem)] items-center"
                              style="scroll-behavior: smooth; cursor: grab;"
                              @mousedown="startDrag" @mouseleave="endDrag" @mouseup="endDrag" @mousemove="doDrag"
                              @touchstart="startDrag" @touchend="endDrag" @touchmove="doDrag">
@@ -144,21 +131,21 @@
                                 <div class="snap-center shrink-0 w-48 sm:w-56 transition-all duration-300 ease-out cursor-pointer group relative mx-[-1rem] sm:mx-[-1.5rem]"
                                      @click="if(!isDragging) { scrollTo(index); $nextTick(() => selectBrand(brand.name)); }"
                                      :style="getCardStyle(index)">
-                                     
+
                                      <div class="flex flex-col bg-card shadow-2xl rounded-xl h-full transition-all duration-300 border-2 pointer-events-none select-none overflow-hidden"
                                           :class="selectedBrand === brand.name ? 'border-primary ring-4 ring-primary/20' : 'border-border'">
-                                         
+
                                          {{-- Full Frame Thumbnail Area --}}
                                          <div class="w-full aspect-[4/3] flex items-center justify-center p-4 bg-gradient-to-br from-slate-800 to-slate-950 dark:from-[#0a1020] dark:to-[#040812]">
                                              <img :src="brand.image" draggable="false" class="w-3/4 h-3/4 object-contain drop-shadow-xl transition-transform duration-500 group-hover:scale-110">
                                          </div>
-                                         
+
                                          {{-- Text Area Below --}}
                                          <div class="flex flex-col items-center p-3 bg-card border-t border-border/50">
                                              <span class="text-xs font-black uppercase tracking-widest text-foreground text-center" x-text="brand.name"></span>
                                              <span class="text-[9px] font-bold text-muted-foreground mt-1 tracking-widest" x-text="brand.count + ' ITEM' + (brand.count !== 1 ? 'S' : '')"></span>
                                          </div>
-                                     
+
                                      </div>
                                 </div>
                             </template>
@@ -211,7 +198,7 @@
                                                 </div>
                                             </template>
 
-                                            
+
                                         </div>
 
                                         <div class="card-body">
@@ -835,12 +822,12 @@ function brandSlider() {
             const isCenter = diff === 0;
             const direction = Math.sign(index - this.activeIdx);
             const zIndex = 50 - diff;
-            
+
             // Pengaturan 3D
             const scale = Math.max(0.65, 1 - (diff * 0.1)); // Lebih landai mengecilnya
             const rotateY = isCenter ? 0 : direction * -10; // Sedikit diputar ke tengah
             const translateZ = isCenter ? "0px" : (-40 * diff) + "px"; // Mundurnya tidak terlalu jauh
-            
+
             // Note: filter brightness 100% agar tidak gelap
             return `z-index:${zIndex};transform:perspective(1200px) translateZ(${translateZ}) rotateY(${rotateY}deg) scale(${scale});`;
         }
