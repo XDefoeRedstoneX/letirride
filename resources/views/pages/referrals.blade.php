@@ -26,6 +26,33 @@
                     <p class="referral-share-hint">When a friend signs up with your code and completes their first purchase, you earn <strong>{{ number_format($config->referrer_first_purchase_pts) }} points</strong>. They get <strong>{{ number_format($config->referee_welcome_points) }} points</strong> for using your code.</p>
                 </div>
 
+                {{-- Claim a code (only if not yet referred AND no paid orders) — placed high so eligible users can redeem without scrolling --}}
+                @if ($canClaim)
+                    <div class="referral-claim-card">
+                        <h3 class="referral-section-title">GOT A CODE FROM A FRIEND?</h3>
+                        <p class="referral-section-sub">Enter it before your first purchase to claim your bonus points.</p>
+                        <form @submit.prevent="submitClaim" class="referral-claim-form">
+                            @csrf
+                            <input type="text" x-model="claimInput" maxlength="16"
+                                   @input="claimInput = claimInput.toUpperCase()"
+                                   class="referral-claim-input"
+                                   placeholder="FRIENDCODE"
+                                   :disabled="claimSubmitting">
+                            <button type="submit" :disabled="claimSubmitting || !claimInput"
+                                    class="px-btn-gold referral-claim-btn">
+                                <span x-show="!claimSubmitting">CLAIM</span>
+                                <span x-show="claimSubmitting">...</span>
+                            </button>
+                        </form>
+                        <p x-show="claimMessage" :class="claimError ? 'referral-claim-error' : 'referral-claim-success'" x-text="claimMessage"></p>
+                    </div>
+                @elseif ($referrer)
+                    <div class="referral-claim-card referral-claim-locked">
+                        <h3 class="referral-section-title">REFERRED BY</h3>
+                        <p class="referral-section-sub">You were referred by <strong>{{ $referrer->name }}</strong>. Thanks for joining!</p>
+                    </div>
+                @endif
+
                 {{-- How it works --}}
                 <div class="referral-how-card" x-data="{ open: true }">
                     <button type="button" class="referral-how-toggle" @click="open = !open">
@@ -183,33 +210,6 @@
                                 </div>
                             @endforeach
                         </div>
-                    </div>
-                @endif
-
-                {{-- Claim a code (only if not yet referred AND no paid orders) --}}
-                @if ($canClaim)
-                    <div class="referral-claim-card">
-                        <h3 class="referral-section-title">GOT A CODE FROM A FRIEND?</h3>
-                        <p class="referral-section-sub">Enter it before your first purchase to claim your bonus points.</p>
-                        <form @submit.prevent="submitClaim" class="referral-claim-form">
-                            @csrf
-                            <input type="text" x-model="claimInput" maxlength="16"
-                                   @input="claimInput = claimInput.toUpperCase()"
-                                   class="referral-claim-input"
-                                   placeholder="FRIENDCODE"
-                                   :disabled="claimSubmitting">
-                            <button type="submit" :disabled="claimSubmitting || !claimInput"
-                                    class="px-btn-gold referral-claim-btn">
-                                <span x-show="!claimSubmitting">CLAIM</span>
-                                <span x-show="claimSubmitting">...</span>
-                            </button>
-                        </form>
-                        <p x-show="claimMessage" :class="claimError ? 'referral-claim-error' : 'referral-claim-success'" x-text="claimMessage"></p>
-                    </div>
-                @elseif ($referrer)
-                    <div class="referral-claim-card referral-claim-locked">
-                        <h3 class="referral-section-title">REFERRED BY</h3>
-                        <p class="referral-section-sub">You were referred by <strong>{{ $referrer->name }}</strong>. Thanks for joining!</p>
                     </div>
                 @endif
 
