@@ -42,6 +42,12 @@ class ReferralController extends Controller
 
         $referrer = $user->referred_by ? $user->referredBy()->first() : null;
 
+        // Self-heal: grant any milestones this user has already crossed but
+        // never received (old accounts predating the milestone system, manual
+        // seeds, tiers activated after the user already qualified). Idempotent
+        // via the unique (recipient_id, kind, tier_id) index on rewards.
+        $this->referrals->checkMilestonesForReferrer($user);
+
         // Milestone progression
         $tiers = ReferralTier::active()
             ->with('discountType')
