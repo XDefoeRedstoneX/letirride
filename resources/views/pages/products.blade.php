@@ -1,4 +1,33 @@
 <x-app-layout>
+<style>
+    /* Hide the global pixel-city background only on this page */
+    .fixed.inset-0.-z-10 { display: none !important; }
+    
+    /* Make default background elements transparent so the new bg shows through */
+    body, .ridly-products {
+        background-color: transparent !important;
+    }
+    
+    body {
+        background-color: #050810 !important; 
+        background-image: 
+            url('{{ asset("bg/bg_night.svg") }}'), 
+            url('{{ asset("bg/night_sky.svg") }}') !important;
+        /* City at bottom, sky at top */
+        background-position: bottom center, top center !important;
+        background-repeat: no-repeat, no-repeat !important;
+        
+        /* 
+           bg_night is 100% auto 
+           night_sky is 100% width. To make its height stretch EXACTLY to the top of bg_night, 
+           we subtract the height of bg_night from 100%.
+           Since bg_night aspect ratio is 480x1000, its height is (1000/480)*100vw = 208.33vw.
+        */
+        background-size: 100% auto, 100% calc(100% - 208.33vw) !important;
+        background-attachment: scroll, scroll !important;
+    }
+</style>
+
 @auth
     @if (! empty($showReferralPrompt))
         <section x-data="{
