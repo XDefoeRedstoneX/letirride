@@ -630,36 +630,59 @@ class DatabaseSeeder extends Seeder
             return;
         }
 
-        $hasCreatedAt = Schema::hasColumn('tickets', 'created_at');
         $existingUserIds = DB::table('users')->pluck('id')->toArray();
+        $emails = DB::table('users')->pluck('email', 'id');
 
-        $rows = [
-            ['id' => 1, 'user_id' => 2, 'type' => 'billing', 'message' => 'I was charged twice for Netflix!', 'status' => 'open'],
-            ['id' => 2, 'user_id' => 5, 'type' => 'technical', 'message' => 'My PSN key says it is already used.', 'status' => 'resolved'],
-            ['id' => 3, 'user_id' => 8, 'type' => 'general', 'message' => 'When is the next gacha event?', 'status' => 'resolved'],
-            ['id' => 4, 'user_id' => 1, 'type' => 'technical', 'message' => 'Cannot login using Google.', 'status' => 'open'],
-            ['id' => 5, 'user_id' => 3, 'type' => 'billing', 'message' => 'Discount code didnÃ¢â‚¬â„¢t apply at checkout.', 'status' => 'open'],
-            ['id' => 6, 'user_id' => 6, 'type' => 'general', 'message' => 'Do you sell Amazon gift cards?', 'status' => 'resolved'],
-            ['id' => 7, 'user_id' => 9, 'type' => 'technical', 'message' => 'Website loads slowly on mobile.', 'status' => 'open'],
-            ['id' => 8, 'user_id' => 10, 'type' => 'billing', 'message' => 'Refund request for order INV-2024-009.', 'status' => 'open'],
-            ['id' => 9, 'user_id' => 7, 'type' => 'technical', 'message' => 'DidnÃ¢â‚¬â„¢t get my verification email.', 'status' => 'resolved'],
-            ['id' => 10, 'user_id' => 4, 'type' => 'admin', 'message' => 'Test ticket from admin account.', 'status' => 'resolved'],
+        // Member tickets (user_id set; email derived from the account).
+        $member = [
+            ['id' => 1, 'user_id' => 2, 'type' => 'billing', 'subject' => 'Billing or payment issue', 'message' => 'I was charged twice for Netflix!', 'status' => 'open'],
+            ['id' => 2, 'user_id' => 5, 'type' => 'technical', 'subject' => 'Voucher or game key not working', 'message' => 'My PSN key says it is already used.', 'status' => 'closed'],
+            ['id' => 3, 'user_id' => 8, 'type' => 'gacha', 'subject' => 'Gacha or rewards question', 'message' => 'When is the next gacha event?', 'status' => 'closed'],
+            ['id' => 4, 'user_id' => 1, 'type' => 'account', 'subject' => 'Account or login help', 'message' => 'Cannot login using Google.', 'status' => 'in_progress'],
+            ['id' => 5, 'user_id' => 3, 'type' => 'billing', 'subject' => 'Billing or payment issue', 'message' => "Discount code didn't apply at checkout.", 'status' => 'open'],
+            ['id' => 6, 'user_id' => 6, 'type' => 'general', 'subject' => 'General question', 'message' => 'Do you sell Amazon gift cards?', 'status' => 'closed'],
+            ['id' => 7, 'user_id' => 9, 'type' => 'technical', 'subject' => 'Other', 'message' => 'Website loads slowly on mobile.', 'status' => 'open'],
+            ['id' => 8, 'user_id' => 10, 'type' => 'order', 'subject' => 'Order or delivery problem', 'message' => 'Refund request for order INV-2024-009.', 'status' => 'open'],
+            ['id' => 9, 'user_id' => 7, 'type' => 'account', 'subject' => 'Account or login help', 'message' => "Didn't get my verification email.", 'status' => 'closed'],
         ];
 
-        $rows = array_values(array_filter($rows, fn ($r) => in_array($r['user_id'], $existingUserIds)));
-
-        if (! empty($rows)) {
-            if ($hasCreatedAt) {
-                $rows = array_map(function (array $row) use ($now) {
-                    $row['created_at'] = $now;
-
-                    return $row;
-                }, $rows);
+        $rows = [];
+        foreach ($member as $r) {
+            if (! in_array($r['user_id'], $existingUserIds, true)) {
+                continue;
             }
-
-            $updateColumns = ['user_id', 'type', 'message', 'status'];
-            DB::table('tickets')->upsert($rows, ['id'], $updateColumns);
+            $rows[] = [
+                'id' => $r['id'],
+                'user_id' => $r['user_id'],
+                'email' => $emails[$r['user_id']] ?? 'member@ridly.example',
+                'name' => null,
+                'type' => $r['type'],
+                'subject' => $r['subject'],
+                'message' => $r['message'],
+                'status' => $r['status'],
+                'ip_address' => '127.0.0.1',
+                'created_at' => $now,
+                'updated_at' => $now,
+            ];
         }
+
+        // Guest tickets (no account) to exercise the guest path.
+        $rows[] = [
+            'id' => 10, 'user_id' => null, 'email' => 'guest.dewi@example.com', 'name' => 'Dewi',
+            'type' => 'order', 'subject' => 'Order or delivery problem',
+            'message' => 'I paid for a Steam wallet code but never received the email. Order placed as a guest.',
+            'status' => 'open', 'ip_address' => '203.0.113.10', 'created_at' => $now, 'updated_at' => $now,
+        ];
+        $rows[] = [
+            'id' => 11, 'user_id' => null, 'email' => 'guest.arif@example.com', 'name' => 'Arif',
+            'type' => 'general', 'subject' => 'General question',
+            'message' => 'Do I need an account to buy, or can I check out as a guest?',
+            'status' => 'closed', 'ip_address' => '203.0.113.22', 'created_at' => $now, 'updated_at' => $now,
+        ];
+
+        DB::table('tickets')->upsert($rows, ['id'], [
+            'user_id', 'email', 'name', 'type', 'subject', 'message', 'status', 'ip_address', 'updated_at',
+        ]);
     }
 
     private function seedNews(): void

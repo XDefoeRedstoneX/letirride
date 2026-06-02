@@ -1,7 +1,6 @@
 <x-app-layout>
     <div class="px-page">
-        <div class="px-page-inner space-y-8"
-             x-data="ticketsPage()" >
+        <div class="px-page-inner space-y-8">
 
             {{-- Header --}}
             <div style="text-align:center;">
@@ -9,43 +8,85 @@
                     <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="square" class="pixel-render"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
                 </div>
                 <h1 class="px-heading">Customer <span class="gold">Support</span></h1>
-                <p style="font-family:var(--font-sans);font-size:14px;color:var(--text-dim);max-width:480px;margin:12px auto 0;line-height:1.7;">Have a question or facing an issue? Send us a message and we'll get back to you.</p>
+                <p style="font-family:var(--font-sans);font-size:14px;color:var(--text-dim);max-width:480px;margin:12px auto 0;line-height:1.7;">Have a question or facing an issue? Send us a message and we'll reply by email.</p>
             </div>
             <div class="px-divider"><div class="px-divider-dot"></div><div class="px-divider-line"></div><div class="px-divider-dot"></div></div>
 
             {{-- Form / Success --}}
             <div class="px-card-static" style="padding:32px;max-width:640px;margin:0 auto;">
-                <template x-if="!submitted">
-                    <form @submit.prevent="submitForm" style="display:flex;flex-direction:column;gap:20px;">
-                        <div style="display:flex;flex-direction:column;gap:6px;">
-                            <label style="font-family:var(--px);font-size:6px;letter-spacing:0.12em;color:var(--text-dim);">YOUR EMAIL ADDRESS</label>
-                            <input type="email" x-model="email" required placeholder="email@example.com" class="px-input" style="padding:14px 18px;font-size:13px;">
-                        </div>
-                        <div style="display:flex;flex-direction:column;gap:6px;">
-                            <label style="font-family:var(--px);font-size:6px;letter-spacing:0.12em;color:var(--text-dim);">HOW CAN WE HELP?</label>
-                            <textarea x-model="message" required rows="5" placeholder="Describe your issue..." class="px-input" style="padding:14px 18px;font-size:13px;resize:none;"></textarea>
-                        </div>
-                        <button type="submit" class="px-btn-gold" style="width:100%;padding:18px;font-size:8px;display:flex;align-items:center;justify-content:center;gap:8px;">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="square"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>
-                            SEND MESSAGE
-                        </button>
-                    </form>
-                </template>
-
-                <template x-if="submitted">
+                @if (session('ticket_submitted'))
+                    {{-- Success state (server-driven after redirect) --}}
                     <div style="text-align:center;padding:24px 0;display:flex;flex-direction:column;align-items:center;gap:16px;">
                         <div style="width:64px;height:64px;background:rgba(34,197,94,0.15);border:3px solid #22c55e;display:flex;align-items:center;justify-content:center;color:#22c55e;">
                             <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="square"><polyline points="20 6 9 17 4 12"/></svg>
                         </div>
                         <h2 style="font-family:var(--font-sans);font-size:20px;font-weight:800;color:#e8f0ff;">Message Sent Successfully!</h2>
-                        <p style="font-family:var(--font-sans);font-size:13px;color:var(--text-dim);max-width:360px;line-height:1.6;">Thank you for reaching out. We have received your inquiry and our team is already on it.</p>
-                        <div style="background:var(--dark-card2);border:2px solid var(--dark-line);padding:14px;width:100%;max-width:320px;">
+                        <p style="font-family:var(--font-sans);font-size:13px;color:var(--text-dim);max-width:360px;line-height:1.6;">Thank you for reaching out. We've received your inquiry and our team is on it.</p>
+                        <div style="background:var(--dark-card2);border:2px solid var(--dark-line);padding:14px;width:100%;max-width:340px;">
                             <p style="font-family:var(--px);font-size:6px;letter-spacing:0.12em;color:var(--gold);margin-bottom:6px;">NEXT STEP</p>
-                            <p style="font-family:var(--font-sans);font-size:12px;color:var(--text-dim);line-height:1.6;">Check your email <span style="color:var(--gold);font-weight:800;" x-text="email"></span> regularly. We usually respond within 24 hours.</p>
+                            <p style="font-family:var(--font-sans);font-size:12px;color:var(--text-dim);line-height:1.6;">Keep an eye on your inbox — we reply by email, usually within 24 hours.</p>
                         </div>
-                        <button @click="submitted = false; message = ''" style="font-family:var(--px);font-size:6px;color:var(--text-dim);cursor:pointer;background:none;border:none;letter-spacing:0.1em;" onmouseover="this.style.color='var(--gold)'" onmouseout="this.style.color='var(--text-dim)'">SEND ANOTHER MESSAGE</button>
+                        <a href="{{ route('tickets') }}" style="font-family:var(--px);font-size:6px;color:var(--text-dim);letter-spacing:0.1em;text-decoration:none;" onmouseover="this.style.color='var(--gold)'" onmouseout="this.style.color='var(--text-dim)'">SEND ANOTHER MESSAGE</a>
                     </div>
-                </template>
+                @else
+                    <form method="POST" action="{{ route('tickets.store') }}"
+                          x-data="{ subject: '{{ old('subject_choice', '') }}' }"
+                          style="display:flex;flex-direction:column;gap:20px;">
+                        @csrf
+
+                        {{-- Honeypot: hidden from humans, tempting to bots. --}}
+                        <div style="position:absolute;left:-9999px;" aria-hidden="true">
+                            <label>Website<input type="text" name="website" tabindex="-1" autocomplete="off"></label>
+                        </div>
+
+                        @guest
+                            <div style="display:flex;flex-direction:column;gap:6px;">
+                                <label style="font-family:var(--px);font-size:6px;letter-spacing:0.12em;color:var(--text-dim);">YOUR EMAIL ADDRESS</label>
+                                <input type="email" name="email" value="{{ old('email') }}" required placeholder="email@example.com" class="px-input" style="padding:14px 18px;font-size:13px;">
+                                @error('email')<span style="color:#f43f5e;font-size:11px;">{{ $message }}</span>@enderror
+                            </div>
+                            <div style="display:flex;flex-direction:column;gap:6px;">
+                                <label style="font-family:var(--px);font-size:6px;letter-spacing:0.12em;color:var(--text-dim);">YOUR NAME <span style="opacity:0.6;">(OPTIONAL)</span></label>
+                                <input type="text" name="name" value="{{ old('name') }}" maxlength="120" placeholder="Your name" class="px-input" style="padding:14px 18px;font-size:13px;">
+                            </div>
+                        @else
+                            <div style="display:flex;flex-direction:column;gap:6px;">
+                                <label style="font-family:var(--px);font-size:6px;letter-spacing:0.12em;color:var(--text-dim);">REPLYING TO</label>
+                                <input type="email" value="{{ auth()->user()->email }}" readonly class="px-input" style="padding:14px 18px;font-size:13px;opacity:0.7;cursor:not-allowed;">
+                            </div>
+                        @endguest
+
+                        {{-- Subject combobox: preset options + free-text "Other". --}}
+                        <div style="display:flex;flex-direction:column;gap:6px;">
+                            <label style="font-family:var(--px);font-size:6px;letter-spacing:0.12em;color:var(--text-dim);">SUBJECT</label>
+                            <select name="subject_choice" x-model="subject" required class="px-input" style="padding:14px 18px;font-size:13px;">
+                                <option value="" disabled>Choose a subject…</option>
+                                @foreach ($subjects as $s)
+                                    <option value="{{ $s }}">{{ $s }}</option>
+                                @endforeach
+                                <option value="Other">Other…</option>
+                            </select>
+                            @error('subject_choice')<span style="color:#f43f5e;font-size:11px;">{{ $message }}</span>@enderror
+
+                            <input type="text" name="subject_other" x-show="subject === 'Other'" x-cloak
+                                   value="{{ old('subject_other') }}" maxlength="120"
+                                   placeholder="Briefly, what's it about?" class="px-input"
+                                   style="padding:14px 18px;font-size:13px;margin-top:8px;">
+                            @error('subject_other')<span style="color:#f43f5e;font-size:11px;">{{ $message }}</span>@enderror
+                        </div>
+
+                        <div style="display:flex;flex-direction:column;gap:6px;">
+                            <label style="font-family:var(--px);font-size:6px;letter-spacing:0.12em;color:var(--text-dim);">HOW CAN WE HELP?</label>
+                            <textarea name="message" required rows="5" minlength="10" maxlength="4000" placeholder="Describe your issue..." class="px-input" style="padding:14px 18px;font-size:13px;resize:none;">{{ old('message') }}</textarea>
+                            @error('message')<span style="color:#f43f5e;font-size:11px;">{{ $message }}</span>@enderror
+                        </div>
+
+                        <button type="submit" class="px-btn-gold" style="width:100%;padding:18px;font-size:8px;display:flex;align-items:center;justify-content:center;gap:8px;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="square"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>
+                            SEND MESSAGE
+                        </button>
+                    </form>
+                @endif
             </div>
 
             {{-- FAQ Link --}}
@@ -54,19 +95,4 @@
             </p>
         </div>
     </div>
-
-    <script>
-    function ticketsPage() {
-        return {
-            submitted: false,
-            email: '',
-            message: '',
-            submitForm() {
-                if (this.email && this.message) {
-                    this.submitted = true;
-                }
-            }
-        };
-    }
-    </script>
 </x-app-layout>

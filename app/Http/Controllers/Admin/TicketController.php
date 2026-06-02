@@ -8,13 +8,31 @@ use Illuminate\Http\Request;
 
 class TicketController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $tickets = Ticket::with('user')
-            ->orderByDesc('created_at')
-            ->paginate(20);
+        $status = $request->query('status');
+        $search = $request->query('q');
 
-        return view('admin.tickets', ['tickets' => $tickets]);
+        $tickets = Ticket::with('user')
+            ->status($status)
+            ->search($search)
+            ->orderByDesc('created_at')
+            ->paginate(20)
+            ->withQueryString();
+
+        $counts = [
+            'all' => Ticket::count(),
+            'open' => Ticket::where('status', 'open')->count(),
+            'in_progress' => Ticket::where('status', 'in_progress')->count(),
+            'closed' => Ticket::where('status', 'closed')->count(),
+        ];
+
+        return view('admin.tickets', [
+            'tickets' => $tickets,
+            'counts' => $counts,
+            'activeStatus' => in_array($status, Ticket::STATUSES, true) ? $status : 'all',
+            'search' => $search,
+        ]);
     }
 
     public function updateStatus(Request $request, Ticket $ticket)
