@@ -8,6 +8,7 @@
     user: {},
     insights: null,
     insightsLoading: false,
+    insightsError: null,
     spendingChart: null,
     orderCountChart: null,
     openEdit(u) {
@@ -17,12 +18,19 @@
     openHistory(u) {
         this.user = u;
         this.showHistoryModal = true;
+        // Reuse the insights payload — its `recentOrders` array IS the history.
+        // Avoids a second endpoint and keeps both modals consistent.
+        this.loadInsights(u);
     },
     openInsights(u) {
         this.user = u;
         this.showInsightsModal = true;
+        this.loadInsights(u);
+    },
+    loadInsights(u) {
         this.insightsLoading = true;
         this.insights = null;
+        this.insightsError = null;
 
         // Reset charts if reopening
         if (this.spendingChart) { this.spendingChart.destroy(); this.spendingChart = null; }
@@ -47,6 +55,17 @@
             this.$nextTick(() => {
                 const labels = data?.spendingAnalytics?.labels || [];
 
+                // Charts only render when the Insights modal is open — History
+                // shares the same payload but has no canvases.
+                const probe = document.getElementById('insightsSpendingChart');
+                if (!probe) return;
+
+                // Read theme-aware colors from the actual DOM so the charts
+                // are legible in both light and dark mode. Chart.js can't
+                // resolve CSS vars inside string color values.
+                const textColor = getComputedStyle(probe).color;
+                const gridColor = textColor.replace(')', ' / 0.12)').replace('rgb', 'rgba');
+
                 if (labels.length > 0) {
                     const spendingEl = document.getElementById('insightsSpendingChart');
                     if (spendingEl) {
@@ -70,20 +89,21 @@
                             },
                             options: {
                                 responsive: true,
-                                maintainAspectRatio: true,
+                                maintainAspectRatio: false,
                                 plugins: {
-                                    legend: { display: true, labels: { font: { weight: 'bold', size: 12 } } }
+                                    legend: { display: true, labels: { color: textColor, font: { weight: 'bold', size: 12 } } },
+                                    tooltip: { titleColor: textColor, bodyColor: textColor }
                                 },
                                 scales: {
                                     y: {
                                         beginAtZero: true,
                                         ticks: {
-                                            color: 'rgb(var(--color-muted-foreground))',
+                                            color: textColor,
                                             callback: (v) => 'Rp ' + Number(v).toLocaleString('id-ID')
                                         },
-                                        grid: { color: 'rgba(var(--color-border), 0.1)' }
+                                        grid: { color: gridColor }
                                     },
-                                    x: { ticks: { color: 'rgb(var(--color-muted-foreground))' }, grid: { display: false } }
+                                    x: { ticks: { color: textColor }, grid: { display: false } }
                                 }
                             }
                         });
@@ -106,17 +126,18 @@
                             },
                             options: {
                                 responsive: true,
-                                maintainAspectRatio: true,
+                                maintainAspectRatio: false,
                                 plugins: {
-                                    legend: { display: true, labels: { font: { weight: 'bold', size: 12 } } }
+                                    legend: { display: true, labels: { color: textColor, font: { weight: 'bold', size: 12 } } },
+                                    tooltip: { titleColor: textColor, bodyColor: textColor }
                                 },
                                 scales: {
                                     y: {
                                         beginAtZero: true,
-                                        ticks: { color: 'rgb(var(--color-muted-foreground))', stepSize: 1 },
-                                        grid: { color: 'rgba(var(--color-border), 0.1)' }
+                                        ticks: { color: textColor, stepSize: 1 },
+                                        grid: { color: gridColor }
                                     },
-                                    x: { ticks: { color: 'rgb(var(--color-muted-foreground))' }, grid: { display: false } }
+                                    x: { ticks: { color: textColor }, grid: { display: false } }
                                 }
                             }
                         });
@@ -127,6 +148,7 @@
         .catch(() => {
             this.insightsLoading = false;
             this.insights = null;
+            this.insightsError = 'Failed to load insights. Please try again.';
         });
     }
 }">
@@ -265,8 +287,13 @@
                     </div>
                 </div>
 
+                <!-- Error State -->
+                <div x-show="!insightsLoading && insightsError" x-cloak class="border-2 border-red-500/40 bg-red-500/10 rounded-2xl p-6">
+                    <p class="text-sm font-bold text-red-500" x-text="insightsError"></p>
+                </div>
+
                 <!-- Content -->
-                <div x-show="!insightsLoading" class="space-y-6">
+                <div x-show="!insightsLoading && insights" class="space-y-6">
                     <!-- Section 1: User Overview -->
                     <div class="bg-foreground/5 border-2 border-border/50 rounded-2xl p-5">
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -347,25 +374,28 @@
                     </div>
 
                     <!-- Section 3: Charts -->
+                    @php $hasChart = "(insights?.spendingAnalytics?.labels || []).length > 0"; @endphp
                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                         <div class="bg-card border border-border rounded-2xl p-5">
                             <h3 class="text-lg font-black uppercase tracking-tighter mb-4">Monthly spending line</h3>
-                            <div class="w-full h-[320px]">
-                                <canvas id="insightsSpendingChart" class="w-full h-full"></canvas>
+                            <div class="w-full h-[320px] relative" x-show="{{ $hasChart }}">
+                                <canvas id="insightsSpendingChart"></canvas>
                             </div>
-                            <template x-if="(insights?.spendingAnalytics?.labels || []).length === 0">
-                                <p class="text-muted-foreground text-sm mt-4 text-center">No paid purchases to chart.</p>
-                            </template>
+                            <div class="w-full h-[320px] flex flex-col items-center justify-center text-muted-foreground" x-show="!({{ $hasChart }})">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mb-2 opacity-60"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
+                                <p class="text-sm font-bold">No orders</p>
+                            </div>
                         </div>
 
                         <div class="bg-card border border-border rounded-2xl p-5">
                             <h3 class="text-lg font-black uppercase tracking-tighter mb-4">Monthly order count</h3>
-                            <div class="w-full h-[320px]">
-                                <canvas id="insightsOrderCountChart" class="w-full h-full"></canvas>
+                            <div class="w-full h-[320px] relative" x-show="{{ $hasChart }}">
+                                <canvas id="insightsOrderCountChart"></canvas>
                             </div>
-                            <template x-if="(insights?.spendingAnalytics?.labels || []).length === 0">
-                                <p class="text-muted-foreground text-sm mt-4 text-center">No paid purchases to chart.</p>
-                            </template>
+                            <div class="w-full h-[320px] flex flex-col items-center justify-center text-muted-foreground" x-show="!({{ $hasChart }})">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mb-2 opacity-60"><path d="M3 3v18h18"/><rect x="7" y="12" width="3" height="6"/><rect x="14" y="8" width="3" height="10"/></svg>
+                                <p class="text-sm font-bold">No orders</p>
+                            </div>
                         </div>
                     </div>
 
@@ -475,7 +505,20 @@
                 </div>
                 
                 <div class="mt-4 border-2 border-border/50 rounded-2xl overflow-hidden bg-foreground/5">
-                    <div class="overflow-x-auto">
+                    {{-- Loading --}}
+                    <div x-show="insightsLoading" class="p-8 flex items-center gap-3 text-muted-foreground">
+                        <div class="w-6 h-6 rounded-full border-2 border-primary/30 border-t-primary animate-spin"></div>
+                        <p class="text-xs font-bold">Loading order history…</p>
+                    </div>
+
+                    {{-- Empty --}}
+                    <div x-show="!insightsLoading && (!insights?.recentOrders || insights.recentOrders.length === 0)" class="p-10 flex flex-col items-center justify-center text-muted-foreground">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mb-2 opacity-60"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+                        <p class="text-sm font-bold">No paid orders yet</p>
+                    </div>
+
+                    {{-- List --}}
+                    <div class="overflow-x-auto" x-show="!insightsLoading && insights?.recentOrders && insights.recentOrders.length > 0">
                         <table class="w-full text-left">
                             <thead>
                                 <tr class="bg-foreground/5 text-[9px] font-black uppercase tracking-widest text-muted-foreground border-b-2 border-border/50">
@@ -486,15 +529,16 @@
                                 </tr>
                             </thead>
                             <tbody class="divide-y-2 divide-border/50">
-                                <!-- UI Empty/Placeholder State -->
-                                <tr class="hover:bg-foreground/5">
-                                    <td colspan="4" class="px-5 py-12 text-center">
-                                        <div class="flex flex-col items-center justify-center text-muted-foreground">
-                
-                                            
-                                        </div>
-                                    </td>
-                                </tr>
+                                <template x-for="o in (insights?.recentOrders || [])" :key="o.invoice">
+                                    <tr class="hover:bg-foreground/5">
+                                        <td class="px-5 py-3 text-xs font-mono font-bold" x-text="o.invoice"></td>
+                                        <td class="px-5 py-3 text-xs" x-text="o.date"></td>
+                                        <td class="px-5 py-3 text-xs font-bold" x-text="'Rp ' + Number(o.total).toLocaleString('id-ID')"></td>
+                                        <td class="px-5 py-3">
+                                            <span class="px-2 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest bg-green-500/10 text-green-500" x-text="o.status"></span>
+                                        </td>
+                                    </tr>
+                                </template>
                             </tbody>
                         </table>
                     </div>

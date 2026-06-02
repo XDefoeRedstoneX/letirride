@@ -9,15 +9,17 @@ use App\Models\OrderDetail;
 use App\Models\Product;
 use App\Models\User;
 use Carbon\Carbon;
-use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class UserController extends Controller
 {
     public function index()
     {
-        $users = User::withCount('orders')
+        // Count paid orders only so the column reconciles with the Insights
+        // modal (which is itself paid-only).
+        $users = User::withCount(['orders as orders_count' => fn ($q) => $q->where('status', 'paid')])
             ->orderByDesc('id')
             ->paginate(20);
 
@@ -36,7 +38,7 @@ class UserController extends Controller
             'points_balance' => $request->points_balance,
         ]);
 
-        return back()->with('success', $user->name . ' updated.');
+        return back()->with('success', $user->name.' updated.');
     }
 
     /**
@@ -91,25 +93,26 @@ class UserController extends Controller
             $topCategory = Category::query()->find($topCategoryAgg->category_id);
         }
 
-        // Charts: monthly spending + monthly order count
-        // Note: uses DATE_TRUNC which is Postgres-compatible. Matches existing service usage.
-        $monthlyRows = DB::table('orders')
-            ->where('user_id', $user->id)
-            ->where('status', 'paid')
-            ->selectRaw('DATE_TRUNC(\'month\', created_at) as month')
-            ->selectRaw('COUNT(*) as order_count')
-            ->selectRaw('SUM(total_price_after_discount) as total_spent')
-            ->groupByRaw('DATE_TRUNC(\'month\', created_at)')
-            ->orderByRaw('DATE_TRUNC(\'month\', created_at)')
-            ->get();
+        // Charts: monthly spending + monthly order count.
+        // Grouped in PHP (by Y-m) so it's driver-agnostic — the previous
+        // DATE_TRUNC() is Postgres-only and 500s on SQLite/MySQL, which is why
+        // the whole modal previously rendered zeros.
+        $monthlyRows = (clone $paidOrdersBaseQuery)
+            ->orderBy('created_at')
+            ->get(['created_at', 'total_price_after_discount'])
+            ->groupBy(fn (Order $o) => optional($o->created_at)->format('Y-m'))
+            ->sortKeys();
 
         $labels = [];
         $monthlySpending = [];
         $monthlyOrderCounts = [];
-        foreach ($monthlyRows as $row) {
-            $labels[] = Carbon::parse($row->month)->format('M Y');
-            $monthlySpending[] = (float) $row->total_spent;
-            $monthlyOrderCounts[] = (int) $row->order_count;
+        foreach ($monthlyRows as $ym => $rows) {
+            if (! $ym) {
+                continue;
+            }
+            $labels[] = Carbon::createFromFormat('Y-m', $ym)->format('M Y');
+            $monthlySpending[] = (float) $rows->sum('total_price_after_discount');
+            $monthlyOrderCounts[] = $rows->count();
         }
 
         // Top 5 products
@@ -126,7 +129,7 @@ class UserController extends Controller
 
         $topProductIds = $topProductRows->pluck('product_id')->all();
         $topProducts = [];
-        if (!empty($topProductIds)) {
+        if (! empty($topProductIds)) {
             $products = Product::query()
                 ->with('category')
                 ->whereIn('id', $topProductIds)
@@ -163,7 +166,7 @@ class UserController extends Controller
 
         $topCategoryIds = $topCategoryRows->pluck('category_id')->all();
         $topCategories = [];
-        if (!empty($topCategoryIds)) {
+        if (! empty($topCategoryIds)) {
             $categories = Category::query()
                 ->whereIn('id', $topCategoryIds)
                 ->get()
@@ -180,10 +183,11 @@ class UserController extends Controller
             }
         }
 
-        // Recent 10 paid order history
+        // Recent paid orders — fuels both the Insights "recent" card and the
+        // History modal, so we return a fuller window than the dashboard preview.
         $recentOrders = (clone $paidOrdersBaseQuery)
             ->orderByDesc('created_at')
-            ->limit(10)
+            ->limit(25)
             ->get(['id', 'noinv', 'created_at', 'status', 'total_price_after_discount']);
 
         $recentOrdersPayload = $recentOrders->map(function (Order $o) {
@@ -233,4 +237,3 @@ class UserController extends Controller
         ]);
     }
 }
-
