@@ -26,7 +26,7 @@
             localStorage.setItem('theme', 'light');
         }
     }
-}" style="position: fixed; top: 0; left: 0; right: 0; z-index: 50; background: var(--dark-bg, #050c1a); border-bottom: 3px solid var(--gold, #f59e0b); box-shadow: 0 4px 0 var(--gold-dim, #92650a);">
+}" style="position: fixed; top: 0; left: 0; right: 0; z-index: 50; background: var(--nav-bg); border-bottom: 3px solid var(--gold, #f59e0b); box-shadow: 0 4px 0 var(--gold-dim, #92650a);">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div style="display: flex; align-items: center; justify-content: space-between; height: 56px; gap: 8px;">
             {{-- Logo --}}
@@ -37,7 +37,7 @@
 
             {{-- Desktop Navigation --}}
             @unless(Auth::check() && Auth::user()->isAdmin())
-            <div class="hidden md:flex" style="align-items: center; gap: 4px; padding: 4px; background: var(--dark-card, #08152a); border: 2px solid var(--dark-line, #122044);">
+            <div class="hidden md:flex" style="align-items: center; gap: 4px; padding: 4px; background: var(--nav-bg); border: 2px solid var(--gold, #f59e0b);">
                 @php
                     $navItems = [
                         ['route' => 'home', 'label' => 'HOME', 'icon' => '<path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>'],
@@ -52,10 +52,10 @@
                     <a href="{{ route($item['route']) }}"
                        style="display: flex; align-items: center; gap: 5px; padding: 6px 10px; font-family: var(--px, 'Press Start 2P', monospace); font-size: 8px; letter-spacing: 0.08em; white-space: nowrap; text-decoration: none; transition: all 0.1s;
                               {{ request()->routeIs($item['route']) 
-                                  ? 'background: var(--gold, #f59e0b); color: var(--dark-bg, #050c1a); box-shadow: 2px 2px 0 var(--gold-dim, #92650a);' 
-                                  : 'color: var(--text-dim, #5a7aaa);' }}"
+                                  ? 'background: var(--gold, #f59e0b); color: var(--nav-bg); box-shadow: 2px 2px 0 var(--gold-dim, #92650a);' 
+                                  : 'color: var(--nav-text);' }}"
                        onmouseover="if(!this.classList.contains('nav-active')){this.style.color='var(--gold)';this.style.borderColor='var(--gold)';}"
-                       onmouseout="if(!this.classList.contains('nav-active')){this.style.color='var(--text-dim)';this.style.borderColor='transparent';}">
+                       onmouseout="if(!this.classList.contains('nav-active')){this.style.color='var(--nav-text)';this.style.borderColor='transparent';}">
                         <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="square" stroke-linejoin="miter" class="pixel-render">{!! $item['icon'] !!}</svg>
                         <span>{{ $item['label'] }}</span>
                     </a>

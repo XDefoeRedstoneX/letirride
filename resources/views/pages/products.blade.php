@@ -68,25 +68,32 @@
              i: 0,
              interval: null,
              init() {
-                 this.start();
+                 this.startSlide();
              },
-             start() {
-                 if (this.imgs.length > 1) {
-                     this.interval = setInterval(() => this.next(), 4000);
+             startSlide() {
+                 if (this.imgs.length > 1 && !this.interval) {
+                     this.interval = setInterval(() => this.nextSlide(), 4000);
                  }
              },
-             stop() {
-                 clearInterval(this.interval);
+             stopSlide() {
+                 if (this.interval) {
+                     clearInterval(this.interval);
+                     this.interval = null;
+                 }
              },
-             next() {
-                 this.i = (this.i + 1) % this.imgs.length;
+             nextSlide() {
+                 if (this.imgs.length > 0) {
+                     this.i = (this.i + 1) % this.imgs.length;
+                 }
              },
-             prev() {
-                 this.i = (this.i - 1 + this.imgs.length) % this.imgs.length;
+             prevSlide() {
+                 if (this.imgs.length > 0) {
+                     this.i = (this.i - 1 + this.imgs.length) % this.imgs.length;
+                 }
              }
          }"
-         @mouseenter="stop()"
-         @mouseleave="start()">
+         @mouseenter="stopSlide()"
+         @mouseleave="startSlide()">
          
         {{-- Frame border image --}}
         <img src="{{ asset('components/frame/news.png') }}" class="hero-frame-img pixel-render" alt="Hero Frame">
@@ -102,14 +109,14 @@
         </div>
 
         {{-- Left Arrow --}}
-        <button type="button" @click.stop="stop(); prev(); start();"
+        <button type="button" @click.prevent="prevSlide()"
                 class="absolute left-[5%] md:left-[3.5%] top-1/2 -translate-y-1/2 z-40 w-8 h-8 md:w-12 md:h-12 flex items-center justify-center bg-[#08152a] border-[3px] border-[#122044] text-[#5a7aaa] opacity-50 group-hover:opacity-100 transition-all duration-200 hover:border-[#f59e0b] hover:text-[#f59e0b] hover:scale-110"
                 style="image-rendering: pixelated; box-shadow: inset -2px -2px 0 rgba(0,0,0,0.5), inset 2px 2px 0 rgba(255,255,255,0.1), 4px 4px 0 rgba(0,0,0,0.5);">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="square" stroke-linejoin="miter" class="w-4 h-4 md:w-6 md:h-6"><path d="m15 18-6-6 6-6"/></svg>
         </button>
         
         {{-- Right Arrow --}}
-        <button type="button" @click.stop="stop(); next(); start();"
+        <button type="button" @click.prevent="nextSlide()"
                 class="absolute right-[5%] md:right-[3.5%] top-1/2 -translate-y-1/2 z-40 w-8 h-8 md:w-12 md:h-12 flex items-center justify-center bg-[#08152a] border-[3px] border-[#122044] text-[#5a7aaa] opacity-50 group-hover:opacity-100 transition-all duration-200 hover:border-[#f59e0b] hover:text-[#f59e0b] hover:scale-110"
                 style="image-rendering: pixelated; box-shadow: inset -2px -2px 0 rgba(0,0,0,0.5), inset 2px 2px 0 rgba(255,255,255,0.1), 4px 4px 0 rgba(0,0,0,0.5);">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="square" stroke-linejoin="miter" class="w-4 h-4 md:w-6 md:h-6"><path d="m9 18 6-6-6-6"/></svg>
@@ -232,10 +239,7 @@
                             <div class="section-right">
                                 <span class="section-meta"
                                       x-text="group.products.length + ' ITEM' + (group.products.length !== 1 ? 'S' : '')"></span>
-                                <button x-show="group.isBrand"
-                                        class="clear-brand-btn"
-                                        @click="clearBrand()"
-                                        type="button">✕ CLEAR</button>
+
                             </div>
                         </div>
 
@@ -719,10 +723,6 @@ function ridlyStore(initialProducts, initialFavorites, isAuthenticated, csrfToke
         selectBrand(name) {
             this.selectedBrand = (this.selectedBrand === name) ? null : name;
             if (this.selectedBrand) this.$nextTick(() => this.scrollToProducts());
-        },
-
-        clearBrand() {
-            this.selectedBrand = null;
         },
 
         openBuyModal(product) {
