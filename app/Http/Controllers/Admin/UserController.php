@@ -96,11 +96,11 @@ class UserController extends Controller
         $monthlyRows = DB::table('orders')
             ->where('user_id', $user->id)
             ->where('status', 'paid')
-            ->selectRaw('DATE_TRUNC(\'month\', created_at) as month')
+            ->selectRaw("DATE_FORMAT(created_at, '%Y-%m') as month")
             ->selectRaw('COUNT(*) as order_count')
             ->selectRaw('SUM(total_price_after_discount) as total_spent')
-            ->groupByRaw('DATE_TRUNC(\'month\', created_at)')
-            ->orderByRaw('DATE_TRUNC(\'month\', created_at)')
+            ->groupByRaw("DATE_FORMAT(created_at, '%Y-%m')")
+            ->orderByRaw("DATE_FORMAT(created_at, '%Y-%m')")
             ->get();
 
         $labels = [];
