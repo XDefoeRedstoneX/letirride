@@ -738,8 +738,9 @@ class DatabaseSeeder extends Seeder
                 'name' => 'Steam Master Discount',
                 'description' => 'Get 20% off all Steam products and wallet top-ups.',
                 'point_cost' => 500,
-                'reward_type' => 'discount_code',
+                'reward_type' => 'discount',
                 'discount_type_id' => 12,
+                'points_amount' => null,
                 'img' => null,
                 'is_active' => true,
             ],
@@ -748,8 +749,9 @@ class DatabaseSeeder extends Seeder
                 'name' => 'Fortnite V-Bucks Frenzy',
                 'description' => 'Receive 25% off every Fortnite V-Bucks package.',
                 'point_cost' => 5000,
-                'reward_type' => 'discount_code',
+                'reward_type' => 'discount',
                 'discount_type_id' => 13,
+                'points_amount' => null,
                 'img' => null,
                 'is_active' => true,
             ],
@@ -758,8 +760,9 @@ class DatabaseSeeder extends Seeder
                 'name' => 'ChatGPT Premium Saver',
                 'description' => 'Enjoy 10% off all ChatGPT subscription plans.',
                 'point_cost' => 1000,
-                'reward_type' => 'discount_code',
+                'reward_type' => 'discount',
                 'discount_type_id' => 14,
+                'points_amount' => null,
                 'img' => null,
                 'is_active' => true,
             ],
@@ -838,7 +841,17 @@ class DatabaseSeeder extends Seeder
                 'img' => null,
                 'is_active' => true,
             ],
-        ], ['id'], ['name', 'description', 'point_cost', 'reward_type', 'discount_type_id', 'img', 'is_active']);
+            [
+                'name' => 'Loyalty Cashback',
+                'description' => 'Trade in points for a 400-point loyalty cashback.',
+                'point_cost' => 500,
+                'reward_type' => 'cashback',
+                'discount_type_id' => null,
+                'points_amount' => 400,
+                'img' => null,
+                'is_active' => true,
+            ],
+        ], ['id'], ['name', 'description', 'point_cost', 'reward_type', 'discount_type_id', 'points_amount', 'img', 'is_active']);
     }
 
     private function seedPointShopPurchases($now): void
