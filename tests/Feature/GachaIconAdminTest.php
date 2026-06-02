@@ -131,3 +131,23 @@ it('accepts icon_key and custom image_path when saving a prize', function () {
     $prize = GachaPool::where('prize_name', 'Netflix Prize')->first();
     expect($prize->icon_key)->toBe('netflix');
 });
+
+it('accepts an SVG upload when adding an icon (regression: image rule rejected SVG)', function () {
+    Storage::fake('public');
+
+    $svg = UploadedFile::fake()->createWithContent(
+        'coin.svg',
+        '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"></svg>'
+    );
+
+    $this->actingAs(admin())->post(route('admin.gacha-icons.store'), [
+        'key' => 'svg-coin',
+        'label' => 'SVG Coin',
+        'category' => 'special',
+        'image_file' => $svg,
+    ])->assertRedirect()->assertSessionHasNoErrors();
+
+    $icon = GachaIcon::where('key', 'svg-coin')->first();
+    expect($icon)->not->toBeNull();
+    expect($icon->image_path)->toEndWith('.svg');
+});

@@ -32,9 +32,9 @@
         <div class="bg-green-500/10 border border-green-500/40 text-green-400 px-4 py-3 rounded-xl text-xs font-bold">{{ session('success') }}</div>
     @endif
 
-    @error('key')
-        <div class="bg-red-500/10 border border-red-500/40 text-red-400 px-4 py-3 rounded-xl text-xs font-bold">{{ $message }}</div>
-    @enderror
+    @if ($errors->any())
+        <div class="bg-red-500/10 border border-red-500/40 text-red-400 px-4 py-3 rounded-xl text-xs font-bold">{{ $errors->first() }}</div>
+    @endif
 
     @foreach($categories as $catKey => $catLabel)
         @php $catIcons = $iconsByCategory[$catKey] ?? collect(); @endphp

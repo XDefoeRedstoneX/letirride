@@ -21,15 +21,4 @@ class OrderController extends Controller
 
         return view('admin.orders', ['orders' => $orders]);
     }
-
-    public function updateStatus(Request $request, Order $order)
-    {
-        $request->validate([
-            'status' => 'required|in:pending,paid,failed',
-        ]);
-
-        $order->update(['status' => $request->status]);
-
-        return back()->with('success', 'Order status updated to '.$request->status.'.');
-    }
 }

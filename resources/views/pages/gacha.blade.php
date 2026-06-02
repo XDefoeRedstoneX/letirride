@@ -4,6 +4,9 @@
             <div class="px-page-inner space-y-10"
                  x-data='gachaPage(@json($prizes), {{ $spinCost }}, @json($boosters ?? []), @json($pity["active_boosters"] ?? []), {{ (int) ($pity["free_spins"] ?? 0) }}, @json($rarityBreakdown ?? []), @json($pity["base_rarity_chances"] ?? (object)[]), @json($pity["effective_rarity_chances"] ?? (object)[]))'>
 
+                {{-- Spin dimmer: darkens the page so the cabinet takes the spotlight --}}
+                <div class="gacha-dim" :class="{ 'on': spinning }" aria-hidden="true"></div>
+
                 {{-- Header --}}
                 <div style="text-align:center;">
                     <h1 class="px-heading">Arcade <span class="gold">Carousel</span></h1>
@@ -12,7 +15,13 @@
                 <div class="px-divider"><div class="px-divider-dot"></div><div class="px-divider-line"></div><div class="px-divider-dot"></div></div>
 
                 {{-- Gacha Carousel --}}
-                <div class="gacha-carousel-frame">
+                @php $hasCabinet = file_exists(public_path('gacha-assets/arcade-cabinet.png')); @endphp
+                <div class="gacha-carousel-frame {{ $hasCabinet ? 'has-cabinet' : '' }}"
+                     :class="{ 'cabinet-on': spinning, 'cabinet-rumble': animationClass === 'gacha-spinning', 'cabinet-impact': impact }">
+                    @if($hasCabinet)
+                        {{-- Arcade cabinet backdrop: fades in during a spin; cards land in its green screen. --}}
+                        <img src="/gacha-assets/arcade-cabinet.png" class="gacha-cabinet" alt="" aria-hidden="true" />
+                    @endif
                     {{-- Skip Button --}}
                     <div x-show="showSkip" x-transition.opacity class="gacha-skip-wrap">
                         <button @click="skipAnimation()" class="gacha-skip-btn">
@@ -25,6 +34,7 @@
                         <div class="gacha-pointer-cap gacha-pointer-cap-bottom"></div>
                     </div>
 
+                    <div class="gacha-screen">
                     <div x-ref="carousel" class="gacha-track"
                          :class="animationClass"
                          :style="(spinning || animationClass === 'gacha-idle-loop') ? '' : 'transform: translateX(' + dragOffset + 'px)'">
@@ -44,6 +54,7 @@
                                 </template>
                             </div>
                         </template>
+                    </div>
                     </div>
                 </div>
 
@@ -79,6 +90,9 @@
                         </span>
                         <button @click="showInfoModal = true" type="button" class="gacha-status-chip gacha-status-rules" title="How it works">
                             ?  RULES
+                        </button>
+                        <button @click="toggleMute()" type="button" class="gacha-status-chip gacha-status-rules" :title="muted ? 'Unmute sound' : 'Mute sound'">
+                            <span x-text="muted ? '♪ OFF' : '♪ ON'"></span>
                         </button>
                         <a href="{{ route('gacha.history') }}" class="gacha-status-chip gacha-status-link">
                             HISTORY &rarr;
@@ -283,6 +297,12 @@
             pityCounter: {{ (int) ($pity['pity_counter'] ?? 0) }},
             miniPityCounter: {{ (int) ($pity['mini_pity_counter'] ?? 0) }},
 
+            // Cabinet impact shake + arcade sound (Web Audio synth, no asset files).
+            impact: false,
+            muted: false,
+            audioCtx: null,
+            tickTimer: null,
+
             init() {
                 // Shuffle the carousel order so the idle drift interleaves rarities
                 // (the backend sorts highest-rarity-first, which otherwise parks the
@@ -303,6 +323,8 @@
 
                 // Make sure the carousel is in the idle-loop class on first paint.
                 this.animationClass = 'gacha-idle-loop';
+
+                this.muted = localStorage.getItem('gachaMuted') === '1';
             },
 
             shuffle(arr) {
@@ -311,6 +333,48 @@
                     [arr[i], arr[j]] = [arr[j], arr[i]];
                 }
                 return arr;
+            },
+
+            /* ---- Arcade sound (synthesised, no audio files) ---- */
+            toggleMute() {
+                this.muted = !this.muted;
+                localStorage.setItem('gachaMuted', this.muted ? '1' : '0');
+                if (this.muted) this.stopTicks();
+            },
+            initAudio() {
+                if (this.audioCtx || this.muted) return;
+                try {
+                    const Ctx = window.AudioContext || window.webkitAudioContext;
+                    if (Ctx) this.audioCtx = new Ctx();
+                } catch (e) { /* audio unsupported — silent */ }
+            },
+            beep(freq, durMs, type = 'square', gain = 0.04) {
+                if (this.muted || !this.audioCtx) return;
+                const ctx = this.audioCtx;
+                if (ctx.state === 'suspended') ctx.resume();
+                const o = ctx.createOscillator();
+                const g = ctx.createGain();
+                o.type = type;
+                o.frequency.value = freq;
+                o.connect(g); g.connect(ctx.destination);
+                const t = ctx.currentTime;
+                g.gain.setValueAtTime(gain, t);
+                g.gain.exponentialRampToValueAtTime(0.0001, t + durMs / 1000);
+                o.start(t);
+                o.stop(t + durMs / 1000);
+            },
+            startTicks() {
+                if (this.muted) return;
+                this.stopTicks();
+                this.tickTimer = setInterval(() => this.beep(1300, 22, 'square', 0.025), 95);
+            },
+            stopTicks() {
+                if (this.tickTimer) { clearInterval(this.tickTimer); this.tickTimer = null; }
+            },
+            playWin(rarity) {
+                const base = { common: 440, uncommon: 523, rare: 587, epic: 659, legendary: 784, grand_prize: 880 }[rarity] || 523;
+                const notes = (rarity === 'legendary' || rarity === 'grand_prize') ? [0, 90, 180, 280] : [0, 110, 220];
+                notes.forEach((d, i) => setTimeout(() => this.beep(base * (1 + i * 0.26), 170, 'square', 0.05), d));
             },
 
             rarityDisplayName(rarity) {
@@ -454,6 +518,10 @@
                 this.showSkip = true;
                 // Swap from idle drift → fast loop.
                 this.animationClass = 'gacha-spinning';
+                // Arcade SFX: a start blip then the reel-tick loop.
+                this.initAudio();
+                this.beep(660, 120, 'square', 0.05);
+                this.startTicks();
             },
 
             async spinWithCostType(costType) {
@@ -604,6 +672,11 @@
                 // Return to gentle idle drift so the carousel is never frozen.
                 this.animationClass = 'gacha-idle-loop';
                 this.$refs.carousel.style.removeProperty('transform');
+                // Reel ticks stop; cabinet "ka-chunk" impact + win jingle.
+                this.stopTicks();
+                this.impact = true;
+                setTimeout(() => { this.impact = false; }, 450);
+                if (this.winner) this.playWin(this.winner.rarity);
             },
 
             skipAnimation() {
@@ -618,6 +691,7 @@
                 this.spinning = false;
                 this.showSkip = false;
                 this.animationClass = 'gacha-idle-loop';
+                this.stopTicks();
             },
 
             claimReward() {

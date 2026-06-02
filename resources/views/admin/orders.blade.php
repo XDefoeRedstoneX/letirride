@@ -69,7 +69,6 @@
                                 @endif">{{ $order->status }}</span>
                         </td>
                         <td class="px-5 py-3 text-[10px] text-muted-foreground">{{ $order->created_at?->format('M d, Y') }}</td>
-                    
                     </tr>
                     @endforeach
                 </tbody>

@@ -120,7 +120,6 @@ Route::prefix('admin')
         Route::post('/products/{product}/keys', [AdminProductController::class, 'addKeys'])->name('admin.products.keys');
 
         Route::get('/orders', [AdminOrderController::class, 'index'])->name('admin.orders');
-        Route::patch('/orders/{order}/status', [AdminOrderController::class, 'updateStatus'])->name('admin.orders.status');
 
         Route::get('/users', [AdminUserController::class, 'index'])->name('admin.users');
         Route::patch('/users/{user}', [AdminUserController::class, 'update'])->name('admin.users.update');
