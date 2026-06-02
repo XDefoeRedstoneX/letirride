@@ -220,6 +220,10 @@
                                                       x-show="product.product_type === 'direct_topup'">
                                                     ⚡ TOP-UP
                                                 </span>
+                                                <span class="badge-sale"
+                                                      x-show="product.discount_label"
+                                                      x-text="product.discount_pct ? product.discount_label + ' ' + product.discount_pct + '%' : product.discount_label">
+                                                </span>
                                             </div>
                                             <template x-if="!product.in_stock">
                                                 <div class="stockout-overlay">
@@ -234,13 +238,19 @@
                                             <h3 class="card-title" x-text="product.name"></h3>
                                             <div class="card-footer">
                                                 <div>
-                                                    <span class="price-label">PRICE</span>
-                                                    <span class="price-value" :class="!product.in_stock ? '!text-gray-500' : ''"
+                                                    <span class="price-label" x-text="product.discount_label ? product.discount_label : 'PRICE'"></span>
+                                                    <template x-if="product.discount_label && product.original_price !== product.price">
+                                                        <span class="price-original"
+                                                              x-text="'Rp ' + new Intl.NumberFormat('id-ID').format(product.original_price)">
+                                                        </span>
+                                                    </template>
+                                                    <span class="price-value"
+                                                          :class="[!product.in_stock ? '!text-gray-500' : '', product.discount_label ? '!text-rose-500' : '']"
                                                           x-text="'Rp ' + new Intl.NumberFormat('id-ID').format(product.price)">
                                                     </span>
                                                     <template x-if="product.product_type === 'voucher' && product.in_stock">
-            <span class="stock-line" :class="product.stock <= 3 ? 'low' : 'ok'" x-text="product.stock + ' IN STOCK'"></span>
-        </template>
+                                                        <span class="stock-line" :class="product.stock <= 3 ? 'low' : 'ok'" x-text="product.stock + ' IN STOCK'"></span>
+                                                    </template>
                                                 </div>
                                                 <div class="card-actions" @click.stop>
                                                     <button @click="toggleFavorite(product.id)"
@@ -363,12 +373,42 @@
                 </div>
             </template>
 
+            {{-- Discount Banner (shown when product has an active discount) --}}
+            <template x-if="selectedProduct?.discount_label">
+                <div class="modal-discount-banner">
+                    <div class="modal-discount-left">
+                        <span class="modal-discount-tag" x-text="selectedProduct.discount_label"></span>
+                        <span class="modal-discount-desc"
+                              x-text="selectedProduct.discount_pct
+                                  ? selectedProduct.discount_pct + '% off'
+                                  : 'Rp ' + new Intl.NumberFormat('id-ID').format(selectedProduct.discount_fixed) + ' off'">
+                        </span>
+                    </div>
+                    <div class="modal-discount-savings">
+                        <span class="modal-discount-was"
+                              x-text="'Was Rp ' + new Intl.NumberFormat('id-ID').format(selectedProduct.original_price)">
+                        </span>
+                        <span class="modal-discount-saves"
+                              x-text="'Save Rp ' + new Intl.NumberFormat('id-ID').format(selectedProduct.original_price - selectedProduct.price)">
+                        </span>
+                    </div>
+                </div>
+            </template>
+
             {{-- Price Row --}}
             <div class="modal-price-row">
                 <span class="modal-price-label">TOTAL PRICE</span>
-                <span class="modal-price-val"
-                      x-text="'Rp ' + (selectedProduct ? new Intl.NumberFormat('id-ID').format(selectedProduct.price) : 0)">
-                </span>
+                <div style="display:flex; flex-direction:column; align-items:flex-end; gap:2px;">
+                    <template x-if="selectedProduct?.discount_label">
+                        <span class="modal-price-original"
+                              x-text="'Rp ' + (selectedProduct ? new Intl.NumberFormat('id-ID').format(selectedProduct.original_price) : 0)">
+                        </span>
+                    </template>
+                    <span class="modal-price-val"
+                          :class="selectedProduct?.discount_label ? '!text-rose-500' : ''"
+                          x-text="'Rp ' + (selectedProduct ? new Intl.NumberFormat('id-ID').format(selectedProduct.price) : 0)">
+                    </span>
+                </div>
             </div>
 
             {{-- Stock Row (voucher only) --}}

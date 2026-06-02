@@ -55,7 +55,7 @@ class CheckoutController extends Controller
 
         $user = Auth::user();
 
-        $cartItems = CartItem::with(['product.subcategory'])
+        $cartItems = CartItem::with(['product.subcategory', 'product.discount'])
             ->where('user_id', $user->id)
             ->get();
 
@@ -63,7 +63,7 @@ class CheckoutController extends Controller
             return response()->json(['message' => 'Your cart is empty.'], 422);
         }
 
-        $subtotal = $cartItems->sum(fn (CartItem $item) => $item->product->price * $item->quantity);
+        $subtotal = $cartItems->sum(fn (CartItem $item) => $item->product->discountedPrice() * $item->quantity);
         $discountAmount = 0.0;
         $voucher = $this->resolveVoucher($request->user_discount_id, $user->id);
 
@@ -96,7 +96,7 @@ class CheckoutController extends Controller
                         'order_id' => $order->id,
                         'product_id' => $cartItem->product_id,
                         'quantity' => $cartItem->quantity,
-                        'total_price_in_cart' => $cartItem->product->price * $cartItem->quantity,
+                        'total_price_in_cart' => $cartItem->product->discountedPrice() * $cartItem->quantity,
                     ]);
 
                     $productType = $cartItem->product->type ?? 'voucher';
@@ -398,11 +398,11 @@ class CheckoutController extends Controller
         if ($discount->target_subcategory_id) {
             $eligible = $cartItems
                 ->filter(fn (CartItem $i) => $i->product->subcategory_id === $discount->target_subcategory_id)
-                ->sum(fn (CartItem $i) => $i->product->price * $i->quantity);
+                ->sum(fn (CartItem $i) => $i->product->discountedPrice() * $i->quantity);
         } elseif ($discount->target_category_id) {
             $eligible = $cartItems
                 ->filter(fn (CartItem $i) => $i->product->category_id === $discount->target_category_id)
-                ->sum(fn (CartItem $i) => $i->product->price * $i->quantity);
+                ->sum(fn (CartItem $i) => $i->product->discountedPrice() * $i->quantity);
         } else {
             $eligible = $subtotal;
         }

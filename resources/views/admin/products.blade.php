@@ -7,12 +7,32 @@
     showDeleteModal: false,
     showKeysModal: false,
     product: {},
+    discountEnabled: false,
+    discountType: 'percentage',
+    discountValue: '',
+    discountLabel: 'SALE',
+    discountEnds: '',
     openAdd() {
         this.showAddModal = true;
     },
     openEdit(p) {
         this.product = JSON.parse(JSON.stringify(p));
+        const d = p.discount;
+        this.discountEnabled = !!(d && d.is_active);
+        this.discountType  = d?.type  || 'percentage';
+        this.discountValue = d?.value || '';
+        this.discountLabel = d?.label || 'SALE';
+        this.discountEnds  = d?.ends_at ? d.ends_at.substring(0, 16) : '';
         this.showEditModal = true;
+    },
+    get discountPreview() {
+        const base = parseFloat(this.product.price) || 0;
+        const val  = parseFloat(this.discountValue)  || 0;
+        if (!this.discountEnabled || val <= 0) return null;
+        const sale = this.discountType === 'percentage'
+            ? Math.round(base * (1 - val / 100) / 100) * 100
+            : Math.max(0, base - val);
+        return { sale, saves: base - sale };
     },
     openDelete(p) {
         this.product = p;
@@ -45,6 +65,7 @@
                         <th class="px-5 py-3">Category</th>
                         <th class="px-5 py-3">Subcategory</th>
                         <th class="px-5 py-3">Price</th>
+                        <th class="px-5 py-3">Discount</th>
                         <th class="px-5 py-3">Pt. Mult.</th>
                         <th class="px-5 py-3">Keys</th>
                         <th class="px-5 py-3">Status</th>
@@ -77,7 +98,26 @@
                         </td>
                         <td class="px-5 py-3 text-xs text-muted-foreground font-bold">{{ $p->category?->name ?? '-' }}</td>
                         <td class="px-5 py-3 text-xs text-muted-foreground font-bold">{{ $p->subcategory?->name ?? '-' }}</td>
+                        @php $pd = $p->discount && $p->discount->isCurrentlyActive() ? $p->discount : null; @endphp
+                        {{-- Price column: always shows base price --}}
                         <td class="px-5 py-3 text-xs font-bold">Rp {{ number_format($p->price, 0, ',', '.') }}</td>
+                        {{-- Discount column: empty dash when no active discount --}}
+                        <td class="px-5 py-3">
+                            @if($pd)
+                                <div class="flex flex-col gap-0.5">
+                                    <span class="px-1.5 py-0.5 rounded text-[8px] font-black uppercase tracking-widest bg-rose-500/10 text-rose-500 self-start">
+                                        {{ $pd->label }}
+                                        @if($pd->type === 'percentage')–{{ number_format($pd->value, 0) }}%@else–Rp {{ number_format($pd->value, 0, ',', '.') }}@endif
+                                    </span>
+                                    <span class="text-xs font-black text-rose-500">→ Rp {{ number_format($p->discountedPrice(), 0, ',', '.') }}</span>
+                                    @if($pd->ends_at)
+                                        <span class="text-[9px] text-muted-foreground font-bold">until {{ $pd->ends_at->format('d M Y') }}</span>
+                                    @endif
+                                </div>
+                            @else
+                                <span class="text-muted-foreground text-xs font-bold">—</span>
+                            @endif
+                        </td>
                         <td class="px-5 py-3 text-xs font-bold text-yellow-500">{{ number_format((float) $p->point_multiplier, 2) }}×</td>
                         <td class="px-5 py-3">
                             <span class="text-xs font-bold">{{ $p->product_keys_count }}</span>
@@ -252,6 +292,73 @@
                         <label class="text-[10px] font-black uppercase tracking-widest text-foreground/70 dark:text-muted-foreground mb-2 block">DESCRIPTION</label>
                         <textarea name="description" x-model="product.description" rows="2" class="w-full px-4 py-3 bg-foreground/5 border-2 border-border/50 rounded-xl text-xs font-bold text-foreground outline-none focus:border-primary focus:ring-4 focus:ring-primary/20 placeholder:text-muted-foreground/50 transition-all"></textarea>
                     </div>
+
+                    {{-- ── Discount Section ─────────────────────────────── --}}
+                    <div class="border border-border/50 rounded-2xl overflow-hidden">
+                        <div class="flex items-center justify-between px-4 py-3 bg-foreground/5 cursor-pointer"
+                             @click="discountEnabled = !discountEnabled">
+                            <div class="flex items-center gap-2">
+                                <span class="text-[10px] font-black uppercase tracking-widest text-foreground/70 dark:text-muted-foreground">DISCOUNT / SALE PRICE</span>
+                                <span x-show="discountEnabled" class="px-1.5 py-0.5 bg-rose-500/15 text-rose-500 rounded text-[8px] font-black uppercase tracking-widest">ON</span>
+                            </div>
+                            <div class="relative w-9 h-5 rounded-full transition-colors"
+                                 :class="discountEnabled ? 'bg-rose-500' : 'bg-foreground/20'">
+                                <div class="absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform"
+                                     :class="discountEnabled ? 'translate-x-4' : 'translate-x-0.5'"></div>
+                            </div>
+                        </div>
+
+                        <input type="hidden" name="discount_enabled" :value="discountEnabled ? '1' : '0'">
+                        <div x-show="discountEnabled" class="px-4 py-4 flex flex-col gap-4">
+
+                            <div class="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label class="text-[10px] font-black uppercase tracking-widest text-foreground/70 dark:text-muted-foreground mb-2 block">TYPE</label>
+                                    <select name="discount_type" x-model="discountType"
+                                            class="w-full px-3 py-2.5 bg-white dark:bg-[#0f172a] border-2 border-border/50 rounded-xl text-xs font-bold text-foreground outline-none focus:border-rose-500 focus:ring-4 focus:ring-rose-500/20 transition-all">
+                                        <option value="percentage">% Percentage</option>
+                                        <option value="fixed">Rp Fixed Amount</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="text-[10px] font-black uppercase tracking-widest text-foreground/70 dark:text-muted-foreground mb-2 block"
+                                           x-text="discountType === 'percentage' ? 'VALUE (%)' : 'VALUE (RP)'"></label>
+                                    <input type="number" name="discount_value" x-model="discountValue"
+                                           :placeholder="discountType === 'percentage' ? 'e.g. 20' : 'e.g. 30000'"
+                                           :max="discountType === 'percentage' ? 95 : ''"
+                                           min="0.01" step="0.01"
+                                           class="w-full px-3 py-2.5 bg-foreground/5 border-2 border-border/50 rounded-xl text-xs font-bold text-foreground outline-none focus:border-rose-500 focus:ring-4 focus:ring-rose-500/20 placeholder:text-muted-foreground/50 transition-all">
+                                </div>
+                                <div>
+                                    <label class="text-[10px] font-black uppercase tracking-widest text-foreground/70 dark:text-muted-foreground mb-2 block">BADGE LABEL</label>
+                                    <input type="text" name="discount_label" x-model="discountLabel"
+                                           placeholder="SALE" maxlength="40"
+                                           class="w-full px-3 py-2.5 bg-foreground/5 border-2 border-border/50 rounded-xl text-xs font-bold text-foreground outline-none focus:border-rose-500 focus:ring-4 focus:ring-rose-500/20 placeholder:text-muted-foreground/50 transition-all">
+                                </div>
+                                <div>
+                                    <label class="text-[10px] font-black uppercase tracking-widest text-foreground/70 dark:text-muted-foreground mb-2 block">EXPIRES (OPTIONAL)</label>
+                                    <input type="datetime-local" name="discount_ends" x-model="discountEnds"
+                                           class="w-full px-3 py-2.5 bg-foreground/5 border-2 border-border/50 rounded-xl text-xs font-bold text-foreground outline-none focus:border-rose-500 focus:ring-4 focus:ring-rose-500/20 transition-all">
+                                </div>
+                            </div>
+
+                            {{-- Live preview --}}
+                            <template x-if="discountPreview">
+                                <div class="flex items-center gap-3 px-3 py-2.5 bg-rose-500/5 border border-rose-500/20 rounded-xl">
+                                    <span class="text-[9px] font-black uppercase tracking-widest text-rose-500">PREVIEW</span>
+                                    <span class="text-xs text-muted-foreground line-through"
+                                          x-text="'Rp ' + new Intl.NumberFormat('id-ID').format(product.price)"></span>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+                                    <span class="text-xs font-black text-rose-500"
+                                          x-text="'Rp ' + new Intl.NumberFormat('id-ID').format(discountPreview.sale)"></span>
+                                    <span class="text-[9px] text-muted-foreground"
+                                          x-text="'saves Rp ' + new Intl.NumberFormat('id-ID').format(discountPreview.saves)"></span>
+                                </div>
+                            </template>
+                        </div>
+
+                    </div>
+
                     <div class="flex justify-end gap-3 mt-6 pt-5 border-t border-border/50">
                         <button type="button" @click="showEditModal = false" class="px-6 py-2.5 bg-slate-200 dark:bg-slate-800 rounded-xl text-[10px] font-black uppercase tracking-widest text-slate-800 dark:text-slate-200 hover:bg-slate-300 dark:hover:bg-slate-700 transition-colors">CANCEL</button>
                         <button type="submit" class="px-6 py-2.5 bg-primary text-primary-foreground rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-primary/90 transition-colors">UPDATE PRODUCT</button>

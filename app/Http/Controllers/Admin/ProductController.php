@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Category;
 use App\Models\Product;
+use App\Models\ProductDiscount;
 use App\Models\ProductKey;
 use App\Models\Subcategory;
 use Illuminate\Http\Request;
@@ -13,7 +14,7 @@ class ProductController extends Controller
 {
     public function index()
     {
-        $products = Product::with(['category', 'subcategory'])
+        $products = Product::with(['category', 'subcategory', 'discount'])
             ->withCount('productKeys')
             ->orderByDesc('id')
             ->get();
@@ -41,7 +42,43 @@ class ProductController extends Controller
 
         $product->update($data);
 
+        // Handle discount upsert / deactivation
+        $this->syncDiscount($request, $product);
+
         return back()->with('success', 'Product updated successfully.');
+    }
+
+    private function syncDiscount(Request $request, Product $product): void
+    {
+        $enabled = $request->boolean('discount_enabled', false);
+
+        if (! $enabled) {
+            // Deactivate any existing discount — no hard delete
+            $product->discount()?->update(['is_active' => false]);
+            return;
+        }
+
+        $request->validate([
+            'discount_type'  => 'required|in:percentage,fixed',
+            'discount_value' => 'required|numeric|min:0.01|max:9999999',
+            'discount_label' => 'nullable|string|max:40',
+            'discount_ends'  => 'nullable|date|after:now',
+        ]);
+
+        if ($request->discount_type === 'percentage' && $request->discount_value > 95) {
+            abort(422, 'Percentage discount cannot exceed 95%.');
+        }
+
+        ProductDiscount::updateOrCreate(
+            ['product_id' => $product->id],
+            [
+                'type'      => $request->discount_type,
+                'value'     => $request->discount_value,
+                'label'     => $request->discount_label ?: 'SALE',
+                'ends_at'   => $request->discount_ends ?: null,
+                'is_active' => true,
+            ]
+        );
     }
 
     public function destroy(Product $product)

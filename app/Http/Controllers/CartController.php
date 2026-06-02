@@ -18,15 +18,20 @@ class CartController extends Controller
     {
         $user = Auth::user();
 
-        $cartItems = CartItem::with(['product.category', 'product.subcategory'])
+        $cartItems = CartItem::with(['product.category', 'product.subcategory', 'product.discount'])
             ->where('user_id', $user->id)
             ->get()
             ->map(function (CartItem $item) {
+                $d = $item->product->discount && $item->product->discount->isCurrentlyActive()
+                    ? $item->product->discount : null;
                 return [
                     'id' => $item->id,
                     'product_id' => $item->product_id,
                     'name' => $item->product->name,
-                    'price' => (float) $item->product->price,
+                    'price' => $item->product->discountedPrice(),
+                    'original_price' => (float) $item->product->price,
+                    'discount_label' => $d?->label,
+                    'discount_pct'   => ($d && $d->type === 'percentage') ? (float) $d->value : null,
                     'category' => $item->product->category?->name ?? 'Other',
                     'category_id' => $item->product->category_id,
                     'subcategory' => $item->product->subcategory?->name,
@@ -168,7 +173,7 @@ class CartController extends Controller
         return response()->json([
             'message'    => 'Cart updated.',
             'cart_count' => (int) $count,
-            'item_total' => (float) $cartItem->product->price * $cartItem->quantity,
+            'item_total' => $cartItem->product->discountedPrice() * $cartItem->quantity,
         ]);
     }
 

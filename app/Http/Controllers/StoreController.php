@@ -46,7 +46,7 @@ class StoreController extends Controller
             ->all();
 
         $products = Product::query()
-            ->with(['category', 'subcategory'])
+            ->with(['category', 'subcategory', 'discount'])
             ->withCount(['productKeys as available_keys_count' => function ($query) {
                 $query->where('status', 'available')
                     ->whereNull('reserved_for_order_id');
@@ -65,16 +65,24 @@ class StoreController extends Controller
                 // direct_topup products don't consume keys, so they're always in stock
                 $inStock = $type === 'direct_topup' ? true : $stock > 0;
 
+                $salePrice = $product->discountedPrice();
+                $originalPrice = (float) $product->price;
+                $d = $product->discount && $product->discount->isCurrentlyActive() ? $product->discount : null;
+
                 return [
-                    'id' => $product->id,
-                    'name' => $product->name,
-                    'price' => (float) $product->price,
-                    'category' => $product->category?->name ?? 'Other',
-                    'subcategory' => $product->subcategory?->name ?? 'Other',
-                    'product_type' => $type,
-                    'stock' => $stock,
-                    'in_stock' => $inStock,
-                    'image' => '/products/'.ltrim($fileName, '/'),
+                    'id'             => $product->id,
+                    'name'           => $product->name,
+                    'price'          => $salePrice,
+                    'original_price' => $originalPrice,
+                    'discount_label' => $d?->label,
+                    'discount_pct'   => ($d && $d->type === 'percentage') ? (float) $d->value : null,
+                    'discount_fixed' => ($d && $d->type === 'fixed') ? (float) $d->value : null,
+                    'category'       => $product->category?->name ?? 'Other',
+                    'subcategory'    => $product->subcategory?->name ?? 'Other',
+                    'product_type'   => $type,
+                    'stock'          => $stock,
+                    'in_stock'       => $inStock,
+                    'image'          => '/products/'.ltrim($fileName, '/'),
                 ];
             })
             ->values();
