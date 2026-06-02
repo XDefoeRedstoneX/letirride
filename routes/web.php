@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
+use App\Http\Controllers\Admin\FaqController as AdminFaqController;
 use App\Http\Controllers\Admin\GachaBoosterController as AdminGachaBoosterController;
 use App\Http\Controllers\Admin\GachaController as AdminGachaController;
 use App\Http\Controllers\Admin\GachaIconController as AdminGachaIconController;
@@ -12,11 +13,10 @@ use App\Http\Controllers\Admin\ReferralController as AdminReferralController;
 use App\Http\Controllers\Admin\ReferralTierController as AdminReferralTierController;
 use App\Http\Controllers\Admin\TicketController as AdminTicketController;
 use App\Http\Controllers\Admin\UserController as AdminUserController;
-use App\Http\Controllers\Admin\FaqController as AdminFaqController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CartController;
-use App\Http\Controllers\FaqController;
 use App\Http\Controllers\CheckoutController;
+use App\Http\Controllers\FaqController;
 use App\Http\Controllers\FavoriteController;
 use App\Http\Controllers\GachaBoosterController;
 use App\Http\Controllers\GachaController;
@@ -25,6 +25,7 @@ use App\Http\Controllers\InventoryController;
 use App\Http\Controllers\PointController;
 use App\Http\Controllers\ReferralController;
 use App\Http\Controllers\StoreController;
+use App\Http\Controllers\TicketController;
 use App\Http\Controllers\TransactionController;
 use App\Http\Middleware\EnsureUserIsAdmin;
 use Illuminate\Support\Facades\Route;
@@ -123,7 +124,6 @@ Route::prefix('admin')
         Route::patch('/users/{user}', [AdminUserController::class, 'update'])->name('admin.users.update');
         Route::get('/users/{user}/insights', [AdminUserController::class, 'insights'])->name('admin.users.insights');
 
-
         Route::get('/gacha', [AdminGachaController::class, 'index'])->name('admin.gacha');
         Route::post('/gacha', [AdminGachaController::class, 'store'])->name('admin.gacha.store');
         Route::patch('/gacha/{pool}', [AdminGachaController::class, 'update'])->name('admin.gacha.update');
@@ -175,4 +175,7 @@ Route::get('/privacy', fn () => view('pages.privacy-policy'))->name('privacy-pol
 Route::get('/about', fn () => view('pages.about'))->name('about');
 Route::get('/faq', [FaqController::class, 'index'])->name('faq');
 Route::get('/contact', fn () => view('pages.contact'))->name('contact');
-Route::get('/tickets', fn () => view('pages.tickets'))->name('tickets');
+Route::get('/tickets', [TicketController::class, 'show'])->name('tickets');
+Route::post('/tickets', [TicketController::class, 'store'])
+    ->middleware('throttle:tickets')
+    ->name('tickets.store');
