@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\Category;
+use App\Models\Favorite;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\ProductKey;
@@ -55,4 +56,21 @@ it('renders inventory product images via imageUrl (no broken soundcloud fallback
 
     expect($key['image'])->toBe('/products/'.Product::FALLBACK_IMAGE);
     expect($items->pluck('image')->filter(fn ($i) => str_contains((string) $i, 'soundcloud')))->toBeEmpty();
+});
+
+it('favorites resolve product images via imageUrl too', function () {
+    $user = User::factory()->create();
+    $category = Category::create(['name' => 'Games', 'slug' => 'games']);
+
+    // A product whose stored image file does not exist → must fall back.
+    $product = Product::create([
+        'category_id' => $category->id, 'type' => 'voucher', 'name' => 'Ghost',
+        'description' => 'x', 'price' => 1000, 'point_multiplier' => 1, 'is_active' => true,
+        'image' => 'does-not-exist.png',
+    ]);
+    Favorite::create(['user_id' => $user->id, 'product_id' => $product->id]);
+
+    $favorites = $this->actingAs($user)->get(route('favorites'))->viewData('favorites');
+
+    expect($favorites->first()['image'])->toBe('/products/'.Product::FALLBACK_IMAGE);
 });

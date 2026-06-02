@@ -67,7 +67,9 @@ class GachaIconController extends Controller
             'label' => 'required|string|max:255',
             'category' => ['required', Rule::in(array_keys(GachaIconCatalog::CATEGORIES))],
             'image_url' => 'nullable|string|max:1024',
-            'image_file' => 'nullable|image|mimes:png,jpg,jpeg,svg,webp|max:512',
+            // NB: use `file` not `image` — the `image` rule rejects SVG (getimagesize
+            // can't read it), which is exactly the format these coin icons use.
+            'image_file' => 'nullable|file|mimes:png,jpg,jpeg,svg,webp|max:512',
             'sort_order' => 'nullable|integer|min:0|max:65535',
             'is_active' => 'nullable|boolean',
         ]);
