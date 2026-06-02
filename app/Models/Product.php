@@ -4,10 +4,9 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use App\Models\Subcategory;
 
 #[Fillable(['category_id', 'type', 'name', 'description', 'price', 'point_multiplier', 'image', 'img', 'is_active'])]
 class Product extends Model
@@ -31,6 +30,38 @@ class Product extends Model
     {
         // Calculate dynamic points and handle potential floating point inaccuracies
         return ($finalPrice / 1000.0) * (float) $this->point_multiplier;
+    }
+
+    /** Fallback when a product has no image, or its image file is missing. */
+    public const FALLBACK_IMAGE = 'steam-wallet.png';
+
+    /**
+     * Cache of real product image filenames in public/products/, globbed once
+     * per request so resolving many products (store grid) stays cheap.
+     *
+     * @var array<int, string>|null
+     */
+    protected static ?array $availableImages = null;
+
+    /**
+     * Web path to the product image, guaranteed to point at a file that exists
+     * under public/products/ (falls back to FALLBACK_IMAGE otherwise). Single
+     * source of truth used by the store, inventory and admin so they never
+     * drift apart.
+     */
+    public function imageUrl(): string
+    {
+        if (static::$availableImages === null) {
+            static::$availableImages = array_map('basename', glob(public_path('products/*.png')) ?: []);
+        }
+
+        $file = ltrim($this->image ?: self::FALLBACK_IMAGE, '/');
+
+        if (! in_array($file, static::$availableImages, true)) {
+            $file = self::FALLBACK_IMAGE;
+        }
+
+        return '/products/'.$file;
     }
 
     public function isVoucher(): bool
