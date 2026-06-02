@@ -99,6 +99,10 @@
   --gold-glow: rgba(245, 158, 11, 0.25);
   --cyan: #00d4ff;
   --cyan-dim: rgba(0, 212, 255, 0.15);
+  --nav-bg: #ffffff;
+  --nav-text: #0f172a;
+  --footer-bg: #ffffff;
+  --footer-text: #0f172a;
   --dark-bg: #050c1a;
   --dark-card: #08152a;
   --dark-card2: #0c1d38;
@@ -233,6 +237,11 @@
   --border: #1e293b;
   --input: #0f172a;
   --ring: #f59e0b;
+
+  --nav-bg: #050c1a;
+  --nav-text: #e8f0ff;
+  --footer-bg: #050c1a;
+  --footer-text: #5a7aaa;
 
   --city-sky: linear-gradient(180deg, #020617 0%, #0f172a 100%);
 }
@@ -1882,25 +1891,6 @@ button,
   padding: 4px 10px;
   border: 2px solid var(--border);
   white-space: nowrap;
-}
-
-/* Decorative — pixel font intentional */
-.clear-brand-btn {
-  font-family: var(--px);
-  font-size: 7px;
-  letter-spacing: 0.1em;
-  color: var(--dark-bg);
-  background: var(--gold);
-  border: 2px solid var(--gold-dim);
-  padding: 5px 10px;
-  cursor: pointer;
-  box-shadow: 2px 2px 0 var(--gold-dim);
-  transition: transform 0.1s;
-  white-space: nowrap;
-}
-
-.clear-brand-btn:hover {
-  transform: translate(-1px, -1px);
 }
 
 /* ── Brand Grid + Tiles ───────────────────────────────────────── */
