@@ -360,6 +360,13 @@ class DatabaseSeeder extends Seeder
             ['id' => 12, 'name' => '20% Off Steam',             'type' => 'percent', 'value' => 20.00,    'target_category_id' => null, 'target_subcategory_id' => 2],   // Steam — point shop
             ['id' => 13, 'name' => '25% Off Fortnite V-Bucks',  'type' => 'percent', 'value' => 25.00,    'target_category_id' => null, 'target_subcategory_id' => 7],   // Fortnite — point shop
             ['id' => 14, 'name' => '10% Off ChatGPT',           'type' => 'percent', 'value' => 10.00,    'target_category_id' => null, 'target_subcategory_id' => 16],  // OpenAI — point shop
+            ['id' => 15, 'name' => '15% off Netflix',           'type' => 'percent', 'value' => 15.00,    'target_category_id' => null, 'target_subcategory_id' => 10],  // Netflix — point shop
+            ['id' => 16, 'name' => '10% off Spotify',           'type' => 'percent', 'value' => 10.00,    'target_category_id' => null, 'target_subcategory_id' => 11],  // Spotify — point shop
+            ['id' => 17, 'name' => '15% off Valorant Points',   'type' => 'percent', 'value' => 15.00,    'target_category_id' => null, 'target_subcategory_id' => 5],   // Valorant — point shop
+            ['id' => 18, 'name' => '25% off Genshin products',  'type' => 'percent', 'value' => 25.00,    'target_category_id' => null, 'target_subcategory_id' => 9],   // Genshin — point shop
+            ['id' => 19, 'name' => '10% off Nintendo eShop',    'type' => 'percent', 'value' => 10.00,    'target_category_id' => null, 'target_subcategory_id' => 4],  // Nintendo — point shop
+            ['id' => 20, 'name' => '15% off Game keys',         'type' => 'percent', 'value' => 15.00,    'target_category_id' => 1, 'target_subcategory_id' => null],  // Game Keys — point shop
+            ['id' => 21, 'name' => '25% off Subscriptions',     'type' => 'percent', 'value' => 25.00,    'target_category_id' => 5, 'target_subcategory_id' => null],  // Subscriptions — point shop
         ];
 
         if (! $hasSubcategoryTarget) {
@@ -753,6 +760,81 @@ class DatabaseSeeder extends Seeder
                 'point_cost' => 1000,
                 'reward_type' => 'discount_code',
                 'discount_type_id' => 14,
+                'img' => null,
+                'is_active' => true,
+            ],
+            [
+                'id' => 4,
+                'name' => 'Netflix Saver',
+                'description' => '15% off Netflix subscriptions.',
+                'point_cost' => 750,
+                'reward_type' => 'discount_code',
+                'discount_type_id' => 15,
+                'img' => null,
+                'is_active' => true,
+            ],
+            [
+                'id' => 5,
+                'name' => 'Spotify Fan Pass',
+                'description' => '10% off Spotify subscriptions.',
+                'point_cost' => 500,
+                'reward_type' => 'discount_code',
+                'discount_type_id' => 16,
+                'img' => null,
+                'is_active' => true,
+            ],
+
+            [
+                'id' => 6,
+                'name' => 'Valorant Sharpshooter',
+                'description' => '15% off Valorant Points.',
+                'point_cost' => 1200,
+                'reward_type' => 'discount_code',
+                'discount_type_id' => 17,
+                'img' => null,
+                'is_active' => true,
+            ],
+
+            [
+                'id' => 7,
+                'name' => 'Genshin Blessing',
+                'description' => '25% off Genshin products.',
+                'point_cost' => 2000,
+                'reward_type' => 'discount_code',
+                'discount_type_id' => 18,
+                'img' => null,
+                'is_active' => true,
+            ],
+
+            [
+                'id' => 8,
+                'name' => 'Nintendo Club',
+                'description' => '10% off Nintendo eShop vouchers.',
+                'point_cost' => 1000,
+                'reward_type' => 'discount_code',
+                'discount_type_id' => 19,
+                'img' => null,
+                'is_active' => true,
+            ],
+
+            [
+                'id' => 9,
+                'name' => 'Game Hunter',
+                'description' => '15% off any game key.',
+                'point_cost' => 3000,
+                'reward_type' => 'discount_code',
+                'discount_type_id' => 20,
+                'img' => null,
+                'is_active' => true,
+            ],
+
+            [
+                'id' => 10,
+                'name' => 'Subscription King',
+                'description' => '25% off any subscription product.',
+                'point_cost' => 5000,
+                'reward_type' => 'discount_code',
+                'discount_type_id' => 21,
                 'img' => null,
                 'is_active' => true,
             ],

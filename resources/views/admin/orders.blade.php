@@ -32,7 +32,6 @@
                         <th class="px-5 py-3">Payment</th>
                         <th class="px-5 py-3">Status</th>
                         <th class="px-5 py-3">Date</th>
-                        <th class="px-5 py-3">Action</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-border">
@@ -70,17 +69,7 @@
                                 @endif">{{ $order->status }}</span>
                         </td>
                         <td class="px-5 py-3 text-[10px] text-muted-foreground">{{ $order->created_at?->format('M d, Y') }}</td>
-                        <td class="px-5 py-3">
-                            <form method="POST" action="{{ route('admin.orders.status', $order) }}" class="flex gap-1">
-                                @csrf @method('PATCH')
-                                <select name="status" class="bg-background border border-border rounded-lg px-2 py-1.5 text-[10px] font-bold text-foreground outline-none">
-                                    @foreach(['pending', 'paid', 'failed'] as $s)
-                                        <option value="{{ $s }}" {{ $order->status === $s ? 'selected' : '' }}>{{ ucfirst($s) }}</option>
-                                    @endforeach
-                                </select>
-                                <button type="submit" class="px-3 py-1.5 bg-primary text-primary-foreground rounded-lg text-[9px] font-black uppercase tracking-widest">Update</button>
-                            </form>
-                        </td>
+                    
                     </tr>
                     @endforeach
                 </tbody>
