@@ -10,6 +10,8 @@ class DiscountType extends Model
 {
     public $timestamps = false;
 
+    public const TYPES = ['percent', 'fixed'];
+
     /**
      * @var array<int, string>
      */
@@ -46,5 +48,39 @@ class DiscountType extends Model
     public function gachaPools(): HasMany
     {
         return $this->hasMany(GachaPool::class);
+    }
+
+    public function pointShopItems(): HasMany
+    {
+        return $this->hasMany(PointShopItem::class);
+    }
+
+    /**
+     * Human-readable value, e.g. "10%" or "Rp 30.000".
+     */
+    public function valueLabel(): string
+    {
+        return $this->type === 'percent'
+            ? rtrim(rtrim(number_format((float) $this->value, 2), '0'), '.').'%'
+            : 'Rp '.number_format((float) $this->value, 0, ',', '.');
+    }
+
+    /**
+     * Where the voucher applies: a subcategory, a category, or storewide.
+     */
+    public function scopeLabel(): string
+    {
+        return $this->targetSubcategory?->name
+            ?? $this->targetCategory?->name
+            ?? 'Storewide';
+    }
+
+    /**
+     * How many places reference this discount (prizes + shop items). Used to
+     * block deletion of an in-use discount.
+     */
+    public function usageCount(): int
+    {
+        return $this->gachaPools()->count() + $this->pointShopItems()->count();
     }
 }
