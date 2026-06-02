@@ -12,7 +12,12 @@
                 <div class="px-divider"><div class="px-divider-dot"></div><div class="px-divider-line"></div><div class="px-divider-dot"></div></div>
 
                 {{-- Gacha Carousel --}}
-                <div class="gacha-carousel-frame">
+                @php $hasCabinet = file_exists(public_path('gacha-assets/arcade-cabinet.png')); @endphp
+                <div class="gacha-carousel-frame {{ $hasCabinet ? 'has-cabinet' : '' }}" :class="{ 'cabinet-on': spinning }">
+                    @if($hasCabinet)
+                        {{-- Arcade cabinet backdrop: fades in during a spin; cards land in its green screen. --}}
+                        <img src="/gacha-assets/arcade-cabinet.png" class="gacha-cabinet" alt="" aria-hidden="true" />
+                    @endif
                     {{-- Skip Button --}}
                     <div x-show="showSkip" x-transition.opacity class="gacha-skip-wrap">
                         <button @click="skipAnimation()" class="gacha-skip-btn">
@@ -25,6 +30,7 @@
                         <div class="gacha-pointer-cap gacha-pointer-cap-bottom"></div>
                     </div>
 
+                    <div class="gacha-screen">
                     <div x-ref="carousel" class="gacha-track"
                          :class="animationClass"
                          :style="(spinning || animationClass === 'gacha-idle-loop') ? '' : 'transform: translateX(' + dragOffset + 'px)'">
@@ -44,6 +50,7 @@
                                 </template>
                             </div>
                         </template>
+                    </div>
                     </div>
                 </div>
 

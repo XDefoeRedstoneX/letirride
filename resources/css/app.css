@@ -462,6 +462,74 @@ button,
   align-items: center;
 }
 
+/* ===========================================================
+   GACHA — arcade cabinet backdrop (fades in during a spin)
+   The cards land inside the cabinet's green screen. The four
+   --screen-* vars are the green panel's insets as a % of the
+   cabinet art; tune them to the exact PNG. --cabinet-aspect
+   must match the PNG's width/height.
+   =========================================================== */
+.gacha-cabinet {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: fill;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.gacha-carousel-frame.cabinet-on .gacha-cabinet {
+  opacity: 1;
+}
+
+/* Wrapper around the spinning track. Transparent passthrough when the cabinet
+   is off (current look); when on, it shrinks to the green-screen rectangle so
+   cards are clipped to the screen. */
+.gacha-screen {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+}
+
+.gacha-carousel-frame.has-cabinet.cabinet-on {
+  height: auto;
+  aspect-ratio: var(--cabinet-aspect, 900 / 500);
+}
+
+.gacha-carousel-frame.has-cabinet.cabinet-on .gacha-screen {
+  position: absolute;
+  top: var(--screen-top, 26%);
+  left: var(--screen-left, 6.5%);
+  right: var(--screen-right, 6.5%);
+  bottom: var(--screen-bottom, 36%);
+  width: auto;
+  height: auto;
+  overflow: hidden;
+}
+
+/* Mobile: skip the cabinet, keep the plain compact spinner. */
+@media (max-width: 640px) {
+  .gacha-carousel-frame.has-cabinet.cabinet-on {
+    height: 240px;
+    aspect-ratio: auto;
+  }
+  .gacha-carousel-frame.has-cabinet.cabinet-on .gacha-cabinet {
+    display: none;
+  }
+  .gacha-carousel-frame.has-cabinet.cabinet-on .gacha-screen {
+    position: relative;
+    inset: auto;
+    width: 100%;
+    height: 100%;
+  }
+}
+
 .gacha-skip-wrap {
   position: absolute;
   bottom: 10px;
