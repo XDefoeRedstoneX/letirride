@@ -18,10 +18,16 @@
     openHistory(u) {
         this.user = u;
         this.showHistoryModal = true;
+        // Reuse the insights payload — its `recentOrders` array IS the history.
+        // Avoids a second endpoint and keeps both modals consistent.
+        this.loadInsights(u);
     },
     openInsights(u) {
         this.user = u;
         this.showInsightsModal = true;
+        this.loadInsights(u);
+    },
+    loadInsights(u) {
         this.insightsLoading = true;
         this.insights = null;
         this.insightsError = null;
@@ -49,6 +55,17 @@
             this.$nextTick(() => {
                 const labels = data?.spendingAnalytics?.labels || [];
 
+                // Charts only render when the Insights modal is open — History
+                // shares the same payload but has no canvases.
+                const probe = document.getElementById('insightsSpendingChart');
+                if (!probe) return;
+
+                // Read theme-aware colors from the actual DOM so the charts
+                // are legible in both light and dark mode. Chart.js can't
+                // resolve CSS vars inside string color values.
+                const textColor = getComputedStyle(probe).color;
+                const gridColor = textColor.replace(')', ' / 0.12)').replace('rgb', 'rgba');
+
                 if (labels.length > 0) {
                     const spendingEl = document.getElementById('insightsSpendingChart');
                     if (spendingEl) {
@@ -72,20 +89,21 @@
                             },
                             options: {
                                 responsive: true,
-                                maintainAspectRatio: true,
+                                maintainAspectRatio: false,
                                 plugins: {
-                                    legend: { display: true, labels: { font: { weight: 'bold', size: 12 } } }
+                                    legend: { display: true, labels: { color: textColor, font: { weight: 'bold', size: 12 } } },
+                                    tooltip: { titleColor: textColor, bodyColor: textColor }
                                 },
                                 scales: {
                                     y: {
                                         beginAtZero: true,
                                         ticks: {
-                                            color: 'rgb(var(--color-muted-foreground))',
+                                            color: textColor,
                                             callback: (v) => 'Rp ' + Number(v).toLocaleString('id-ID')
                                         },
-                                        grid: { color: 'rgba(var(--color-border), 0.1)' }
+                                        grid: { color: gridColor }
                                     },
-                                    x: { ticks: { color: 'rgb(var(--color-muted-foreground))' }, grid: { display: false } }
+                                    x: { ticks: { color: textColor }, grid: { display: false } }
                                 }
                             }
                         });
@@ -108,17 +126,18 @@
                             },
                             options: {
                                 responsive: true,
-                                maintainAspectRatio: true,
+                                maintainAspectRatio: false,
                                 plugins: {
-                                    legend: { display: true, labels: { font: { weight: 'bold', size: 12 } } }
+                                    legend: { display: true, labels: { color: textColor, font: { weight: 'bold', size: 12 } } },
+                                    tooltip: { titleColor: textColor, bodyColor: textColor }
                                 },
                                 scales: {
                                     y: {
                                         beginAtZero: true,
-                                        ticks: { color: 'rgb(var(--color-muted-foreground))', stepSize: 1 },
-                                        grid: { color: 'rgba(var(--color-border), 0.1)' }
+                                        ticks: { color: textColor, stepSize: 1 },
+                                        grid: { color: gridColor }
                                     },
-                                    x: { ticks: { color: 'rgb(var(--color-muted-foreground))' }, grid: { display: false } }
+                                    x: { ticks: { color: textColor }, grid: { display: false } }
                                 }
                             }
                         });
@@ -223,15 +242,15 @@
                 </div>
                 <form method="POST" :action="'{{ route('admin.users') }}/' + user.id" class="flex flex-col gap-4 mt-2">
                     @csrf @method('PATCH')
-                    
+
                     <div>
                         <label class="text-[10px] font-black uppercase tracking-widest text-foreground/70 dark:text-muted-foreground mb-2 block">POINTS BALANCE <span class="text-red-500">*</span></label>
                         <input type="number" name="points_balance" x-model="user.points_balance" required min="0" class="w-full px-4 py-3 bg-foreground/5 border-2 border-border/50 rounded-xl text-xs font-bold text-foreground outline-none focus:border-primary focus:ring-4 focus:ring-primary/20 placeholder:text-muted-foreground/50 transition-all">
                     </div>
-                    
+
                     <!-- Hidden role input to pass backend validation -->
                     <input type="hidden" name="role" :value="user.role">
-                    
+
                     <div class="flex justify-end gap-3 mt-6 pt-5 border-t border-border/50">
                         <button type="button" @click="showEditModal = false" class="px-6 py-2.5 bg-slate-200 dark:bg-slate-800 rounded-xl text-[10px] font-black uppercase tracking-widest text-slate-800 dark:text-slate-200 hover:bg-slate-300 dark:hover:bg-slate-700 transition-colors">CANCEL</button>
                         <button type="submit" class="px-6 py-2.5 bg-primary text-primary-foreground rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-primary/90 transition-colors">UPDATE USER</button>
@@ -355,6 +374,7 @@
                     </div>
 
                     <!-- Section 3: Charts -->
+                    @php $hasChart = "(insights?.spendingAnalytics?.labels || []).length > 0"; @endphp
                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                         @php $hasChart = "(insights?.spendingAnalytics?.labels || []).length > 0"; @endphp
                         <div class="bg-card border border-border rounded-2xl p-5">
@@ -484,9 +504,22 @@
                     </div>
                     <button type="button" @click="showHistoryModal = false" class="p-2 hover:bg-foreground/5 rounded-xl text-muted-foreground hover:text-foreground transition-colors"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="square"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>
                 </div>
-                
+
                 <div class="mt-4 border-2 border-border/50 rounded-2xl overflow-hidden bg-foreground/5">
-                    <div class="overflow-x-auto">
+                    {{-- Loading --}}
+                    <div x-show="insightsLoading" class="p-8 flex items-center gap-3 text-muted-foreground">
+                        <div class="w-6 h-6 rounded-full border-2 border-primary/30 border-t-primary animate-spin"></div>
+                        <p class="text-xs font-bold">Loading order history…</p>
+                    </div>
+
+                    {{-- Empty --}}
+                    <div x-show="!insightsLoading && (!insights?.recentOrders || insights.recentOrders.length === 0)" class="p-10 flex flex-col items-center justify-center text-muted-foreground">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mb-2 opacity-60"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+                        <p class="text-sm font-bold">No paid orders yet</p>
+                    </div>
+
+                    {{-- List --}}
+                    <div class="overflow-x-auto" x-show="!insightsLoading && insights?.recentOrders && insights.recentOrders.length > 0">
                         <table class="w-full text-left">
                             <thead>
                                 <tr class="bg-foreground/5 text-[9px] font-black uppercase tracking-widest text-muted-foreground border-b-2 border-border/50">
@@ -497,15 +530,16 @@
                                 </tr>
                             </thead>
                             <tbody class="divide-y-2 divide-border/50">
-                                <!-- UI Empty/Placeholder State -->
-                                <tr class="hover:bg-foreground/5">
-                                    <td colspan="4" class="px-5 py-12 text-center">
-                                        <div class="flex flex-col items-center justify-center text-muted-foreground">
-                
-                                            
-                                        </div>
-                                    </td>
-                                </tr>
+                                <template x-for="o in (insights?.recentOrders || [])" :key="o.invoice">
+                                    <tr class="hover:bg-foreground/5">
+                                        <td class="px-5 py-3 text-xs font-mono font-bold" x-text="o.invoice"></td>
+                                        <td class="px-5 py-3 text-xs" x-text="o.date"></td>
+                                        <td class="px-5 py-3 text-xs font-bold" x-text="'Rp ' + Number(o.total).toLocaleString('id-ID')"></td>
+                                        <td class="px-5 py-3">
+                                            <span class="px-2 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest bg-green-500/10 text-green-500" x-text="o.status"></span>
+                                        </td>
+                                    </tr>
+                                </template>
                             </tbody>
                         </table>
                     </div>

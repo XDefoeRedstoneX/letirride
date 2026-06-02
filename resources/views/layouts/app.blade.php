@@ -42,15 +42,15 @@
         </div>
     </main>
 
-    <footer class="relative z-10 mt-auto" style="border-top: 3px solid var(--gold, #f59e0b); background: var(--dark-bg, #050c1a);">
+    <footer class="relative z-10 mt-auto" style="border-top: 3px solid var(--gold, #f59e0b); background: var(--footer-bg);">
         <div class="max-w-7xl mx-auto px-4 py-6">
             <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
-                <p style="font-family: var(--px, 'Press Start 2P', monospace); font-size: 7px; letter-spacing: 0.1em; color: var(--text-dim, #5a7aaa);">
+                <p style="font-family: var(--px, 'Press Start 2P', monospace); font-size: 7px; letter-spacing: 0.1em; color: var(--footer-text);">
                     © 2026 RIDLY COMMERCE
                 </p>
                 <div class="flex items-center gap-6" style="font-family: var(--px, 'Press Start 2P', monospace); font-size: 7px; letter-spacing: 0.1em;">
-                    <a href="{{ route('terms-of-service') }}" style="color: var(--text-dim, #5a7aaa); transition: color 0.15s;" onmouseover="this.style.color='var(--gold, #f59e0b)'" onmouseout="this.style.color='var(--text-dim, #5a7aaa)'">TERMS OF SERVICE</a>
-                    <a href="{{ route('privacy-policy') }}" style="color: var(--text-dim, #5a7aaa); transition: color 0.15s;" onmouseover="this.style.color='var(--gold, #f59e0b)'" onmouseout="this.style.color='var(--text-dim, #5a7aaa)'">PRIVACY POLICY</a>
+                    <a href="{{ route('terms-of-service') }}" style="color: var(--footer-text); transition: color 0.15s;" onmouseover="this.style.color='var(--gold, #f59e0b)'" onmouseout="this.style.color='var(--footer-text)'">TERMS OF SERVICE</a>
+                    <a href="{{ route('privacy-policy') }}" style="color: var(--footer-text); transition: color 0.15s;" onmouseover="this.style.color='var(--gold, #f59e0b)'" onmouseout="this.style.color='var(--footer-text)'">PRIVACY POLICY</a>
                 </div>
             </div>
         </div>

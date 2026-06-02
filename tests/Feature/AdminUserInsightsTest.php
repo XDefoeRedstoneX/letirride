@@ -44,7 +44,8 @@ it('returns 200 with zeroed overview and no chart labels for a user with no paid
         ->assertJsonPath('overview.totalSpent', 0)
         ->assertJsonPath('overview.averageOrderValue', 0)
         ->assertJsonPath('overview.lastPurchaseDate', null)
-        ->assertJsonPath('spendingAnalytics.labels', []);
+        ->assertJsonPath('spendingAnalytics.labels', [])
+        ->assertJsonPath('recentOrders', []);
 });
 
 it('aggregates paid orders into monthly chart buckets (regression for DATE_TRUNC)', function () {
@@ -102,4 +103,44 @@ it('reports the top product and category for a customer', function () {
         ->assertOk()
         ->assertJsonPath('overview.topProduct.name', 'Steam Wallet')
         ->assertJsonPath('overview.topProduct.categoryName', 'Wallet');
+});
+
+it('returns up to 25 recent paid orders, newest first (feeds the History modal)', function () {
+    $admin = User::factory()->create(['role' => 'admin']);
+    $user = User::factory()->create(['role' => 'buyer']);
+
+    // 27 paid orders; we expect 25 returned, newest first.
+    foreach (range(1, 27) as $i) {
+        paidOrder($user, 1000 * $i, sprintf('2026-01-%02d 10:00:00', $i));
+    }
+
+    $res = $this->actingAs($admin)->getJson(route('admin.users.insights', $user))->assertOk();
+    $recent = $res->json('recentOrders');
+
+    expect($recent)->toHaveCount(25);
+    expect((float) $recent[0]['total'])->toBe(27000.0); // newest is day 27
+    expect((float) $recent[24]['total'])->toBe(3000.0); // 25th-newest is day 3
+});
+
+it('counts only paid orders in the customer list column (matches Insights)', function () {
+    $admin = User::factory()->create(['role' => 'admin']);
+    $user = User::factory()->create(['role' => 'buyer']);
+
+    paidOrder($user, 50000, '2026-01-01 10:00:00');
+    paidOrder($user, 70000, '2026-01-02 10:00:00');
+    // Non-paid orders that must not bump the column.
+    foreach (['pending', 'failed', 'cancelled'] as $s) {
+        $o = new Order([
+            'noinv' => 'INV-'.$s, 'user_id' => $user->id,
+            'subtotal' => 1, 'discount_amount' => 0, 'total_price_after_discount' => 1, 'status' => $s,
+        ]);
+        $o->created_at = '2026-01-03 10:00:00';
+        $o->save();
+    }
+
+    $response = $this->actingAs($admin)->get(route('admin.users'));
+    $response->assertOk();
+
+    $row = $response->viewData('users')->firstWhere('id', $user->id);
+    expect($row->orders_count)->toBe(2);
 });

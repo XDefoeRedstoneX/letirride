@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use App\Models\Subcategory;
 
@@ -60,5 +61,28 @@ class Product extends Model
     public function subcategory(): BelongsTo
     {
         return $this->belongsTo(Subcategory::class);
+    }
+
+    public function discount(): HasOne
+    {
+        return $this->hasOne(ProductDiscount::class);
+    }
+
+    /**
+     * The effective selling price after any active product-level discount.
+     * User vouchers are stacked on top of this value during checkout.
+     */
+    public function discountedPrice(): float
+    {
+        $d = $this->discount;
+        if (! $d || ! $d->isCurrentlyActive()) {
+            return (float) $this->price;
+        }
+
+        if ($d->type === 'percentage') {
+            return round((float) $this->price * (1 - $d->value / 100), -2);
+        }
+
+        return max(0.0, (float) $this->price - (float) $d->value);
     }
 }

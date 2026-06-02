@@ -99,6 +99,10 @@
   --gold-glow: rgba(245, 158, 11, 0.25);
   --cyan: #00d4ff;
   --cyan-dim: rgba(0, 212, 255, 0.15);
+  --nav-bg: #ffffff;
+  --nav-text: #0f172a;
+  --footer-bg: #ffffff;
+  --footer-text: #0f172a;
   --dark-bg: #050c1a;
   --dark-card: #08152a;
   --dark-card2: #0c1d38;
@@ -233,6 +237,11 @@
   --border: #1e293b;
   --input: #0f172a;
   --ring: #f59e0b;
+
+  --nav-bg: #050c1a;
+  --nav-text: #e8f0ff;
+  --footer-bg: #050c1a;
+  --footer-text: #5a7aaa;
 
   --city-sky: linear-gradient(180deg, #020617 0%, #0f172a 100%);
 }
@@ -1715,6 +1724,27 @@ button,
   color: var(--dark-bg);
 }
 
+.badge-sale {
+  font-family: var(--px);
+  font-size: 6px;
+  letter-spacing: 0.08em;
+  padding: 4px 8px;
+  background: rgba(244, 63, 94, 0.88);
+  border: 2px solid rgba(244, 63, 94, 0.5);
+  color: #fff;
+}
+
+.price-original {
+  display: block;
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--muted-foreground);
+  text-decoration: line-through;
+  letter-spacing: 0.01em;
+  margin-bottom: 1px;
+}
+
 .card-body {
   padding: 16px;
   flex: 1;
@@ -1861,25 +1891,6 @@ button,
   padding: 4px 10px;
   border: 2px solid var(--border);
   white-space: nowrap;
-}
-
-/* Decorative — pixel font intentional */
-.clear-brand-btn {
-  font-family: var(--px);
-  font-size: 7px;
-  letter-spacing: 0.1em;
-  color: var(--dark-bg);
-  background: var(--gold);
-  border: 2px solid var(--gold-dim);
-  padding: 5px 10px;
-  cursor: pointer;
-  box-shadow: 2px 2px 0 var(--gold-dim);
-  transition: transform 0.1s;
-  white-space: nowrap;
-}
-
-.clear-brand-btn:hover {
-  transform: translate(-1px, -1px);
 }
 
 /* ── Brand Grid + Tiles ───────────────────────────────────────── */
@@ -2190,7 +2201,7 @@ button,
 
 .modal-price-row {
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   justify-content: space-between;
   padding: 16px 20px;
   background: var(--card);
@@ -2212,6 +2223,69 @@ button,
   font-size: 22px;
   font-weight: 700;
   color: var(--gold);
+}
+
+.modal-discount-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 16px;
+  background: rgba(244, 63, 94, 0.08);
+  border: 2px solid rgba(244, 63, 94, 0.25);
+}
+
+.modal-discount-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.modal-discount-tag {
+  font-family: var(--px);
+  font-size: 7px;
+  letter-spacing: 0.08em;
+  padding: 3px 7px;
+  background: rgb(244, 63, 94);
+  color: #fff;
+}
+
+.modal-discount-desc {
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: 600;
+  color: rgb(244, 63, 94);
+}
+
+.modal-discount-savings {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 1px;
+}
+
+.modal-discount-was {
+  font-family: var(--font-sans);
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--muted-foreground);
+  text-decoration: line-through;
+}
+
+.modal-discount-saves {
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: 700;
+  color: rgb(244, 63, 94);
+}
+
+.modal-price-original {
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--muted-foreground);
+  text-decoration: line-through;
+  letter-spacing: 0.01em;
 }
 
 .modal-actions {

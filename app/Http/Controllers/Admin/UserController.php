@@ -17,7 +17,9 @@ class UserController extends Controller
 {
     public function index()
     {
-        $users = User::withCount('orders')
+        // Count paid orders only so the column reconciles with the Insights
+        // modal (which is itself paid-only).
+        $users = User::withCount(['orders as orders_count' => fn ($q) => $q->where('status', 'paid')])
             ->orderByDesc('id')
             ->paginate(20);
 
@@ -92,9 +94,11 @@ class UserController extends Controller
         }
 
         // Charts: monthly spending + monthly order count.
-        // Grouped in PHP (by Y-m) so it's driver-agnostic — the previous
-        // DATE_TRUNC() is Postgres-only and 500s on SQLite/MySQL, which is why
-        // the whole modal rendered zeros.
+        // Grouped in PHP (by Y-m) so it's driver-agnostic. The original
+        // DATE_TRUNC('month', …) was Postgres-only; a follow-up on main
+        // swapped it to MySQL's DATE_FORMAT, which fails on SQLite (no
+        // DATE_FORMAT — only strftime). Grouping in PHP works on every
+        // driver and keeps the same payload shape.
         $monthlyRows = (clone $paidOrdersBaseQuery)
             ->orderBy('created_at')
             ->get(['created_at', 'total_price_after_discount'])
@@ -181,10 +185,11 @@ class UserController extends Controller
             }
         }
 
-        // Recent 10 paid order history
+        // Recent paid orders — fuels both the Insights "recent" card and the
+        // History modal, so we return a fuller window than the dashboard preview.
         $recentOrders = (clone $paidOrdersBaseQuery)
             ->orderByDesc('created_at')
-            ->limit(10)
+            ->limit(25)
             ->get(['id', 'noinv', 'created_at', 'status', 'total_price_after_discount']);
 
         $recentOrdersPayload = $recentOrders->map(function (Order $o) {
