@@ -94,9 +94,11 @@ class UserController extends Controller
         }
 
         // Charts: monthly spending + monthly order count.
-        // Grouped in PHP (by Y-m) so it's driver-agnostic — the previous
-        // DATE_TRUNC() is Postgres-only and 500s on SQLite/MySQL, which is why
-        // the whole modal previously rendered zeros.
+        // Grouped in PHP (by Y-m) so it's driver-agnostic. The original
+        // DATE_TRUNC('month', …) was Postgres-only; a follow-up on main
+        // swapped it to MySQL's DATE_FORMAT, which fails on SQLite (no
+        // DATE_FORMAT — only strftime). Grouping in PHP works on every
+        // driver and keeps the same payload shape.
         $monthlyRows = (clone $paidOrdersBaseQuery)
             ->orderBy('created_at')
             ->get(['created_at', 'total_price_after_discount'])
