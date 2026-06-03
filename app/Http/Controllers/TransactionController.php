@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Order;
+use App\Models\Product;
 use App\Models\ProductKey;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
@@ -40,17 +41,17 @@ class TransactionController extends Controller
                 }
 
                 return [
-                    'id'       => $order->display_noinv,
-                    'name'     => $productName,
-                    'amount'   => $order->total_price_after_discount,
-                    'status'   => $displayStatus,
-                    'date'     => $order->created_at?->format('M d, Y') ?? '-',
-                    'image'    => '/products/'.ltrim($firstDetail?->product?->image ?: 'soundcloud.png', '/'),
+                    'id' => $order->display_noinv,
+                    'name' => $productName,
+                    'amount' => $order->total_price_after_discount,
+                    'status' => $displayStatus,
+                    'date' => $order->created_at?->format('M d, Y') ?? '-',
+                    'image' => $firstDetail?->product?->imageUrl() ?? '/products/'.Product::FALLBACK_IMAGE,
                     'order_id' => $order->id,
-                    'details'  => $order->orderDetails->map(fn ($d) => [
-                        'product'  => $d->product?->name ?? 'Unknown',
+                    'details' => $order->orderDetails->map(fn ($d) => [
+                        'product' => $d->product?->name ?? 'Unknown',
                         'quantity' => $d->quantity,
-                        'total'    => (float) $d->total_price_in_cart,
+                        'total' => (float) $d->total_price_in_cart,
                     ])->values(),
                 ];
             });

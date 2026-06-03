@@ -5,7 +5,9 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\GachaIcon;
 use App\Support\GachaIconCatalog;
+use App\Support\SvgSanitizer;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
@@ -78,8 +80,19 @@ class GachaIconController extends Controller
 
         if ($request->hasFile('image_file')) {
             $file = $request->file('image_file');
-            $name = Str::slug($validated['key']).'-'.Str::random(6).'.'.$file->getClientOriginalExtension();
-            $file->storeAs('gacha-icons/uploads', $name, 'public');
+            // Server-guessed extension (from MIME) — never trust the client name.
+            $ext = $file->extension() ?: $file->getClientOriginalExtension();
+            $name = Str::slug($validated['key']).'-'.Str::random(6).'.'.$ext;
+
+            // SVGs are XML; strip <script>/event handlers/etc. before persisting
+            // so an admin opening the file directly can't be XSS'd in-origin.
+            if (strtolower($ext) === 'svg') {
+                $clean = SvgSanitizer::sanitize((string) file_get_contents($file->getRealPath()));
+                Storage::disk('public')->put('gacha-icons/uploads/'.$name, $clean);
+            } else {
+                $file->storeAs('gacha-icons/uploads', $name, 'public');
+            }
+
             $imagePath = '/storage/gacha-icons/uploads/'.$name;
         } elseif (! empty($validated['image_url'])) {
             $imagePath = $validated['image_url'];

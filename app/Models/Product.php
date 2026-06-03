@@ -36,28 +36,22 @@ class Product extends Model
     public const FALLBACK_IMAGE = 'steam-wallet.png';
 
     /**
-     * Cache of real product image filenames in public/products/, globbed once
-     * per request so resolving many products (store grid) stays cheap.
-     *
-     * @var array<int, string>|null
-     */
-    protected static ?array $availableImages = null;
-
-    /**
      * Web path to the product image, guaranteed to point at a file that exists
-     * under public/products/ (falls back to FALLBACK_IMAGE otherwise). Single
-     * source of truth used by the store, inventory and admin so they never
-     * drift apart.
+     * under public/products/ (falls back to FALLBACK_IMAGE otherwise).
+     *
+     * Single source of truth used by the store, cart, inventory, favorites,
+     * transactions, checkout and admin so they never drift apart.
+     *
+     * Validates by per-file existence rather than a globbed allowlist, so
+     * non-PNG images (svg/jpg/webp) work too and newly-uploaded files are
+     * recognized immediately (no process-lifetime cache to invalidate under
+     * Octane/queue workers).
      */
     public function imageUrl(): string
     {
-        if (static::$availableImages === null) {
-            static::$availableImages = array_map('basename', glob(public_path('products/*.png')) ?: []);
-        }
+        $file = basename(ltrim($this->image ?: self::FALLBACK_IMAGE, '/'));
 
-        $file = ltrim($this->image ?: self::FALLBACK_IMAGE, '/');
-
-        if (! in_array($file, static::$availableImages, true)) {
+        if (! is_file(public_path('products/'.$file))) {
             $file = self::FALLBACK_IMAGE;
         }
 
