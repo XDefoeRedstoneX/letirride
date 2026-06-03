@@ -13,23 +13,10 @@ use Illuminate\Validation\Rule;
 
 class TicketController extends Controller
 {
-    /**
-     * Maps a chosen subject (or custom "Other" text) to a coarse category used
-     * for admin filtering.
-     */
-    private const SUBJECT_TYPE_MAP = [
-        'Billing or payment issue' => 'billing',
-        'Order or delivery problem' => 'order',
-        'Voucher or game key not working' => 'technical',
-        'Account or login help' => 'account',
-        'Gacha or rewards question' => 'gacha',
-        'General question' => 'general',
-    ];
-
     public function show()
     {
         return view('pages.tickets', [
-            'subjects' => config('support.subjects', []),
+            'subjects' => array_keys(config('support.subjects', [])),
         ]);
     }
 
@@ -57,7 +44,7 @@ class TicketController extends Controller
             ? $validated['subject_other']
             : $validated['subject_choice'];
 
-        $type = self::SUBJECT_TYPE_MAP[$validated['subject_choice']] ?? 'general';
+        $type = config('support.subjects')[$validated['subject_choice']] ?? 'general';
 
         $ticket = Ticket::create([
             'user_id' => $user?->id,
@@ -70,21 +57,21 @@ class TicketController extends Controller
             'ip_address' => $request->ip(),
         ]);
 
-        $this->notifyAdmin($ticket);
+        $this->notifyCustomer($ticket);
 
         return redirect()->route('tickets')->with('ticket_submitted', true);
     }
 
     /**
-     * Email the support inbox. Never let a mail hiccup fail the submission —
-     * the ticket is already persisted and visible in the admin panel.
+     * Send a confirmation email to the customer. Never let a mail hiccup fail
+     * the submission — the ticket is already persisted in the admin panel.
      */
-    private function notifyAdmin(Ticket $ticket): void
+    private function notifyCustomer(Ticket $ticket): void
     {
         try {
-            Mail::to(config('support.admin_address'))->send(new TicketSubmittedMail($ticket));
+            Mail::to($ticket->email)->send(new TicketSubmittedMail($ticket));
         } catch (\Throwable $e) {
-            Log::warning('Support ticket email failed for ticket #'.$ticket->id.': '.$e->getMessage());
+            Log::warning('Support ticket confirmation email failed for ticket #'.$ticket->id.': '.$e->getMessage());
         }
     }
 }

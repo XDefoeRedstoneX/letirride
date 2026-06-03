@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Ticket;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class TicketController extends Controller
 {
@@ -20,11 +21,15 @@ class TicketController extends Controller
             ->paginate(20)
             ->withQueryString();
 
+        $rawCounts = Ticket::selectRaw('status, count(*) as total')
+            ->groupBy('status')
+            ->pluck('total', 'status');
+
         $counts = [
-            'all' => Ticket::count(),
-            'open' => Ticket::where('status', 'open')->count(),
-            'in_progress' => Ticket::where('status', 'in_progress')->count(),
-            'closed' => Ticket::where('status', 'closed')->count(),
+            'all'         => $rawCounts->sum(),
+            'open'        => $rawCounts->get('open', 0),
+            'in_progress' => $rawCounts->get('in_progress', 0),
+            'closed'      => $rawCounts->get('closed', 0),
         ];
 
         return view('admin.tickets', [
@@ -38,7 +43,7 @@ class TicketController extends Controller
     public function updateStatus(Request $request, Ticket $ticket)
     {
         $request->validate([
-            'status' => 'required|in:open,in_progress,closed',
+            'status' => ['required', Rule::in(Ticket::STATUSES)],
         ]);
 
         $ticket->update(['status' => $request->status]);

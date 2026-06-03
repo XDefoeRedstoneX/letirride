@@ -1,7 +1,7 @@
 <x-mail::message>
-# New Support Ticket #{{ $ticket->id }}
+# We've received your message
 
-**{{ $ticket->displaySubject() }}**
+Hi {{ $ticket->requesterName() }}, thanks for reaching out. We've logged your request and will get back to you as soon as possible.
 
 <x-mail::panel>
 {{ $ticket->message }}
@@ -9,20 +9,13 @@
 
 | | |
 |---|---|
-| **From** | {{ $ticket->requesterName() }} |
-| **Email** | {{ $ticket->email }} |
-| **Account** | {{ $ticket->user_id ? '#'.$ticket->user_id : 'Guest (not logged in)' }} |
+| **Ticket #** | {{ $ticket->id }} |
+| **Subject** | {{ $ticket->displaySubject() }} |
 | **Category** | {{ ucfirst($ticket->type) }} |
-| **Status** | {{ ucfirst(str_replace('_', ' ', $ticket->status)) }} |
-| **Received** | {{ $ticket->created_at?->format('M d, Y H:i') }} |
-| **IP** | {{ $ticket->ip_address ?? '—' }} |
+| **Submitted** | {{ $ticket->created_at?->format('M d, Y H:i') }} |
 
-<x-mail::button :url="config('app.url').'/admin/tickets'">
-Open in Admin
-</x-mail::button>
-
-**Reply directly to this email** to respond to the customer — it goes straight to their inbox.
+Simply reply to this email if you'd like to add more details — we'll see it right away.
 
 Thanks,<br>
-{{ config('app.name') }}
+{{ config('app.name') }} Support
 </x-mail::message>

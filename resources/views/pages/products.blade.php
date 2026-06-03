@@ -259,7 +259,7 @@
                                                       x-show="product.product_type === 'direct_topup'">
                                                     ⚡ TOP-UP
                                                 </span>
-                                                <span class="badge-sale"
+<span class="badge-sale"
                                                       x-show="product.discount_label"
                                                       x-text="product.discount_pct ? product.discount_label + ' ' + product.discount_pct + '%' : product.discount_label">
                                                 </span>

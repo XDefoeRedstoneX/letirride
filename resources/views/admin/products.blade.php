@@ -123,6 +123,7 @@
                             <span class="text-xs font-bold">{{ $p->product_keys_count }}</span>
                             <button @click="openKeys({{ json_encode($p) }})" class="ml-1 text-[9px] text-primary font-black uppercase tracking-widest hover:underline">+ Add</button>
                         </td>
+                        {{-- Active / Inactive toggle --}}
                         <td class="px-5 py-3">
                             <form method="POST" action="{{ route('admin.products.update', $p) }}">
                                 @csrf @method('PATCH')

@@ -11,6 +11,12 @@ class Ticket extends Model
 {
     public const STATUSES = ['open', 'in_progress', 'closed'];
 
+    private const STATUS_COLORS = [
+        'open'        => 'bg-amber-500/10 text-amber-500',
+        'in_progress' => 'bg-blue-500/10 text-blue-500',
+        'closed'      => 'bg-green-500/10 text-green-500',
+    ];
+
     /**
      * @var array<int, string>
      */
@@ -24,14 +30,6 @@ class Ticket extends Model
         'status',
         'ip_address',
     ];
-
-    protected function casts(): array
-    {
-        return [
-            'created_at' => 'datetime',
-            'updated_at' => 'datetime',
-        ];
-    }
 
     public function user(): BelongsTo
     {
@@ -72,6 +70,25 @@ class Ticket extends Model
 
     public function displaySubject(): string
     {
-        return $this->subject ?: Str::limit((string) $this->message, 57, '...');
+        return $this->subject ?: Str::limit((string) $this->message, 57);
+    }
+
+    public function statusLabel(): string
+    {
+        return ucfirst(str_replace('_', ' ', $this->status));
+    }
+
+    public function statusColor(): string
+    {
+        return self::STATUS_COLORS[$this->status] ?? 'bg-foreground/10 text-muted-foreground';
+    }
+
+    public function mailtoUrl(): string
+    {
+        $body = "Hi {$this->requesterName()},\n\n\n\n-----\nYour message:\n{$this->message}";
+
+        return 'mailto:'.$this->email
+            .'?subject='.rawurlencode('[Ridly Support #'.$this->id.'] '.$this->displaySubject())
+            .'&body='.rawurlencode($body);
     }
 }

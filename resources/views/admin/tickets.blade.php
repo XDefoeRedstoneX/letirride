@@ -45,12 +45,6 @@
                 </thead>
                 <tbody class="divide-y divide-border">
                     @forelse($tickets as $ticket)
-                    @php
-                        $mailtoBody = "Hi ".$ticket->requesterName().",\n\n\n\n-----\nYour message:\n".$ticket->message;
-                        $mailto = 'mailto:'.$ticket->email
-                            .'?subject='.rawurlencode('Re: [Ridly Support #'.$ticket->id.'] '.$ticket->displaySubject())
-                            .'&body='.rawurlencode($mailtoBody);
-                    @endphp
                     <tr class="hover:bg-foreground/5 align-top">
                         <td class="px-5 py-3 text-xs font-mono font-bold text-muted-foreground">#{{ $ticket->id }}</td>
                         <td class="px-5 py-3">
@@ -66,30 +60,26 @@
                             </div>
                         </td>
                         <td class="px-5 py-3">
-                            <div class="max-w-sm">
+                            <div class="max-w-sm" x-data="{ open: false }">
                                 <p class="text-xs font-bold text-foreground">{{ $ticket->displaySubject() }}</p>
-                                <p class="text-xs text-muted-foreground line-clamp-2 mt-0.5">{{ $ticket->message }}</p>
-                                <button type="button" onclick="document.getElementById('ticketMsg{{ $ticket->id }}').classList.toggle('hidden')" class="text-[9px] text-primary font-black uppercase tracking-widest hover:underline mt-1">Read full</button>
-                                <div id="ticketMsg{{ $ticket->id }}" class="hidden mt-2 p-3 bg-foreground/5 rounded-xl">
+                                <p class="text-xs text-muted-foreground line-clamp-2 mt-0.5" x-show="!open">{{ $ticket->message }}</p>
+                                <button type="button" @click="open = !open" class="text-[9px] text-primary font-black uppercase tracking-widest hover:underline mt-1" x-text="open ? 'Collapse' : 'Read full'"></button>
+                                <div x-show="open" class="mt-2 p-3 bg-foreground/5 rounded-xl">
                                     <p class="text-xs text-muted-foreground whitespace-pre-line">{{ $ticket->message }}</p>
                                 </div>
                             </div>
                         </td>
                         <td class="px-5 py-3">
-                            <span class="px-2 py-1 rounded-lg text-[8px] font-black uppercase tracking-widest
-                                @if($ticket->status === 'open') bg-amber-500/10 text-amber-500
-                                @elseif($ticket->status === 'in_progress') bg-blue-500/10 text-blue-500
-                                @else bg-green-500/10 text-green-500
-                                @endif">{{ str_replace('_', ' ', $ticket->status) }}</span>
+                            <span class="px-2 py-1 rounded-lg text-[8px] font-black uppercase tracking-widest {{ $ticket->statusColor() }}">{{ $ticket->statusLabel() }}</span>
                         </td>
                         <td class="px-5 py-3 text-[10px] text-muted-foreground whitespace-nowrap">{{ $ticket->created_at?->format('M d, Y') }}</td>
                         <td class="px-5 py-3">
                             <div class="flex flex-col gap-1.5">
-                                <a href="{{ $mailto }}" class="px-3 py-1.5 bg-primary text-primary-foreground rounded-lg text-[9px] font-black uppercase tracking-widest text-center hover:bg-primary/90">Reply via email</a>
+                                <a href="{{ $ticket->mailtoUrl() }}" class="px-3 py-1.5 bg-primary text-primary-foreground rounded-lg text-[9px] font-black uppercase tracking-widest text-center hover:bg-primary/90">Reply via email</a>
                                 <form method="POST" action="{{ route('admin.tickets.status', $ticket) }}" class="flex gap-1">
                                     @csrf @method('PATCH')
                                     <select name="status" class="bg-background border border-border rounded-lg px-2 py-1.5 text-[10px] font-bold text-foreground outline-none">
-                                        @foreach(['open', 'in_progress', 'closed'] as $s)
+                                        @foreach(\App\Models\Ticket::STATUSES as $s)
                                             <option value="{{ $s }}" {{ $ticket->status === $s ? 'selected' : '' }}>{{ ucfirst(str_replace('_', ' ', $s)) }}</option>
                                         @endforeach
                                     </select>

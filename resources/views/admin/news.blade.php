@@ -23,11 +23,6 @@
         </button>
     </div>
 
-    @if(session('success'))
-        <div class="px-4 py-3 bg-green-500/10 border border-green-500/20 rounded-xl text-xs font-bold text-green-500">
-            {{ session('success') }}
-        </div>
-    @endif
 
     {{-- Table --}}
     <div class="bg-card border border-border rounded-2xl overflow-hidden">
@@ -58,11 +53,16 @@
                         <td class="px-5 py-3 text-[10px] font-mono text-muted-foreground">{{ $n->image }}</td>
 
                         <td class="px-5 py-3">
-                            @if($n->is_active)
-                                <span class="px-2 py-1 rounded-lg text-[8px] font-black uppercase tracking-widest bg-green-500/10 text-green-500">Active</span>
-                            @else
-                                <span class="px-2 py-1 rounded-lg text-[8px] font-black uppercase tracking-widest bg-foreground/10 text-muted-foreground">Hidden</span>
-                            @endif
+                            <form method="POST" action="{{ route('admin.news.toggle-active', $n) }}">
+                                @csrf @method('PATCH')
+                                <button type="submit"
+                                    class="px-2 py-1 rounded-lg text-[8px] font-black uppercase tracking-widest transition-colors cursor-pointer
+                                    {{ $n->is_active
+                                        ? 'bg-green-500/10 text-green-500 hover:bg-red-500/10 hover:text-red-500'
+                                        : 'bg-foreground/10 text-muted-foreground hover:bg-green-500/10 hover:text-green-500' }}">
+                                    {{ $n->is_active ? 'Active' : 'Hidden' }}
+                                </button>
+                            </form>
                         </td>
 
                         <td class="px-5 py-3">

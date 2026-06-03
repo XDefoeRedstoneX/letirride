@@ -158,6 +158,7 @@ Route::prefix('admin')
         Route::get('/news', [AdminNewsController::class, 'index'])->name('admin.news');
         Route::post('/news', [AdminNewsController::class, 'store'])->name('admin.news.store');
         Route::patch('/news/{news}', [AdminNewsController::class, 'update'])->name('admin.news.update');
+        Route::patch('/news/{news}/toggle-active', [AdminNewsController::class, 'toggleActive'])->name('admin.news.toggle-active');
 
         // UI-only pages (static views with dummy data)
         Route::get('/point-shop', fn () => view('admin.point-shop'))->name('admin.point-shop');

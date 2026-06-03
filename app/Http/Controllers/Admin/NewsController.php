@@ -61,4 +61,11 @@ class NewsController extends Controller
         return back()->with('success', 'News item updated.');
     }
 
+    public function toggleActive(News $news)
+    {
+        $news->update(['is_active' => ! $news->is_active]);
+
+        return back()->with('success', $news->is_active ? 'News item set to Active.' : 'News item set to Hidden.');
+    }
+
 }
