@@ -79,7 +79,7 @@
                         <td class="px-5 py-3">
                             <div class="flex items-center gap-3">
                                 <div class="w-8 h-8 bg-foreground/5 rounded-lg flex items-center justify-center p-1 shrink-0">
-                                    <img src="/products/{{ $p->image ?? 'soundcloud.svg' }}" class="w-full h-full object-contain" />
+                                    <img src="{{ $p->imageUrl() }}" class="w-full h-full object-contain" />
                                 </div>
                                 <div>
                                     <span class="text-xs font-bold">{{ $p->name }}</span>

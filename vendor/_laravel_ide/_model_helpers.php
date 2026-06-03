@@ -687,6 +687,8 @@ namespace App\Models {
    * @property-read int|null $user_discounts_count
    * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\GachaPool> $gachaPools
    * @property-read int|null $gacha_pools_count
+   * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\PointShopItem> $pointShopItems
+   * @property-read int|null $point_shop_items_count
    * @method static \Illuminate\Database\Eloquent\Builder<DiscountType>|DiscountType whereId($value)
    * @method static \Illuminate\Database\Eloquent\Builder<DiscountType>|DiscountType whereName($value)
    * @method static \Illuminate\Database\Eloquent\Builder<DiscountType>|DiscountType whereType($value)
@@ -696,6 +698,7 @@ namespace App\Models {
    * @method static \Illuminate\Database\Eloquent\Builder<DiscountType>|DiscountType newModelQuery()
    * @method static \Illuminate\Database\Eloquent\Builder<DiscountType>|DiscountType newQuery()
    * @method static \Illuminate\Database\Eloquent\Builder<DiscountType>|DiscountType query()
+   * @method static \Illuminate\Database\Eloquent\Builder<DiscountType>|DiscountType label() {@see App\Models\DiscountType::scopeLabel()}
    * @method static \Illuminate\Database\Eloquent\Builder<DiscountType>|DiscountType select(mixed $columns)
    * @method static \Illuminate\Database\Eloquent\Builder<DiscountType>|DiscountType selectSub(\Closure|\Illuminate\Database\Query\Builder|\Illuminate\Database\Eloquent\Builder<mixed>|string $query, string $as)
    * @method static \Illuminate\Database\Eloquent\Builder<DiscountType>|DiscountType selectExpression(\Illuminate\Contracts\Database\Query\Expression|literal-string $expression, string $as)
@@ -4764,6 +4767,8 @@ namespace App\Models {
    * @property string $name
    * @property int $id
    * @property-read \App\Models\DiscountType $discountType
+   * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\PointShopPurchase> $purchases
+   * @property-read int|null $purchases_count
    * @method static \Illuminate\Database\Eloquent\Builder<PointShopItem>|PointShopItem whereId($value)
    * @method static \Illuminate\Database\Eloquent\Builder<PointShopItem>|PointShopItem whereName($value)
    * @method static \Illuminate\Database\Eloquent\Builder<PointShopItem>|PointShopItem whereDescription($value)
@@ -4777,6 +4782,7 @@ namespace App\Models {
    * @method static \Illuminate\Database\Eloquent\Builder<PointShopItem>|PointShopItem newModelQuery()
    * @method static \Illuminate\Database\Eloquent\Builder<PointShopItem>|PointShopItem newQuery()
    * @method static \Illuminate\Database\Eloquent\Builder<PointShopItem>|PointShopItem query()
+   * @method static \Illuminate\Database\Eloquent\Builder<PointShopItem>|PointShopItem active() {@see App\Models\PointShopItem::scopeActive()}
    * @method static \Illuminate\Database\Eloquent\Builder<PointShopItem>|PointShopItem select(mixed $columns)
    * @method static \Illuminate\Database\Eloquent\Builder<PointShopItem>|PointShopItem selectSub(\Closure|\Illuminate\Database\Query\Builder|\Illuminate\Database\Eloquent\Builder<mixed>|string $query, string $as)
    * @method static \Illuminate\Database\Eloquent\Builder<PointShopItem>|PointShopItem selectExpression(\Illuminate\Contracts\Database\Query\Expression|literal-string $expression, string $as)

@@ -206,7 +206,7 @@
                                          {{-- Full Frame Thumbnail Area --}}
                                          <div class="w-full aspect-[4/3] flex items-center justify-center p-4 bg-gradient-to-br from-slate-800 to-slate-950 dark:from-[#0a1020] dark:to-[#040812]">
                                              <template x-if="brand.image">
-                                                <img :src="brand.image" draggable="false" class="w-3/4 h-3/4 object-contain drop-shadow-xl transition-transform duration-500 group-hover:scale-110">
+                                                <img :src="brand.image" draggable="false" class="w-3/4 h-3/4 object-contain drop-shadow-xl transition-transform duration-500 group-hover:scale-110 pixel-render">
                                              </template>
                                              <template x-if="!brand.image">
                                                 <div class="text-4xl font-black uppercase tracking-widest text-primary drop-shadow-[0_0_10px_rgba(245,158,11,0.5)]">ALL</div>

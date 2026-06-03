@@ -24,6 +24,7 @@ class CartController extends Controller
             ->map(function (CartItem $item) {
                 $d = $item->product->discount && $item->product->discount->isCurrentlyActive()
                     ? $item->product->discount : null;
+
                 return [
                     'id' => $item->id,
                     'product_id' => $item->product_id,
@@ -31,13 +32,13 @@ class CartController extends Controller
                     'price' => $item->product->discountedPrice(),
                     'original_price' => (float) $item->product->price,
                     'discount_label' => $d?->label,
-                    'discount_pct'   => ($d && $d->type === 'percentage') ? (float) $d->value : null,
+                    'discount_pct' => ($d && $d->type === 'percentage') ? (float) $d->value : null,
                     'category' => $item->product->category?->name ?? 'Other',
                     'category_id' => $item->product->category_id,
                     'subcategory' => $item->product->subcategory?->name,
                     'subcategory_id' => $item->product->subcategory_id,
                     'product_type' => $item->product->type ?? 'voucher',
-                    'image' => '/products/'.ltrim($item->product->image ?: 'soundcloud.png', '/'),
+                    'image' => $item->product->imageUrl(),
                     'quantity' => $item->quantity,
                     'topup_meta' => $item->topup_meta,
                 ];
@@ -90,12 +91,12 @@ class CartController extends Controller
         if ($type === 'direct_topup') {
             // Each direct top-up add is an independent purchase with its own credentials.
             CartItem::create([
-                'user_id'    => Auth::id(),
+                'user_id' => Auth::id(),
                 'product_id' => $product->id,
-                'quantity'   => 1,
+                'quantity' => 1,
                 'topup_meta' => [
                     'player_id' => $request->input('player_id'),
-                    'zone_id'   => $request->input('zone_id'),
+                    'zone_id' => $request->input('zone_id'),
                     'server_id' => $request->input('server_id'),
                 ],
             ]);
@@ -123,9 +124,9 @@ class CartController extends Controller
                 $cartItem->increment('quantity');
             } else {
                 CartItem::create([
-                    'user_id'    => Auth::id(),
+                    'user_id' => Auth::id(),
                     'product_id' => $product->id,
-                    'quantity'   => 1,
+                    'quantity' => 1,
                     'topup_meta' => null,
                 ]);
             }
@@ -149,11 +150,11 @@ class CartController extends Controller
         }
 
         $request->validate([
-            'quantity'              => 'sometimes|integer|min:1|max:99',
-            'topup_meta'            => 'sometimes|nullable|array',
-            'topup_meta.player_id'  => 'required_with:topup_meta|string|max:100',
-            'topup_meta.zone_id'    => 'sometimes|nullable|string|max:50',
-            'topup_meta.server_id'  => 'sometimes|nullable|string|max:50',
+            'quantity' => 'sometimes|integer|min:1|max:99',
+            'topup_meta' => 'sometimes|nullable|array',
+            'topup_meta.player_id' => 'required_with:topup_meta|string|max:100',
+            'topup_meta.zone_id' => 'sometimes|nullable|string|max:50',
+            'topup_meta.server_id' => 'sometimes|nullable|string|max:50',
         ]);
 
         $updates = [];
@@ -171,7 +172,7 @@ class CartController extends Controller
         $count = CartItem::where('user_id', Auth::id())->sum('quantity');
 
         return response()->json([
-            'message'    => 'Cart updated.',
+            'message' => 'Cart updated.',
             'cart_count' => (int) $count,
             'item_total' => $cartItem->product->discountedPrice() * $cartItem->quantity,
         ]);

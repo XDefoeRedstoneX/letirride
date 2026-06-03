@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
+use App\Http\Controllers\Admin\DiscountTypeController as AdminDiscountTypeController;
 use App\Http\Controllers\Admin\FaqController as AdminFaqController;
 use App\Http\Controllers\Admin\GachaBoosterController as AdminGachaBoosterController;
 use App\Http\Controllers\Admin\GachaController as AdminGachaController;
@@ -8,6 +9,7 @@ use App\Http\Controllers\Admin\GachaIconController as AdminGachaIconController;
 use App\Http\Controllers\Admin\GachaRarityChanceController as AdminGachaRarityChanceController;
 use App\Http\Controllers\Admin\NewsController as AdminNewsController;
 use App\Http\Controllers\Admin\OrderController as AdminOrderController;
+use App\Http\Controllers\Admin\PointShopController as AdminPointShopController;
 use App\Http\Controllers\Admin\ProductController as AdminProductController;
 use App\Http\Controllers\Admin\ReferralController as AdminReferralController;
 use App\Http\Controllers\Admin\ReferralTierController as AdminReferralTierController;
@@ -118,7 +120,6 @@ Route::prefix('admin')
         Route::post('/products/{product}/keys', [AdminProductController::class, 'addKeys'])->name('admin.products.keys');
 
         Route::get('/orders', [AdminOrderController::class, 'index'])->name('admin.orders');
-        Route::patch('/orders/{order}/status', [AdminOrderController::class, 'updateStatus'])->name('admin.orders.status');
 
         Route::get('/users', [AdminUserController::class, 'index'])->name('admin.users');
         Route::patch('/users/{user}', [AdminUserController::class, 'update'])->name('admin.users.update');
@@ -160,8 +161,17 @@ Route::prefix('admin')
         Route::patch('/news/{news}', [AdminNewsController::class, 'update'])->name('admin.news.update');
         Route::patch('/news/{news}/toggle-active', [AdminNewsController::class, 'toggleActive'])->name('admin.news.toggle-active');
 
-        // UI-only pages (static views with dummy data)
-        Route::get('/point-shop', fn () => view('admin.point-shop'))->name('admin.point-shop');
+        // Discount types (shared catalog used by gacha + point shop)
+        Route::get('/discounts', [AdminDiscountTypeController::class, 'index'])->name('admin.discounts');
+        Route::post('/discounts', [AdminDiscountTypeController::class, 'store'])->name('admin.discounts.store');
+        Route::patch('/discounts/{discountType}', [AdminDiscountTypeController::class, 'update'])->name('admin.discounts.update');
+        Route::delete('/discounts/{discountType}', [AdminDiscountTypeController::class, 'destroy'])->name('admin.discounts.destroy');
+
+        // Point shop (DB-backed CRUD)
+        Route::get('/point-shop', [AdminPointShopController::class, 'index'])->name('admin.point-shop');
+        Route::post('/point-shop', [AdminPointShopController::class, 'store'])->name('admin.point-shop.store');
+        Route::patch('/point-shop/{pointShopItem}', [AdminPointShopController::class, 'update'])->name('admin.point-shop.update');
+        Route::delete('/point-shop/{pointShopItem}', [AdminPointShopController::class, 'destroy'])->name('admin.point-shop.destroy');
 
         // FAQs (DB-backed CRUD)
         Route::get('/faqs', [AdminFaqController::class, 'index'])->name('admin.faqs');

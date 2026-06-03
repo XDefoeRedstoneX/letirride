@@ -26,7 +26,8 @@ class PointController extends Controller
                 'description' => $item->description,
                 'point_cost' => $item->point_cost,
                 'reward_type' => $item->reward_type,
-                'image' => $item->img ? '/point-shop-assets/' . $item->img : '/gacha-assets/voucher.svg',
+                'points_amount' => $item->points_amount,
+                'image' => $item->img ? '/point-shop-assets/'.$item->img : '/gacha-assets/voucher.svg',
                 'discount_name' => $item->discountType?->name ?? '',
             ]);
 
@@ -63,8 +64,11 @@ class PointController extends Controller
                 'points_spent' => $item->point_cost,
             ]);
 
-            // Create the discount voucher for the user
-            if ($item->discount_type_id) {
+            // Grant the reward. Discount → a UserDiscount voucher; cashback →
+            // credit the user's points balance by points_amount.
+            if ($item->reward_type === 'cashback' && $item->points_amount) {
+                $user->increment('points_balance', $item->points_amount);
+            } elseif ($item->discount_type_id) {
                 UserDiscount::create([
                     'user_id' => $user->id,
                     'discount_type_id' => $item->discount_type_id,

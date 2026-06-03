@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Favorite;
 use App\Models\News;
 use App\Models\Product;
+use App\Models\ReferralConfig;
 use Illuminate\Support\Facades\Auth;
 
 class StoreController extends Controller
@@ -36,14 +37,10 @@ class StoreController extends Controller
                 $hasPaid = $user->orders()->where('status', 'paid')->exists();
                 if (! $hasPaid) {
                     $showReferralPrompt = true;
-                    $referralWelcomePoints = (int) (\App\Models\ReferralConfig::current()->referee_welcome_points);
+                    $referralWelcomePoints = (int) (ReferralConfig::current()->referee_welcome_points);
                 }
             }
         }
-
-        $availableProductImages = collect(glob(public_path('products/*.png')))
-            ->map(fn (string $path) => basename($path))
-            ->all();
 
         $products = Product::query()
             ->with(['category', 'subcategory', 'discount'])
@@ -53,13 +50,7 @@ class StoreController extends Controller
             }])
             ->where('is_active', true)
             ->get()
-            ->map(function (Product $product) use ($availableProductImages) {
-                $fileName = $product->image ?: 'steam-wallet.png';
-
-                if (! in_array($fileName, $availableProductImages, true)) {
-                    $fileName = 'steam-wallet.png';
-                }
-
+            ->map(function (Product $product) {
                 $type = $product->type ?? 'voucher';
                 $stock = (int) ($product->available_keys_count ?? 0);
                 // direct_topup products don't consume keys, so they're always in stock
@@ -70,19 +61,19 @@ class StoreController extends Controller
                 $d = $product->discount && $product->discount->isCurrentlyActive() ? $product->discount : null;
 
                 return [
-                    'id'             => $product->id,
-                    'name'           => $product->name,
-                    'price'          => $salePrice,
+                    'id' => $product->id,
+                    'name' => $product->name,
+                    'price' => $salePrice,
                     'original_price' => $originalPrice,
                     'discount_label' => $d?->label,
-                    'discount_pct'   => ($d && $d->type === 'percentage') ? (float) $d->value : null,
+                    'discount_pct' => ($d && $d->type === 'percentage') ? (float) $d->value : null,
                     'discount_fixed' => ($d && $d->type === 'fixed') ? (float) $d->value : null,
-                    'category'       => $product->category?->name ?? 'Other',
-                    'subcategory'    => $product->subcategory?->name ?? 'Other',
-                    'product_type'   => $type,
-                    'stock'          => $stock,
-                    'in_stock'       => $inStock,
-                    'image'          => '/products/'.ltrim($fileName, '/'),
+                    'category' => $product->category?->name ?? 'Other',
+                    'subcategory' => $product->subcategory?->name ?? 'Other',
+                    'product_type' => $type,
+                    'stock' => $stock,
+                    'in_stock' => $inStock,
+                    'image' => $product->imageUrl(),
                 ];
             })
             ->values();
@@ -103,15 +94,15 @@ class StoreController extends Controller
 
         if (empty($newsImages)) {
             $newsImages = collect(glob(public_path('news/*.{jpg,jpeg,png,gif,webp}'), GLOB_BRACE))
-                ->map(fn (string $p) => asset('news/' . basename($p)))
+                ->map(fn (string $p) => asset('news/'.basename($p)))
                 ->values()
                 ->toArray();
         }
 
         return [
-            'products'    => $products,
+            'products' => $products,
             'favoriteIds' => $favoriteIds,
-            'newsImages'  => $newsImages,
+            'newsImages' => $newsImages,
             'showReferralPrompt' => $showReferralPrompt,
             'referralWelcomePoints' => $referralWelcomePoints,
         ];

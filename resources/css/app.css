@@ -462,6 +462,126 @@ button,
   align-items: center;
 }
 
+/* ===========================================================
+   GACHA — arcade cabinet backdrop (fades in during a spin)
+   The cards land inside the cabinet's green screen. The four
+   --screen-* vars are the green panel's insets as a % of the
+   cabinet art; tune them to the exact PNG. --cabinet-aspect
+   must match the PNG's width/height.
+   =========================================================== */
+.gacha-cabinet {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: fill;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.gacha-carousel-frame.cabinet-on .gacha-cabinet {
+  opacity: 1;
+}
+
+/* Wrapper around the spinning track. Transparent passthrough when the cabinet
+   is off (current look); when on, it shrinks to the green-screen rectangle so
+   cards are clipped to the screen. */
+.gacha-screen {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+}
+
+.gacha-carousel-frame.has-cabinet.cabinet-on {
+  height: auto;
+  aspect-ratio: var(--cabinet-aspect, 900 / 500);
+}
+
+.gacha-carousel-frame.has-cabinet.cabinet-on .gacha-screen {
+  position: absolute;
+  /* Green-panel insets measured from the 900x500 arcade-cabinet.png. */
+  top: var(--screen-top, 27%);
+  left: var(--screen-left, 9%);
+  right: var(--screen-right, 9%);
+  bottom: var(--screen-bottom, 37%);
+  width: auto;
+  height: auto;
+  overflow: hidden;
+}
+
+/* Mobile: skip the cabinet, keep the plain compact spinner. */
+@media (max-width: 640px) {
+  .gacha-carousel-frame.has-cabinet.cabinet-on {
+    height: 240px;
+    aspect-ratio: auto;
+  }
+  .gacha-carousel-frame.has-cabinet.cabinet-on .gacha-cabinet {
+    display: none;
+  }
+  .gacha-carousel-frame.has-cabinet.cabinet-on .gacha-screen {
+    position: relative;
+    inset: auto;
+    width: 100%;
+    height: 100%;
+  }
+}
+
+/* Page dimmer: spotlights the cabinet while spinning. */
+.gacha-dim {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.62);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease, visibility 0.3s;
+  z-index: 40;
+  pointer-events: none;
+}
+.gacha-dim.on {
+  opacity: 1;
+  visibility: visible;
+}
+/* Lift the spinner above the dimmer during a spin. */
+.gacha-carousel-frame.cabinet-on {
+  position: relative;
+  z-index: 50;
+}
+
+/* Subtle machine rumble during the fast spin. */
+@keyframes gacha-cabinet-rumble {
+  0%, 100% { transform: translate(0, 0); }
+  25% { transform: translate(-1px, 1px); }
+  50% { transform: translate(1px, -1px); }
+  75% { transform: translate(-1px, -1px); }
+}
+.gacha-carousel-frame.cabinet-rumble {
+  animation: gacha-cabinet-rumble 0.12s linear infinite;
+}
+
+/* One-shot "ka-chunk" impact when the prize lands. */
+@keyframes gacha-cabinet-impact {
+  0% { transform: translateY(0) scale(1); }
+  20% { transform: translateY(4px) scale(1.012); }
+  45% { transform: translateY(-3px) scale(0.997); }
+  70% { transform: translateY(2px); }
+  100% { transform: translateY(0) scale(1); }
+}
+.gacha-carousel-frame.cabinet-impact {
+  animation: gacha-cabinet-impact 0.45s ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gacha-carousel-frame.cabinet-rumble,
+  .gacha-carousel-frame.cabinet-impact {
+    animation: none;
+  }
+}
+
 .gacha-skip-wrap {
   position: absolute;
   bottom: 10px;
