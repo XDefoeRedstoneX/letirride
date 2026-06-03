@@ -98,7 +98,7 @@
                     @foreach($order->orderDetails as $detail)
                     <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:2px solid var(--dark-line);">
                         <div style="display:flex;align-items:center;gap:12px;">
-                            <div style="width:36px;height:36px;background:var(--dark-card2);border:2px solid var(--dark-line);display:flex;align-items:center;justify-content:center;padding:6px;"><img src="/products/{{ $detail->product->image ?? 'soundcloud.png' }}" class="w-full h-full object-contain pixel-render" /></div>
+                            <div style="width:36px;height:36px;background:var(--dark-card2);border:2px solid var(--dark-line);display:flex;align-items:center;justify-content:center;padding:6px;"><img src="{{ $detail->product?->imageUrl() ?? '/products/'.\App\Models\Product::FALLBACK_IMAGE }}" class="w-full h-full object-contain pixel-render" /></div>
                             <div><p style="font-family:var(--font-sans);font-size:13px;font-weight:800;color:#e8f0ff;">{{ $detail->product->name ?? 'Unknown' }}</p><p style="font-family:var(--px);font-size:6px;color:var(--text-dim);letter-spacing:0.1em;margin-top:2px;">QTY: {{ $detail->quantity }}</p></div>
                         </div>
                         <p style="font-family:var(--font-sans);font-size:13px;font-weight:800;color:#e8f0ff;">Rp {{ number_format($detail->total_price_in_cart, 0, ',', '.') }}</p>
