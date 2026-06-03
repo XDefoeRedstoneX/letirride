@@ -27,8 +27,8 @@ class AppServiceProvider extends ServiceProvider
             $email = strtolower((string) $request->input('email'));
 
             return [
-                Limit::perHour(3)->by('ip:'.$request->ip()),
-                Limit::perDay(10)->by('email:'.$email),
+                Limit::perHour(100)->by('ip:'.$request->ip()),
+                Limit::perDay(100)->by('email:'.$email),
             ];
         });
     }

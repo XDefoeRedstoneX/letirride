@@ -7,6 +7,7 @@ use App\Services\ReferralService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Laravel\Socialite\Facades\Socialite;
@@ -213,33 +214,34 @@ class AuthController extends Controller
 
         try {
             $googleUser = Socialite::driver('google')->stateless()->user();
+
+            $user = User::where('google_id', $googleUser->getId())->first()
+                ?? User::where('email', $googleUser->getEmail())->first();
+
+            if ($user) {
+                if (! $user->google_id) {
+                    $user->update(['google_id' => $googleUser->getId()]);
+                }
+            } else {
+                $user = User::create([
+                    'name'          => $googleUser->getName(),
+                    'email'         => $googleUser->getEmail(),
+                    'google_id'     => $googleUser->getId(),
+                    'password'      => null,
+                    'referral_code' => strtoupper(Str::random(8)),
+                ]);
+            }
+
+            Auth::login($user, remember: true);
+
+            return redirect()->intended(
+                $user->isAdmin() ? route('admin.dashboard') : route('home')
+            );
         } catch (\Throwable $e) {
-            report($e);
+            Log::warning('Google sign-in failed: '.$e->getMessage(), ['exception' => $e]);
+
             return redirect()->route('home')->with('error', 'Google sign-in failed. Please try again.');
         }
-
-        $user = User::where('google_id', $googleUser->getId())->first()
-            ?? User::where('email', $googleUser->getEmail())->first();
-
-        if ($user) {
-            if (! $user->google_id) {
-                $user->update(['google_id' => $googleUser->getId()]);
-            }
-        } else {
-            $user = User::create([
-                'name' => $googleUser->getName(),
-                'email' => $googleUser->getEmail(),
-                'google_id' => $googleUser->getId(),
-                'password' => null,
-                'referral_code' => strtoupper(Str::random(8)),
-            ]);
-        }
-
-        Auth::login($user, remember: true);
-
-        return redirect()->intended(
-            $user->isAdmin() ? route('admin.dashboard') : route('home')
-        );
     }
 
     public function deleteAccount(Request $request)

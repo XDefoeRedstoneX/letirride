@@ -64,8 +64,8 @@
                                 <p class="text-xs font-bold text-foreground">{{ $ticket->displaySubject() }}</p>
                                 <p class="text-xs text-muted-foreground line-clamp-2 mt-0.5" x-show="!open">{{ $ticket->message }}</p>
                                 <button type="button" @click="open = !open" class="text-[9px] text-primary font-black uppercase tracking-widest hover:underline mt-1" x-text="open ? 'Collapse' : 'Read full'"></button>
-                                <div x-show="open" class="mt-2 p-3 bg-foreground/5 rounded-xl">
-                                    <p class="text-xs text-muted-foreground whitespace-pre-line">{{ $ticket->message }}</p>
+                                <div x-show="open" class="mt-2 p-3 bg-foreground/5 rounded-xl overflow-hidden">
+                                    <p class="text-xs text-muted-foreground whitespace-pre-line break-words">{{ $ticket->message }}</p>
                                 </div>
                             </div>
                         </td>

@@ -14,6 +14,13 @@
 
             {{-- Form / Success --}}
             <div class="px-card-static" style="padding:32px;max-width:640px;margin:0 auto;">
+                @if (session('error'))
+                    <div style="display:flex;align-items:flex-start;gap:14px;background:rgba(239,68,68,0.08);border:2px solid #ef4444;padding:16px 20px;margin-bottom:8px;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="square" style="flex-shrink:0;margin-top:1px;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                        <p style="font-family:var(--font-sans);font-size:13px;color:#ef4444;font-weight:600;line-height:1.5;">{{ session('error') }}</p>
+                    </div>
+                @endif
+
                 @if (session('ticket_submitted'))
                     {{-- Success state (server-driven after redirect) --}}
                     <div style="text-align:center;padding:24px 0;display:flex;flex-direction:column;align-items:center;gap:16px;">
@@ -30,7 +37,6 @@
                     </div>
                 @else
                     <form method="POST" action="{{ route('tickets.store') }}"
-                          x-data="{ subject: '{{ old('subject_choice', '') }}' }"
                           style="display:flex;flex-direction:column;gap:20px;">
                         @csrf
 
@@ -56,23 +62,10 @@
                             </div>
                         @endguest
 
-                        {{-- Subject combobox: preset options + free-text "Other". --}}
                         <div style="display:flex;flex-direction:column;gap:6px;">
                             <label style="font-family:var(--px);font-size:6px;letter-spacing:0.12em;color:var(--text-dim);">SUBJECT</label>
-                            <select name="subject_choice" x-model="subject" required class="px-input" style="padding:14px 18px;font-size:13px;">
-                                <option value="" disabled>Choose a subject…</option>
-                                @foreach ($subjects as $s)
-                                    <option value="{{ $s }}">{{ $s }}</option>
-                                @endforeach
-                                <option value="Other">Other…</option>
-                            </select>
-                            @error('subject_choice')<span style="color:#f43f5e;font-size:11px;">{{ $message }}</span>@enderror
-
-                            <input type="text" name="subject_other" x-show="subject === 'Other'" x-cloak
-                                   value="{{ old('subject_other') }}" maxlength="120"
-                                   placeholder="Briefly, what's it about?" class="px-input"
-                                   style="padding:14px 18px;font-size:13px;margin-top:8px;">
-                            @error('subject_other')<span style="color:#f43f5e;font-size:11px;">{{ $message }}</span>@enderror
+                            <input type="text" name="subject" value="{{ old('subject') }}" required minlength="3" maxlength="120" placeholder="Briefly, what's it about?" class="px-input" style="padding:14px 18px;font-size:13px;">
+                            @error('subject')<span style="color:#f43f5e;font-size:11px;">{{ $message }}</span>@enderror
                         </div>
 
                         <div style="display:flex;flex-direction:column;gap:6px;">

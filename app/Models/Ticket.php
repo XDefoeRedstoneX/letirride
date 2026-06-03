@@ -85,10 +85,7 @@ class Ticket extends Model
 
     public function mailtoUrl(): string
     {
-        $body = "Hi {$this->requesterName()},\n\n\n\n-----\nYour message:\n{$this->message}";
-
         return 'mailto:'.$this->email
-            .'?subject='.rawurlencode('[Ridly Support #'.$this->id.'] '.$this->displaySubject())
-            .'&body='.rawurlencode($body);
+            .'?subject='.rawurlencode('[Ridly Support #'.$this->id.'] '.$this->displaySubject());
     }
 }
