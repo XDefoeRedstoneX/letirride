@@ -6,11 +6,14 @@
     username: '',
     showPassword: false,
     showSignupPassword: false,
-    acceptTos: false,
     loginError: '',
     loginLoading: false,
     signupError: '',
     signupLoading: false,
+    forgotMode: false,
+    forgotSent: false,
+    forgotLoading: false,
+    forgotError: '',
     referralCode: '',
     passwordStrength: 0,
     get strengthLabel() {
@@ -52,6 +55,34 @@
         }
 
         this.loginError = data.message || data.errors?.email?.[0] || 'Those credentials do not match our records.';
+    },
+    async submitForgot() {
+        this.forgotError = '';
+        if (!this.email) {
+            this.forgotError = 'Please enter your account email first.';
+            return;
+        }
+        this.forgotLoading = true;
+
+        const form = this.$refs.forgotForm;
+        const response = await fetch(form.action, {
+            method: 'POST',
+            headers: {
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+            },
+            body: new FormData(form),
+        });
+
+        const data = await response.json().catch(() => ({}));
+        this.forgotLoading = false;
+
+        if (response.ok) {
+            this.forgotSent = true;
+            return;
+        }
+
+        this.forgotError = data.message || data.errors?.email?.[0] || 'Something went wrong. Please try again.';
     },
     async submitSignup() {
         this.signupError = '';
@@ -128,7 +159,7 @@
         {{-- Content inside the frame --}}
         <div class="px-frame-content">
             {{-- Modern Tab Header --}}
-            <div class="p-4 pb-0">
+            <div class="p-4 pb-0" x-show="!forgotMode">
                 <div class="flex p-1 bg-foreground/5 rounded-2xl w-full">
                     <button @click="tab = 'login'"
                             :class="tab === 'login' ? 'bg-background shadow-sm text-foreground' : 'text-muted-foreground hover:text-foreground'"
@@ -145,7 +176,7 @@
 
             <div class="p-4">
                 {{-- Login Form --}}
-                <form x-show="tab === 'login'" x-ref="loginForm" @submit.prevent="submitLogin" method="POST" action="{{ route('logAuth') }}" class="space-y-3">
+                <form x-show="tab === 'login' && !forgotMode" x-ref="loginForm" @submit.prevent="submitLogin" method="POST" action="{{ route('logAuth') }}" class="space-y-3">
                     @csrf
                     <div class="space-y-1">
                         <label class="text-xs font-black text-muted-foreground uppercase tracking-widest">Email</label>
@@ -168,10 +199,62 @@
                     </button>
 
                     <div x-show="loginError" x-text="loginError" class="text-center text-sm text-red-500 font-bold"></div>
+
+                    {{-- Forgot password entry --}}
+                    <div class="text-center">
+                        <button type="button" @click="forgotMode = true; forgotSent = false; forgotError = ''"
+                                class="text-xs font-black uppercase tracking-widest hover:underline"
+                                style="color:#ef4444;">
+                            Forgot password?
+                        </button>
+                    </div>
                 </form>
 
+                {{-- Forgot Password panel --}}
+                <div x-show="forgotMode" class="space-y-4">
+                    {{-- Confirmation prompt + email --}}
+                    <div x-show="!forgotSent" class="space-y-4">
+                        <div class="text-center space-y-1">
+                            <div class="mx-auto flex items-center justify-center" style="width:52px;height:52px;background:rgba(239,68,68,0.12);border:3px solid rgba(239,68,68,0.35);color:#ef4444;">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="square"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                            </div>
+                            <h3 class="font-black text-base">Reset your password</h3>
+                            <p class="text-xs text-muted-foreground">We'll send a reset link to your account email. Confirm the address below.</p>
+                        </div>
+
+                        <form x-ref="forgotForm" @submit.prevent="submitForgot" method="POST" action="{{ route('password.email') }}" class="space-y-3">
+                            @csrf
+                            <div class="space-y-1">
+                                <label class="text-xs font-black text-muted-foreground uppercase tracking-widest">Account Email</label>
+                                <input type="email" name="email" x-model="email" required class="w-full px-3 py-2 bg-background border-2 border-input rounded-xl focus:ring-4 focus:ring-primary/20 outline-none transition-all font-bold text-sm" placeholder="name@email.com">
+                            </div>
+
+                            <button type="submit" :disabled="forgotLoading" class="modal-btn-primary" style="padding: 12px; width: 100%; font-size: 8px;">
+                                <span x-text="forgotLoading ? 'SENDING...' : 'SEND RESET LINK'"></span>
+                            </button>
+
+                            <div x-show="forgotError" x-text="forgotError" class="text-center text-sm text-red-500 font-bold"></div>
+                        </form>
+                    </div>
+
+                    {{-- Sent confirmation --}}
+                    <div x-show="forgotSent" class="text-center space-y-3 py-2">
+                        <div class="mx-auto flex items-center justify-center" style="width:56px;height:56px;background:rgba(34,197,94,0.12);border:3px solid #22c55e;color:#22c55e;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="square"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>
+                        </div>
+                        <h3 class="font-black text-base">Check your inbox</h3>
+                        <p class="text-xs text-muted-foreground">If an account exists for <span class="font-bold text-foreground" x-text="email"></span>, a password reset link is on its way.</p>
+                    </div>
+
+                    {{-- Back to login --}}
+                    <button type="button" @click="forgotMode = false"
+                            class="w-full text-xs font-black uppercase tracking-widest text-muted-foreground hover:text-foreground transition-colors">
+                        &larr; Back to login
+                    </button>
+                </div>
+
                 {{-- Signup Form --}}
-                <form x-show="tab === 'signup'" x-ref="signupForm" @submit.prevent="submitSignup" method="POST" action="{{ route('regAuth') }}" class="space-y-3">
+                <form x-show="tab === 'signup' && !forgotMode" x-ref="signupForm" @submit.prevent="submitSignup" method="POST" action="{{ route('regAuth') }}" class="space-y-3">
                     @csrf
                     <div class="space-y-1">
                         <label class="text-xs font-black text-muted-foreground uppercase tracking-widest">Username</label>
@@ -206,34 +289,11 @@
                         </div>
                     </div>
 
-                    {{-- Optional referral code --}}
-                    <div class="space-y-2">
-                        <label class="text-xs font-black text-muted-foreground uppercase tracking-widest">Referral Code <span class="text-muted-foreground/60">(optional)</span></label>
-                        <input type="text" name="referral_code" x-model="referralCode" maxlength="16"
-                               @input="referralCode = referralCode.toUpperCase()"
-                               class="referral-signup-input"
-                               placeholder="GOTACODE">
-                        <p class="referral-signup-hint">Friend gave you a code? Pop it in to earn bonus points.</p>
-                    </div>
-
-                    {{-- TOS & Privacy (only on signup) --}}
-                    <div class="space-y-2">
-                        <div class="flex items-start gap-2">
-                            <input type="checkbox" id="signup-tos" x-model="acceptTos" required class="w-4 h-4 mt-0.5 rounded border-border text-primary focus:ring-primary/50 bg-background">
-                            <label for="signup-tos" class="text-xs font-bold text-muted-foreground uppercase tracking-widest leading-tight">
-                                I agree to the <a href="{{ route('terms-of-service') }}" class="text-primary hover:underline" target="_blank">Terms of Service</a>
-                            </label>
-                        </div>
-                        <div class="flex items-start gap-2">
-                            <input type="checkbox" id="signup-pp" required class="w-4 h-4 mt-0.5 rounded border-border text-primary focus:ring-primary/50 bg-background">
-                            <label for="signup-pp" class="text-xs font-bold text-muted-foreground uppercase tracking-widest leading-tight">
-                                I accept the <a href="{{ route('privacy-policy') }}" class="text-primary hover:underline" target="_blank">Privacy Policy</a>
-                            </label>
-                        </div>
-                    </div>
+                    {{-- Referral code carried silently from a ?ref=CODE deep link --}}
+                    <input type="hidden" name="referral_code" :value="referralCode">
 
                     {{-- Pixelated Create Account Button --}}
-                    <button type="submit" :disabled="signupLoading || !acceptTos" class="modal-btn-primary" style="padding: 12px; width: 100%; font-size: 8px;">
+                    <button type="submit" :disabled="signupLoading" class="modal-btn-primary" style="padding: 12px; width: 100%; font-size: 8px;">
                         <span x-text="signupLoading ? 'CREATING...' : 'CREATE ACCOUNT'"></span>
                     </button>
 
@@ -241,7 +301,7 @@
                 </form>
 
                 {{-- Divider --}}
-                <div class="relative my-3">
+                <div class="relative my-3" x-show="!forgotMode">
                     <div class="absolute inset-0 flex items-center">
                         <div class="w-full border-t-2 border-input"></div>
                     </div>
@@ -251,7 +311,7 @@
                 </div>
 
                 {{-- Google OAuth --}}
-                <a href="{{ route('auth.google') }}"
+                <a x-show="!forgotMode" href="{{ route('auth.google') }}"
                    class="flex items-center justify-center gap-3 w-full px-4 py-2 bg-background border-2 border-input rounded-xl font-bold text-sm hover:border-primary/50 hover:bg-primary/5 transition-all">
                     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 48 48">
                         <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
@@ -263,7 +323,7 @@
                     <span>Continue with Google</span>
                 </a>
 
-                <div class="mt-3 text-center">
+                <div class="mt-3 text-center" x-show="!forgotMode">
                     <p class="text-xs text-muted-foreground">
                         By logging in, you agree to our Terms & Conditions.
                     </p>

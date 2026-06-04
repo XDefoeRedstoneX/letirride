@@ -3,6 +3,7 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Notifications\ResetPasswordNotification;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -73,6 +74,14 @@ class User extends Authenticatable
     public function activeBoosters(): HasMany
     {
         return $this->hasMany(UserActiveBooster::class)->where('rolls_remaining', '>', 0);
+    }
+
+    /**
+     * Send the password reset notification using our branded email.
+     */
+    public function sendPasswordResetNotification($token): void
+    {
+        $this->notify(new ResetPasswordNotification($token));
     }
 
     /**

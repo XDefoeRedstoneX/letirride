@@ -4,10 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use App\Services\ReferralService;
+use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Laravel\Socialite\Facades\Socialite;
@@ -35,6 +37,81 @@ class AuthController extends Controller
     public function showForgot()
     {
         return view('pages.forgot-password');
+    }
+
+    /**
+     * Email a password reset link to the given address. Always responds with a
+     * generic success message so we never reveal whether an account exists.
+     */
+    public function sendResetLink(Request $request)
+    {
+        $request->validate(['email' => 'required|email']);
+
+        // A logged-in user can only ever reset their own account — ignore any
+        // submitted address (the field is read-only in the UI, but enforce it here).
+        $email = Auth::check() ? Auth::user()->email : $request->input('email');
+
+        Password::sendResetLink(['email' => $email]);
+
+        $message = 'If an account exists for that email, a reset link is on its way.';
+
+        if ($request->expectsJson()) {
+            return response()->json(['message' => $message]);
+        }
+
+        return back()->with('success', $message);
+    }
+
+    /**
+     * Show the page where the user picks a new password (reached from the email link).
+     */
+    public function showReset(Request $request, string $token)
+    {
+        $email = $request->query('email', '');
+
+        // A link is single-use: the broker deletes the token after a successful
+        // reset. If the token is missing/expired/already-used, show the dead-link
+        // state instead of a form that would only fail on submit.
+        $user = User::where('email', $email)->first();
+        $valid = $user && Password::tokenExists($user, $token);
+
+        return view('pages.reset-password', [
+            'token' => $token,
+            'email' => $email,
+            'valid' => $valid,
+        ]);
+    }
+
+    /**
+     * Validate the reset token and persist the new password.
+     */
+    public function resetPassword(Request $request)
+    {
+        $request->validate([
+            'token' => 'required',
+            'email' => 'required|email',
+            'password' => 'required|min:8|confirmed',
+        ]);
+
+        $status = Password::reset(
+            $request->only('email', 'password', 'password_confirmation', 'token'),
+            function (User $user, string $password) {
+                $user->forceFill([
+                    'password' => Hash::make($password),
+                    'remember_token' => Str::random(60),
+                ])->save();
+
+                event(new PasswordReset($user));
+            }
+        );
+
+        if ($status === Password::PasswordReset) {
+            return redirect()->route('home')->with('success', 'Your password has been reset. You can now log in.');
+        }
+
+        throw ValidationException::withMessages([
+            'email' => [__($status)],
+        ]);
     }
 
     public function logAuth(Request $request)
@@ -83,11 +160,19 @@ class AuthController extends Controller
     public function regAuth(Request $request)
     {
         try {
+            // Normalize the email so casing/whitespace can never slip past the
+            // unique check (e.g. a Google account stored as John@Gmail.com).
+            $request->merge([
+                'email' => strtolower(trim((string) $request->input('email'))),
+            ]);
+
             $creds = $request->validate([
                 'name' => 'required|min:2|max:50',
                 'email' => 'required|email:dns|unique:users',
                 'password' => 'required|min:8',
                 'referral_code' => 'nullable|string|max:16',
+            ], [
+                'email.unique' => 'This email is already registered. If you signed up with Google, use "Continue with Google" to log in.',
             ]);
 
             $referralCode = trim((string) ($creds['referral_code'] ?? ''));
@@ -215,8 +300,12 @@ class AuthController extends Controller
         try {
             $googleUser = Socialite::driver('google')->stateless()->user();
 
+            // Same normalization as manual signup so a Google login matches an
+            // existing manual account (auto-link) regardless of casing.
+            $email = strtolower(trim((string) $googleUser->getEmail()));
+
             $user = User::where('google_id', $googleUser->getId())->first()
-                ?? User::where('email', $googleUser->getEmail())->first();
+                ?? User::where('email', $email)->first();
 
             if ($user) {
                 if (! $user->google_id) {
@@ -225,7 +314,7 @@ class AuthController extends Controller
             } else {
                 $user = User::create([
                     'name'          => $googleUser->getName(),
-                    'email'         => $googleUser->getEmail(),
+                    'email'         => $email,
                     'google_id'     => $googleUser->getId(),
                     'password'      => null,
                     'referral_code' => strtoupper(Str::random(8)),

@@ -15,9 +15,11 @@
 
                 <div class="px-card-static" style="padding:28px;display:flex;flex-direction:column;gap:16px;">
                     <div style="display:flex;flex-direction:column;gap:6px;">
-                        <label style="font-family:var(--px);font-size:6px;letter-spacing:0.12em;color:var(--text-dim);">EMAIL ADDRESS</label>
-                        <input type="email" x-model="email" class="px-input" style="padding:14px 18px;font-size:13px;">
+                        <label style="font-family:var(--px);font-size:6px;letter-spacing:0.12em;color:var(--text-dim);">ACCOUNT EMAIL</label>
+                        <input type="email" x-model="email" readonly tabindex="-1" class="px-input" style="padding:14px 18px;font-size:13px;opacity:0.7;cursor:not-allowed;">
+                        <p style="font-family:var(--font-sans);font-size:11px;color:var(--text-dim);margin:0;">The reset link will be sent to your account email.</p>
                     </div>
+                    <p x-show="error" x-text="error" style="color:#ef4444;font-family:var(--font-sans);font-size:12px;font-weight:700;margin:0;"></p>
                     <button @click="sendEmail()" :disabled="loading" class="px-btn-gold" style="width:100%;padding:18px;font-size:8px;display:flex;align-items:center;justify-content:center;gap:8px;">
                         <template x-if="loading"><svg class="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg></template>
                         <span x-text="loading ? 'SENDING...' : 'SEND RESET LINK'"></span>
@@ -44,12 +46,38 @@
             email: initialEmail,
             sent: false,
             loading: false,
-            sendEmail() {
+            error: '',
+            async sendEmail() {
+                this.error = '';
+                if (!this.email) {
+                    this.error = 'Please enter your email address.';
+                    return;
+                }
                 this.loading = true;
-                setTimeout(() => {
+
+                try {
+                    const response = await fetch('{{ route('password.email') }}', {
+                        method: 'POST',
+                        headers: {
+                            'Accept': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        },
+                        body: new URLSearchParams({ email: this.email }),
+                    });
                     this.loading = false;
-                    this.sent = true;
-                }, 2000);
+
+                    if (response.ok) {
+                        this.sent = true;
+                        return;
+                    }
+
+                    const data = await response.json().catch(() => ({}));
+                    this.error = data.message || data.errors?.email?.[0] || 'Something went wrong. Please try again.';
+                } catch (e) {
+                    this.loading = false;
+                    this.error = 'Network error. Please try again.';
+                }
             }
         };
     }

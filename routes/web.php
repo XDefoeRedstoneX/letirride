@@ -40,6 +40,13 @@ Route::post('/register', [AuthController::class, 'regAuth'])->name('regAuth');
 Route::get('/auth/google', [AuthController::class, 'googleRedirect'])->name('auth.google');
 Route::get('/auth/google/callback', [AuthController::class, 'googleCallback'])->name('auth.google.callback');
 
+// Password reset (public — for users who can't log in)
+Route::post('/forgot-password', [AuthController::class, 'sendResetLink'])
+    ->middleware('throttle:5,1')->name('password.email');
+Route::get('/reset-password/{token}', [AuthController::class, 'showReset'])->name('password.reset');
+Route::post('/reset-password', [AuthController::class, 'resetPassword'])
+    ->middleware('throttle:5,1')->name('password.update');
+
 // Guest-accessible pages
 Route::get('/point-shop', [PointController::class, 'index'])->name('point-shop');
 Route::get('/gacha', [GachaController::class, 'showGacha'])->name('gacha');
