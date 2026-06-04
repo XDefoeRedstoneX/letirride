@@ -27,12 +27,12 @@
 
     <!-- Mobile Top Bar -->
     <div class="md:hidden flex items-center justify-between p-4 border-b border-border bg-card sticky top-0 z-40">
-        <div>
-            <a href="{{ route('admin.dashboard') }}" class="text-lg font-black tracking-tighter uppercase">Ridly <span class="text-primary">Admin</span></a>
-        </div>
         <button @click="mobileMenuOpen = !mobileMenuOpen" class="p-2 bg-foreground/5 rounded-lg text-foreground hover:bg-foreground/10 transition-colors">
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></svg>
         </button>
+        <div>
+            <a href="{{ route('admin.dashboard') }}" class="text-lg font-black tracking-tighter uppercase">Ridly <span class="text-primary">Admin</span></a>
+        </div>
     </div>
 
     <!-- Mobile Sidebar Backdrop -->
