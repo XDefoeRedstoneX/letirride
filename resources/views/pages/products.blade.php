@@ -375,6 +375,15 @@
                     <img :src="selectedProduct?.image" alt="steam-wallet.png">
                 </div>
 
+                {{-- Description --}}
+                <template x-if="selectedProduct?.description">
+                    <div>
+                        <p class="field-label" style="margin-bottom: 6px;">DESCRIPTION</p>
+                        <p style="font-family: var(--font-sans); font-size: 13px; line-height: 1.7; color: var(--text-dim, var(--muted-foreground)); white-space: pre-line; max-height: 160px; overflow-y: auto;"
+                           x-text="selectedProduct.description"></p>
+                    </div>
+                </template>
+
                 {{-- Direct Top-Up Fields --}}
                 <template x-if="selectedProduct?.product_type === 'direct_topup'">
                     <div class="modal-topup-box">

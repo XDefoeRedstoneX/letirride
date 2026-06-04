@@ -276,6 +276,17 @@ class DatabaseSeeder extends Seeder
             }, $rows);
         }
 
+        // Overlay storefront copy from the single source of truth so fresh seeds
+        // match what ProductDescriptionSeeder applies to existing databases.
+        $descriptions = ProductDescriptionSeeder::DESCRIPTIONS;
+        $rows = array_map(function (array $row) use ($descriptions) {
+            if (isset($descriptions[$row['id']])) {
+                $row['description'] = $descriptions[$row['id']];
+            }
+
+            return $row;
+        }, $rows);
+
         DB::table('products')->upsert($rows, ['id']);
     }
 

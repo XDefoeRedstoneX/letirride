@@ -50,40 +50,10 @@ class StoreController extends Controller
             }])
             ->where('is_active', true)
             ->get()
-            ->map(function (Product $product) {
-                $type = $product->type ?? 'voucher';
-                $stock = (int) ($product->available_keys_count ?? 0);
-                // direct_topup products don't consume keys, so they're always in stock
-                $inStock = $type === 'direct_topup' ? true : $stock > 0;
-
-                $salePrice = $product->discountedPrice();
-                $originalPrice = (float) $product->price;
-                $d = $product->discount && $product->discount->isCurrentlyActive() ? $product->discount : null;
-
-                return [
-                    'id' => $product->id,
-                    'name' => $product->name,
-                    'price' => $salePrice,
-                    'original_price' => $originalPrice,
-                    'discount_label' => $d?->label,
-                    'discount_pct' => ($d && $d->type === 'percentage') ? (float) $d->value : null,
-                    'discount_fixed' => ($d && $d->type === 'fixed') ? (float) $d->value : null,
-                    'category' => $product->category?->name ?? 'Other',
-                    'subcategory' => $product->subcategory?->name ?? 'Other',
-                    'product_type' => $type,
-                    'stock' => $stock,
-                    'in_stock' => $inStock,
-                    'image' => $product->imageUrl(),
-                ];
-            })
+            ->map(fn (Product $product) => $this->shapeProduct($product))
             ->values();
 
-        $favoriteIds = Auth::check()
-            ? Favorite::where('user_id', Auth::id())
-                ->pluck('product_id')
-                ->map(fn ($id) => (int) $id)
-                ->values()
-            : collect();
+        $favoriteIds = $this->favoriteIds();
 
         $newsImages = News::where('is_active', true)
             ->orderBy('sort_order')
@@ -106,5 +76,50 @@ class StoreController extends Controller
             'showReferralPrompt' => $showReferralPrompt,
             'referralWelcomePoints' => $referralWelcomePoints,
         ];
+    }
+
+    /**
+     * Front-end shape for a single product. Single source of truth for the
+     * storefront grid and the buy modal so they never drift.
+     * Assumes `available_keys_count` was loaded via withCount/loadCount.
+     */
+    private function shapeProduct(Product $product): array
+    {
+        $type = $product->type ?? 'voucher';
+        $stock = (int) ($product->available_keys_count ?? 0);
+        // direct_topup products don't consume keys, so they're always in stock
+        $inStock = $type === 'direct_topup' ? true : $stock > 0;
+
+        $d = $product->discount && $product->discount->isCurrentlyActive() ? $product->discount : null;
+
+        return [
+            'id' => $product->id,
+            'name' => $product->name,
+            'price' => $product->discountedPrice(),
+            'original_price' => (float) $product->price,
+            'discount_label' => $d?->label,
+            'discount_pct' => ($d && $d->type === 'percentage') ? (float) $d->value : null,
+            'discount_fixed' => ($d && $d->type === 'fixed') ? (float) $d->value : null,
+            'category' => $product->category?->name ?? 'Other',
+            'subcategory' => $product->subcategory?->name ?? 'Other',
+            'product_type' => $type,
+            'stock' => $stock,
+            'in_stock' => $inStock,
+            'image' => $product->imageUrl(),
+            'description' => $product->description,
+        ];
+    }
+
+    /**
+     * Product ids favorited by the current user (empty collection for guests).
+     */
+    private function favoriteIds()
+    {
+        return Auth::check()
+            ? Favorite::where('user_id', Auth::id())
+                ->pluck('product_id')
+                ->map(fn ($id) => (int) $id)
+                ->values()
+            : collect();
     }
 }
