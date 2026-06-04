@@ -148,20 +148,20 @@
                     <input type="text"
                            x-model="search"
                            placeholder="SEARCH PRODUCTS..."
-                           class="w-full bg-card border-2 border-border rounded-xl px-12 py-3.5 text-sm font-bold text-foreground outline-none focus:border-primary focus:ring-4 focus:ring-primary/20 transition-all shadow-sm">
+                           class="w-full bg-card border-2 border-border rounded-xl px-10 py-2.5 sm:px-12 sm:py-3.5 text-xs sm:text-sm font-bold text-foreground outline-none focus:border-primary focus:ring-4 focus:ring-primary/20 transition-all shadow-sm">
                 </div>
 
                 <div class="flex items-center justify-between gap-2 sm:gap-4">
                     <div class="flex gap-2 sm:gap-3 overflow-x-auto scrollbar-hide py-1 w-full min-w-0">
                         <button @click="setFilter('All')"
                                 :class="activeFilter === 'All' ? 'bg-primary text-primary-foreground border-primary' : 'bg-card text-muted-foreground border-border hover:border-primary/50 hover:text-primary'"
-                                class="whitespace-nowrap px-6 py-2.5 rounded-xl font-black text-[10px] tracking-widest border-2 shadow-sm transition-all flex-shrink-0">
+                                class="whitespace-nowrap px-3 sm:px-6 py-1.5 sm:py-2.5 rounded-xl font-black text-[8px] sm:text-[10px] tracking-widest border-2 shadow-sm transition-all flex-shrink-0">
                             ALL
                         </button>
                         <template x-for="cat in categories.filter(c => c !== 'All')" :key="cat">
                             <button @click="setFilter(cat)"
                                     :class="activeFilter === cat ? 'bg-primary text-primary-foreground border-primary' : 'bg-card text-muted-foreground border-border hover:border-primary/50 hover:text-primary'"
-                                    class="whitespace-nowrap px-6 py-2.5 rounded-xl font-black text-[10px] tracking-widest border-2 shadow-sm transition-all flex-shrink-0"
+                                    class="whitespace-nowrap px-3 sm:px-6 py-1.5 sm:py-2.5 rounded-xl font-black text-[8px] sm:text-[10px] tracking-widest border-2 shadow-sm transition-all flex-shrink-0"
                                     x-text="cat">
                             </button>
                         </template>
@@ -189,14 +189,14 @@
                 {{-- Browse By Brand (3D Coverflow) --}}
                 <div x-show="brands.length > 0" class="mb-2">
                     <div x-data="brandSlider()" x-init="initSlider()" 
-                         class="relative w-full h-[320px] py-2 overflow-hidden" 
+                         class="relative w-full h-[130px] sm:h-[320px] py-1 sm:py-2 overflow-hidden" 
                          style="perspective: 1200px; -webkit-mask-image: linear-gradient(to right, transparent, black 15%, black 85%, transparent); mask-image: linear-gradient(to right, transparent, black 15%, black 85%, transparent);"
                          @wheel.prevent="handleWheel"
                          @mousedown="startDrag" @mouseleave="endDrag" @mouseup="endDrag" @mousemove="doDrag"
                          @touchstart="startDrag" @touchend="endDrag" @touchmove="doDrag">
                         
                         <template x-for="(brand, index) in brands" :key="brand.name">
-                            <div class="w-48 sm:w-56 cursor-pointer group relative"
+                            <div class="w-28 sm:w-56 cursor-pointer group relative"
                                  @click="if(!isDragging) { scrollTo(index); }"
                                  :style="getCardStyle(index)">
 
@@ -204,19 +204,19 @@
                                           :class="selectedBrand === brand.name ? 'border-primary ring-4 ring-primary/20' : 'border-border'">
 
                                          {{-- Full Frame Thumbnail Area --}}
-                                         <div class="w-full aspect-[4/3] flex items-center justify-center p-4 bg-gradient-to-br from-slate-800 to-slate-950 dark:from-[#0a1020] dark:to-[#040812]">
+                                         <div class="w-full aspect-[4/3] flex items-center justify-center p-1.5 sm:p-4 bg-gradient-to-br from-slate-800 to-slate-950 dark:from-[#0a1020] dark:to-[#040812]">
                                              <template x-if="brand.image">
                                                 <img :src="brand.image" draggable="false" class="w-3/4 h-3/4 object-contain drop-shadow-xl transition-transform duration-500 group-hover:scale-110 pixel-render">
                                              </template>
                                              <template x-if="!brand.image">
-                                                <div class="text-4xl font-black uppercase tracking-widest text-primary drop-shadow-[0_0_10px_rgba(245,158,11,0.5)]">ALL</div>
+                                                <div class="text-2xl sm:text-4xl font-black uppercase tracking-widest text-primary drop-shadow-[0_0_10px_rgba(245,158,11,0.5)]">ALL</div>
                                              </template>
                                          </div>
 
                                          {{-- Text Area Below --}}
-                                         <div class="flex flex-col items-center p-3 bg-card border-t border-border/50">
-                                             <span class="text-xs font-black uppercase tracking-widest text-foreground text-center" x-text="brand.name"></span>
-                                             <span class="text-[9px] font-bold text-muted-foreground mt-1 tracking-widest" x-text="brand.count + ' ITEM' + (brand.count !== 1 ? 'S' : '')"></span>
+                                         <div class="flex flex-col items-center p-1.5 sm:p-3 bg-card border-t border-border/50">
+                                             <span class="text-[8px] sm:text-xs font-black uppercase tracking-widest text-foreground text-center" x-text="brand.name"></span>
+                                             <span class="text-[6px] sm:text-[9px] font-bold text-muted-foreground mt-0.5 sm:mt-1 tracking-widest" x-text="brand.count + ' ITEM' + (brand.count !== 1 ? 'S' : '')"></span>
                                          </div>
 
                                      </div>
@@ -231,19 +231,13 @@
                 <template x-for="group in displayGroups" :key="group.key">
                     <section class="products-section">
 
-                        <div class="section-bar">
-                            <span class="section-title">
-                                <span class="cat-emoji" x-show="group.emoji" x-text="group.emoji"></span>
-                                <span x-text="(group.isBrand ? '▣ ' : '') + group.label"></span>
-                            </span>
-                            <div class="section-right">
-                                <span class="section-meta"
-                                      x-text="group.products.length + ' ITEM' + (group.products.length !== 1 ? 'S' : '')"></span>
-
-                            </div>
+                        <div class="mb-4 mt-8">
+                            <h2 class="text-xl sm:text-2xl font-black uppercase tracking-widest text-[var(--gold)] dark:text-white transition-colors duration-200" style="font-family: var(--px, 'Press Start 2P', monospace);">
+                                <span x-text="group.label"></span>
+                            </h2>
                         </div>
 
-                        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 pb-8">
+                        <div class="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-5 gap-1 sm:gap-4 md:gap-6 pb-8">
                                 <template x-for="product in group.products" :key="product.id">
                                     <div class="product-card px-border-card"
                                          :class="!product.in_stock ? 'is-out-of-stock' : ''"
@@ -990,7 +984,7 @@ function brandSlider() {
             const scale = Math.max(0.6, 1 - (absDiff * 0.15));
             const rotateY = 0; 
             
-            const spacing = window.innerWidth < 640 ? 130 : 150;
+            const spacing = window.innerWidth < 640 ? 90 : 150;
             const translateZ = -absDiff * 40; 
             const transform = `translate(calc(-50% + ${normDiff * spacing}px), -50%) translateZ(${translateZ}px) rotateY(${rotateY}deg) scale(${scale})`;
 

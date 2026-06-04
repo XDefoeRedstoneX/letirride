@@ -1469,7 +1469,7 @@ button,
   inset: 0;
   width: 100%;
   height: 100%;
-  object-fit: cover; /* to cover the inner area */
+  object-fit: contain;
   display: block;
 }
 
@@ -1890,12 +1890,103 @@ button,
   color: var(--gold);
 }
 
+@media (max-width: 639px) {
+  .card-body {
+    padding: 3px 2px;
+    gap: 1px;
+  }
+  .card-title {
+    font-size: 6px;
+    min-height: 0;
+    line-height: 1.1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+  }
+  .price-label {
+    font-size: 3px;
+    margin-bottom: 0px;
+    letter-spacing: 0.01em;
+  }
+  .price-value {
+    font-size: 5px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    word-break: normal;
+    display: block;
+    max-width: 100%;
+  }
+  .price-original {
+    font-size: 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .card-footer {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1px;
+  }
+  .card-footer > div:first-child {
+    min-width: 0;
+    overflow: hidden;
+  }
+  .card-actions {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 1px;
+  }
+  .buy-btn, .buy-btn-disabled {
+    padding: 2px 0px;
+    font-size: 3px;
+    flex: 1;
+    text-align: center;
+    white-space: nowrap;
+    min-width: 0;
+  }
+  .fav-btn {
+    width: 14px !important;
+    height: 14px !important;
+    min-width: 14px !important;
+    min-height: 14px !important;
+    padding: 0;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .fav-btn svg {
+    width: 6px;
+    height: 6px;
+  }
+  .stock-line {
+    font-size: 5px;
+    font-weight: 800;
+  }
+  .badge-cat, .badge-topup, .badge-sale {
+    font-size: 3px;
+    padding: 1px 2px;
+  }
+  .stockout-text {
+    font-size: 4px;
+    padding: 2px 4px;
+  }
+}
+
 .card-footer {
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
   gap: 8px;
   margin-top: auto;
+}
+
+.card-footer > div:first-child {
+  min-width: 0;
 }
 
 /* READABLE — system sans, enlarged */
