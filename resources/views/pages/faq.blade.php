@@ -15,23 +15,23 @@
             <div class="px-divider"><div class="px-divider-dot"></div><div class="px-divider-line"></div><div class="px-divider-dot"></div></div>
 
             {{-- FAQ List --}}
-            <div style="max-width:800px;display:flex;flex-direction:column;gap:24px;">
+            <div style="max-width:800px;width:100%;margin:0 auto;display:flex;flex-direction:column;gap:24px;">
                 <template x-for="(category, catIndex) in [...new Set(filteredFaqs.map(f => f.category))]" :key="catIndex">
                     <div style="display:flex;flex-direction:column;gap:10px;">
                         <h2 style="font-family:var(--px);font-size:8px;letter-spacing:0.12em;color:var(--gold);margin-left:4px;" x-text="category"></h2>
                         <template x-for="(faq, index) in filteredFaqs.filter(f => f.category === category)" :key="faq.id">
-                            <div class="px-card" style="padding:0;overflow:hidden;" x-data="{ open: false }">
-                                <button @click="open = !open" style="width:100%;padding:18px 20px;display:flex;align-items:center;gap:12px;justify-content:space-between;text-align:left;cursor:pointer;background:none;border:none;">
+                            <div class="px-accordion" x-data="{ open: false }">
+                                <button @click="open = !open" class="px-accordion-btn">
                                     <div style="display:flex;align-items:flex-start;gap:10px;">
                                         <span style="margin-top:2px;padding:2px 6px;background:rgba(245,158,11,0.15);color:var(--gold);font-family:var(--px);font-size:7px;border-radius:4px;flex-shrink:0;">Q</span>
-                                        <span style="font-family:var(--font-sans);font-size:13px;font-weight:800;color:#e8f0ff;" x-text="faq.question"></span>
+                                        <span x-text="faq.question"></span>
                                     </div>
                                     <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="square" class="pixel-render" style="color:var(--text-dim);flex-shrink:0;transition:transform 0.2s;" :style="open ? 'transform:rotate(180deg)' : ''"><path d="m6 9 6 6 6-6"/></svg>
                                 </button>
                                 <div x-show="open" x-collapse x-transition>
-                                    <div style="padding:0 20px 18px;display:flex;align-items:flex-start;gap:10px;">
+                                    <div class="px-accordion-body" style="display:flex;align-items:flex-start;gap:10px;">
                                         <span style="margin-top:2px;padding:2px 6px;background:rgba(90,122,170,0.15);color:var(--text-dim);font-family:var(--px);font-size:7px;border-radius:4px;flex-shrink:0;">A</span>
-                                        <span style="font-family:var(--font-sans);font-size:13px;color:var(--text-dim);line-height:1.7;" x-text="faq.answer"></span>
+                                        <span x-text="faq.answer"></span>
                                     </div>
                                 </div>
                             </div>
@@ -47,7 +47,7 @@
             </div>
 
             {{-- Contact Support --}}
-            <div class="px-card-static" style="padding:24px;max-width:800px;display:flex;align-items:center;justify-content:space-between;gap:16px;border-color:rgba(245,158,11,0.2);" class="flex-col md:flex-row">
+            <div class="px-card-static" style="padding:24px;max-width:800px;margin:0 auto;width:100%;display:flex;align-items:center;justify-content:space-between;gap:16px;border-color:rgba(245,158,11,0.2);" class="flex-col md:flex-row">
                 <div>
                     <h3 style="font-family:var(--font-sans);font-size:16px;font-weight:800;color:#e8f0ff;">Still have questions?</h3>
                     <p style="font-family:var(--px);font-size:6px;color:var(--text-dim);letter-spacing:0.1em;margin-top:4px;">OUR SUPPORT TEAM IS READY TO HELP YOU 24/7</p>
