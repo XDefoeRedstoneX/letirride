@@ -17,7 +17,7 @@ class ProductController extends Controller
         $products = Product::with(['category', 'subcategory', 'discount'])
             ->withCount('productKeys')
             ->orderByDesc('id')
-            ->get();
+            ->paginate(20);
 
         return view('admin.products', [
             'products' => $products,
