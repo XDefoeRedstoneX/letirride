@@ -92,13 +92,14 @@
                     <span x-text="reorderMode ? 'Done' : 'Reorder'">Reorder</span>
                 </button>
 
-                {{-- Reset Layout --}}
-                <button @click="resetLayout()"
-                        title="Reset dashboard to default layout"
-                        class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-transparent text-[9px] font-black uppercase tracking-widest text-muted-foreground bg-foreground/5 hover:bg-red-500/10 hover:text-red-500 hover:border-red-500/20 transition-all duration-100">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg>
-                    Reset Layout
+                {{-- Templates --}}
+                <button @click="showTemplates = true"
+                        title="Apply a preset dashboard layout"
+                        class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-transparent text-[9px] font-black uppercase tracking-widest text-muted-foreground bg-foreground/5 hover:bg-primary/10 hover:text-primary hover:border-primary/20 transition-all duration-100">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg>
+                    Templates
                 </button>
+
             </div>
         </div>
     </div>
@@ -971,6 +972,46 @@
         </div>
     </div>
 
+    {{-- ================================================================ --}}
+    {{-- TEMPLATES MODAL — pick a preset layout                           --}}
+    {{-- ================================================================ --}}
+    <div x-show="showTemplates" x-cloak
+         class="fixed inset-0 z-50 flex items-center justify-center p-4"
+         x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
+         x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0">
+        {{-- Backdrop --}}
+        <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" @click="showTemplates = false"></div>
+        {{-- Panel --}}
+        <div class="relative bg-card border border-border rounded-2xl w-full max-w-2xl shadow-2xl overflow-hidden"
+             x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
+             x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95">
+            <div class="flex items-center justify-between px-6 py-4 border-b border-border">
+                <div>
+                    <h3 class="text-sm font-black uppercase tracking-widest">Layout Templates</h3>
+                    <p class="text-[9px] font-bold text-muted-foreground uppercase tracking-widest mt-0.5">Pick a preset — it replaces your current layout</p>
+                </div>
+                <button @click="showTemplates = false"
+                        class="w-8 h-8 rounded-lg flex items-center justify-center text-muted-foreground hover:bg-foreground/10 hover:text-foreground transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+                </button>
+            </div>
+            <div class="p-5 grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[60vh] overflow-y-auto">
+                <template x-for="tpl in templateList" :key="tpl.key">
+                    <button @click="applyTemplate(tpl.key)"
+                            class="flex items-start gap-3 p-4 rounded-xl border border-border hover:border-primary/40 hover:bg-primary/5 transition-all text-left">
+                        <span class="w-9 h-9 rounded-lg bg-foreground/5 flex items-center justify-center shrink-0">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-muted-foreground"><path :d="tpl.icon"></path></svg>
+                        </span>
+                        <span class="min-w-0 flex-1">
+                            <span class="block text-[10px] font-black uppercase tracking-widest leading-tight" x-text="tpl.name"></span>
+                            <span class="block text-[10px] font-bold text-muted-foreground leading-snug mt-1" x-text="tpl.desc"></span>
+                        </span>
+                    </button>
+                </template>
+            </div>
+        </div>
+    </div>
+
 </div>{{-- end space-y-8 / dashboardManager --}}
 
 <style>
@@ -1349,6 +1390,83 @@ function dashboardManager() {
     // previously-saved preference.
     const FULL_ONLY = ['recent_orders'];
 
+    // ── Preset layouts ────────────────────────────────────────────────
+    // Each template only lists the widgets/config it wants to change; the rest
+    // fall back to DEFAULTS when applied. `order` sets the on-screen sequence.
+    const TEMPLATES = {
+        default: {
+            name: 'Default',
+            desc: 'The balanced standard layout.',
+            icon: 'M4 4h6v6H4zM14 4h6v6h-6zM14 14h6v6h-6zM4 14h6v6H4z',
+            widgets: {},
+            order: ['kpi_cards', 'revenue_trend', 'order_status', 'top_products', 'category_revenue', 'user_growth', 'recent_orders', 'sidebar_attention', 'sidebar_quicknav', 'sidebar_snapshot'],
+        },
+        analytics: {
+            name: 'Analytics',
+            desc: 'Charts-first: trends, products & categories up top.',
+            icon: 'M3 3v18h18M7 16l4-8 4 4 4-8',
+            widgets: {
+                revenue_trend:     { visible: true, config: { span: 2, type: 'line' } },
+                order_status:      { visible: true, config: { span: 1, type: 'doughnut' } },
+                user_growth:       { visible: true, config: { span: 1, type: 'line' } },
+                top_products:      { visible: true, config: { span: 1, type: 'hbar', topN: 10 } },
+                category_revenue:  { visible: true, config: { span: 1, type: 'doughnut' } },
+                sidebar_attention: { visible: false },
+                sidebar_quicknav:  { visible: false },
+                sidebar_snapshot:  { visible: false },
+            },
+            order: ['kpi_cards', 'revenue_trend', 'order_status', 'user_growth', 'top_products', 'category_revenue', 'recent_orders', 'sidebar_attention', 'sidebar_quicknav', 'sidebar_snapshot'],
+        },
+        sales: {
+            name: 'Sales & Orders',
+            desc: 'Revenue, order status and the live order feed.',
+            icon: 'M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6',
+            widgets: {
+                revenue_trend:     { visible: true, config: { span: 2, type: 'bar', metric: 'revenue' } },
+                order_status:      { visible: true, config: { span: 1, type: 'doughnut' } },
+                top_products:      { visible: true, config: { span: 1, type: 'hbar' } },
+                sidebar_attention: { visible: true, config: { span: 1 } },
+                sidebar_snapshot:  { visible: true, config: { span: 1 } },
+                user_growth:       { visible: false },
+                category_revenue:  { visible: false },
+                sidebar_quicknav:  { visible: false },
+            },
+            order: ['kpi_cards', 'revenue_trend', 'order_status', 'recent_orders', 'sidebar_attention', 'top_products', 'sidebar_snapshot', 'user_growth', 'category_revenue', 'sidebar_quicknav'],
+        },
+        operations: {
+            name: 'Operations',
+            desc: 'Action items, quick links and recent orders.',
+            icon: 'M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0zM12 9v4M12 17h.01',
+            widgets: {
+                order_status:      { visible: true, config: { span: 1, type: 'bar' } },
+                sidebar_attention: { visible: true, config: { span: 1 } },
+                sidebar_quicknav:  { visible: true, config: { span: 1 } },
+                sidebar_snapshot:  { visible: true, config: { span: 1 } },
+                revenue_trend:     { visible: false },
+                user_growth:       { visible: false },
+                top_products:      { visible: false },
+                category_revenue:  { visible: false },
+            },
+            order: ['kpi_cards', 'sidebar_attention', 'sidebar_quicknav', 'sidebar_snapshot', 'order_status', 'recent_orders', 'revenue_trend', 'user_growth', 'top_products', 'category_revenue'],
+        },
+        minimal: {
+            name: 'Minimal',
+            desc: 'Just KPIs and the latest orders.',
+            icon: 'M3 3h18v18H3zM3 9h18',
+            widgets: {
+                revenue_trend:     { visible: false },
+                order_status:      { visible: false },
+                top_products:      { visible: false },
+                category_revenue:  { visible: false },
+                user_growth:       { visible: false },
+                sidebar_attention: { visible: false },
+                sidebar_quicknav:  { visible: false },
+                sidebar_snapshot:  { visible: false },
+            },
+            order: ['kpi_cards', 'recent_orders', 'revenue_trend', 'order_status', 'top_products', 'category_revenue', 'user_growth', 'sidebar_attention', 'sidebar_quicknav', 'sidebar_snapshot'],
+        },
+    };
+
     const CATALOG = [
         { id: 'kpi_cards',         name: 'KPI Overview',    desc: 'Key performance indicators',     iconPath: 'M3 3v18h18M7 16l4-4 4 4 4-8' },
         { id: 'revenue_trend',     name: 'Revenue Trend',   desc: 'Revenue over time',              iconPath: 'M3 3v18h18M7 16l4-8 4 4 4-8' },
@@ -1366,12 +1484,13 @@ function dashboardManager() {
     ];
 
     return {
-        widgets:      {},
-        configOpen:   {},
-        changeTarget: null,
-        order:        [],
-        reorderMode:  false,
-        sortable:     null,
+        widgets:       {},
+        configOpen:    {},
+        changeTarget:  null,
+        showTemplates: false,
+        order:         [],
+        reorderMode:   false,
+        sortable:      null,
 
         init() {
             const saved = JSON.parse(localStorage.getItem(LS_KEY) || '{}');
@@ -1595,6 +1714,41 @@ function dashboardManager() {
         resetLayout() {
             localStorage.removeItem(LS_KEY);
             localStorage.removeItem(ORDER_KEY);
+            window.location.reload();
+        },
+
+        // List of presets for the Templates dropdown.
+        get templateList() {
+            return Object.entries(TEMPLATES).map(([key, t]) => ({
+                key, name: t.name, desc: t.desc, icon: t.icon,
+            }));
+        },
+
+        // Apply a preset: merge its overrides onto DEFAULTS, persist, and reload
+        // so every widget (and its chart) renders fresh from the saved config.
+        applyTemplate(key) {
+            const tpl = TEMPLATES[key];
+            if (!tpl) return;
+
+            const widgets = JSON.parse(JSON.stringify(DEFAULTS));
+            Object.keys(tpl.widgets || {}).forEach(id => {
+                if (!widgets[id]) return;
+                const override = tpl.widgets[id] || {};
+                widgets[id] = {
+                    ...widgets[id],
+                    ...override,
+                    config: { ...(widgets[id].config || {}), ...(override.config || {}) },
+                };
+            });
+
+            // Wide table widgets stay full width no matter the template.
+            FULL_ONLY.forEach(id => { if (widgets[id]?.config) widgets[id].config.span = 3; });
+
+            let order = (Array.isArray(tpl.order) && tpl.order.length) ? tpl.order.slice() : DEFAULT_ORDER.slice();
+            DEFAULT_ORDER.forEach(id => { if (!order.includes(id)) order.push(id); });
+
+            localStorage.setItem(LS_KEY, JSON.stringify(widgets));
+            localStorage.setItem(ORDER_KEY, JSON.stringify(order));
             window.location.reload();
         },
 
