@@ -9,6 +9,7 @@
     <meta property="og:description" content="Buy game credits, streaming subscriptions, and digital vouchers with instant delivery.">
     <meta property="og:type" content="website">
     <title>Ridly - Digital Marketplace & Gacha Arcade</title>
+    <link rel="icon" type="image/png" href="/logo.png">
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.bunny.net">
