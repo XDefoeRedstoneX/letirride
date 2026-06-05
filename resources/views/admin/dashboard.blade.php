@@ -162,13 +162,13 @@
             </div>
         </div>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div class="kpi-grid">
             @foreach($kpiCards as $card)
                 @php
                     $maxBar  = !empty($card['sparkline']) ? max(1, max($card['sparkline'])) : 1;
                     $hasLink = !empty($card['link']);
                 @endphp
-                <div class="relative bg-card border rounded-2xl p-5 flex flex-col gap-3 h-full
+                <div class="kpi-card relative bg-card border rounded-2xl p-5 flex flex-col gap-3 h-full
                             {{ $card['alert'] ? 'border-amber-500/40' : 'border-border' }}
                             {{ $hasLink ? 'transition-all duration-150 hover:shadow-md hover:border-foreground/25 cursor-pointer' : '' }}">
                     @if($card['alert'])
@@ -186,7 +186,7 @@
                             <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="{{ $card['icon_c'] }}"><path d="{{ $card['icon'] }}"/></svg>
                         </div>
                     </div>
-                    <p class="text-2xl sm:text-3xl font-black {{ $card['color'] }} leading-none tabular-nums tracking-tight">{{ $card['value'] }}</p>
+                    <p class="kpi-value font-black {{ $card['color'] }} leading-none tabular-nums tracking-tight">{{ $card['value'] }}</p>
                     @if($card['delta'])
                         <div class="flex items-center gap-2">
                             @if($card['delta']['type'] === 'up')
@@ -577,7 +577,7 @@
                         View All →
                     </a>
                 </div>
-                @include('admin.partials.widget-controls', ['id' => 'recent_orders', 'configurable' => false])
+                @include('admin.partials.widget-controls', ['id' => 'recent_orders', 'configurable' => false, 'lockFull' => true])
             </div>
             <div class="overflow-x-auto">
                 <table class="w-full text-left">
@@ -729,13 +729,13 @@
                     <p class="text-[9px] font-black text-muted-foreground uppercase tracking-widest">Store Snapshot</p>
                     @include('admin.partials.widget-controls', ['id' => 'sidebar_snapshot', 'configurable' => false])
                 </div>
-                <div class="grid grid-cols-2 gap-3">
-                    <div>
-                        <p class="text-2xl font-black tabular-nums leading-none">{{ number_format($stats['total_users']) }}</p>
+                <div class="snap-grid">
+                    <div class="snap-cell">
+                        <p class="snap-value font-black tabular-nums leading-none">{{ number_format($stats['total_users']) }}</p>
                         <p class="text-[9px] font-bold text-muted-foreground uppercase tracking-widest mt-1">Total Users</p>
                     </div>
-                    <div>
-                        <p class="text-2xl font-black tabular-nums leading-none">{{ number_format($stats['total_products']) }}</p>
+                    <div class="snap-cell">
+                        <p class="snap-value font-black tabular-nums leading-none">{{ number_format($stats['total_products']) }}</p>
                         <p class="text-[9px] font-bold text-muted-foreground uppercase tracking-widest mt-1">Active Products</p>
                     </div>
                 </div>
@@ -838,6 +838,31 @@
 </div>{{-- end space-y-8 / dashboardManager --}}
 
 <style>
+    /* ── Container-relative sizing ──────────────────────────────────────
+       Widgets can be resized to ⅓ / ⅔ / full width, so their content must
+       size off the WIDGET's own width — not the viewport. Auto-fit grids
+       reflow to the available width, and container-query units (cqi) keep
+       numbers readable at any size instead of getting cut or oversized. */
+
+    /* KPI cards: fit as many ~240px cards as the widget width allows. */
+    .kpi-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 1rem;
+    }
+    .kpi-card { container-type: inline-size; }
+    /* Scales 1.25rem → 1.875rem with the card's own width; never overflows. */
+    .kpi-value { font-size: clamp(1.25rem, 8cqi, 1.875rem); line-height: 1; }
+
+    /* Store snapshot: two stats that stack when the widget gets narrow. */
+    .snap-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+        gap: 0.75rem;
+    }
+    .snap-cell { container-type: inline-size; }
+    .snap-value { font-size: clamp(1.125rem, 11cqi, 1.5rem); line-height: 1; }
+
     /* Reorder mode — visual affordance on draggable widgets */
     #dashboard-grid.reorder-active > [data-widget-id] {
         cursor: move;
@@ -1134,11 +1159,16 @@ function dashboardManager() {
         top_products:      { visible: true, config: { type: 'hbar',     span: 1, topN: 5 } },
         category_revenue:  { visible: true, config: { type: 'hbar',     span: 1 } },
         user_growth:       { visible: true, config: { type: 'line',     span: 1, color: 'violet', fill: true, tension: true } },
-        recent_orders:     { visible: true, config: { span: 2 } },
+        recent_orders:     { visible: true, config: { span: 3 } },
         sidebar_attention: { visible: true, config: { span: 1 } },
         sidebar_quicknav:  { visible: true, config: { span: 1 } },
         sidebar_snapshot:  { visible: true, config: { span: 1 } },
     };
+
+    // Widgets that only work at full width (e.g. wide data tables that would be
+    // cut/cramped at ⅓ or ⅔). Their width is locked to full regardless of any
+    // previously-saved preference.
+    const FULL_ONLY = ['recent_orders'];
 
     const CATALOG = [
         { id: 'kpi_cards',         name: 'KPI Overview',    desc: 'Key performance indicators',     iconPath: 'M3 3v18h18M7 16l4-4 4 4 4-8' },
@@ -1249,12 +1279,18 @@ function dashboardManager() {
         },
 
         // ── Widget width (column span: 1 = ⅓, 2 = ⅔, 3 = full) ──────────
+        isFullOnly(id) {
+            return FULL_ONLY.includes(id);
+        },
+
         getWidgetSpan(id) {
+            if (this.isFullOnly(id)) return 3;
             return this.widgets[id]?.config?.span ?? 1;
         },
 
         setWidgetSpan(id, n) {
             if (!this.widgets[id]) return;
+            if (this.isFullOnly(id)) n = 3;            // ignore narrow widths
             if (!this.widgets[id].config) this.widgets[id].config = {};
             this.widgets[id].config.span = n;
             this.save();
