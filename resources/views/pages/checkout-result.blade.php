@@ -6,7 +6,7 @@
             csrfToken: '{{ csrf_token() }}',
             pollInterval: null,
             init() { if (this.orderStatus === 'pending') { this.pollInterval = setInterval(() => this.checkStatus(), 10000); } },
-            async checkStatus() { try { const r = await fetch('/checkout/status/{{ $order->id }}', { headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' } }); if (r.ok) { const d = await r.json(); if (d.status !== 'pending') { clearInterval(this.pollInterval); window.location.reload(); } } } catch(e) {} },
+            async checkStatus() { try { const r = await fetch('/checkout/verify/{{ $order->id }}', { method: 'POST', headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest', 'X-CSRF-TOKEN': this.csrfToken } }); if (r.ok) { const d = await r.json(); if (d.status !== 'pending') { clearInterval(this.pollInterval); window.location.reload(); } } } catch(e) {} },
             async resumePayment() {
                 if (this.resuming) return; this.resuming = true;
                 try {
