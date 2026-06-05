@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use App\Services\ReferralService;
+use App\Support\ReferralLink;
 use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -124,6 +125,12 @@ class AuthController extends Controller
         if (Auth::attempt($creds)) {
             $request->session()->regenerate();
 
+            // Claim a referral link the user opened before logging in. Flashed so
+            // the toast appears on the page they land on after the redirect.
+            if ($feedback = ReferralLink::consumePending(app(ReferralService::class), Auth::user())) {
+                session()->flash($feedback[0], $feedback[1]);
+            }
+
             $redirect = Auth::user()->isAdmin()
                 ? route('admin.dashboard')
                 : route('home');
@@ -177,6 +184,12 @@ class AuthController extends Controller
 
             $referralCode = trim((string) ($creds['referral_code'] ?? ''));
             unset($creds['referral_code']);
+
+            // Fall back to a code stashed when they opened a share link as a guest.
+            if ($referralCode === '') {
+                $referralCode = trim((string) session(ReferralLink::SESSION_KEY, ''));
+            }
+            session()->forget(ReferralLink::SESSION_KEY);
 
             $creds['referral_code'] = strtoupper(Str::random(8));
 
@@ -322,6 +335,11 @@ class AuthController extends Controller
             }
 
             Auth::login($user, remember: true);
+
+            // Claim a referral link opened before this Google sign-in.
+            if ($feedback = ReferralLink::consumePending(app(ReferralService::class), $user)) {
+                session()->flash($feedback[0], $feedback[1]);
+            }
 
             return redirect()->intended(
                 $user->isAdmin() ? route('admin.dashboard') : route('home')

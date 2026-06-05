@@ -13,6 +13,11 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        // Auto-claim referral share links (?ref=CODE) on any page navigation.
+        $middleware->web(append: [
+            \App\Http\Middleware\HandleReferralLink::class,
+        ]);
+
         $middleware->redirectGuestsTo(function (Request $request): string {
             return route('home', [
                 'auth' => 'login',
