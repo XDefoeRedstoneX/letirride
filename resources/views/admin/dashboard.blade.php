@@ -306,7 +306,7 @@
                 </div>
             </div>
             <div class="p-6 pb-4">
-                <canvas id="revenueChart" class="max-h-[220px]"></canvas>
+                <div class="relative h-[220px]"><canvas id="revenueChart"></canvas></div>
             </div>
         </div>
 
@@ -436,7 +436,7 @@
                 </div>
             </div>
             @if(count($supportingData['topProducts']) > 0)
-                <div class="p-5"><canvas id="topProductsChart" class="max-h-[200px]"></canvas></div>
+                <div class="p-5"><div class="relative h-[200px]"><canvas id="topProductsChart"></canvas></div></div>
             @else
                 <div class="flex flex-col items-center justify-center py-12 text-center px-6">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="text-muted-foreground/30 mb-3"><path d="M3 3v18h18"/><path d="M7 16l4-8 4 4 4-8"/></svg>
@@ -557,7 +557,7 @@
                     </button>
                 </div>
             </div>
-            <div class="p-5"><canvas id="userGrowthChart" class="max-h-[200px]"></canvas></div>
+            <div class="p-5"><div class="relative h-[200px]"><canvas id="userGrowthChart"></canvas></div></div>
         </div>
 
     {{-- RECENT ORDERS --}}

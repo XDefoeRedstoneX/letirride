@@ -4760,7 +4760,6 @@ namespace App\Models {
      * @property \Illuminate\Support\Carbon|null $created_at
      * @property boolean $is_active
      * @property string|null $img
-     * @property integer|null $points_amount
      * @property int|null $discount_type_id
      * @property string $reward_type
      * @property integer $point_cost
@@ -4776,7 +4775,6 @@ namespace App\Models {
      * @method static \Illuminate\Database\Eloquent\Builder<PointShopItem>|PointShopItem wherePointCost($value)
      * @method static \Illuminate\Database\Eloquent\Builder<PointShopItem>|PointShopItem whereRewardType($value)
      * @method static \Illuminate\Database\Eloquent\Builder<PointShopItem>|PointShopItem whereDiscountTypeId($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<PointShopItem>|PointShopItem wherePointsAmount($value)
      * @method static \Illuminate\Database\Eloquent\Builder<PointShopItem>|PointShopItem whereImg($value)
      * @method static \Illuminate\Database\Eloquent\Builder<PointShopItem>|PointShopItem whereIsActive($value)
      * @method static \Illuminate\Database\Eloquent\Builder<PointShopItem>|PointShopItem whereCreatedAt($value)
