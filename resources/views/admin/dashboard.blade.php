@@ -1294,7 +1294,24 @@ function dashboardManager() {
             if (!this.widgets[id].config) this.widgets[id].config = {};
             this.widgets[id].config.span = n;
             this.save();
-            // Charts auto-resize via Chart.js ResizeObserver when the container width changes
+            // Changing one widget's span reflows the whole grid (grid-flow-dense),
+            // so every chart may have a new width. Chart.js's own ResizeObserver
+            // doesn't reliably catch a CSS class swap, so resize them explicitly
+            // once the new layout has settled.
+            this.resizeCharts();
+        },
+
+        // Force every Chart.js instance to re-fit its (possibly new) container.
+        resizeCharts() {
+            const doResize = () => {
+                Object.values(window._dashCharts || {}).forEach(c => {
+                    try { c.resize(); } catch (e) { /* chart torn down */ }
+                });
+            };
+            // rAF catches the immediate reflow; the timeouts cover any late layout.
+            this.$nextTick(() => requestAnimationFrame(doResize));
+            setTimeout(doResize, 120);
+            setTimeout(doResize, 320);
         },
 
         spanClass(id) {
@@ -1326,11 +1343,13 @@ function dashboardManager() {
             if (this.widgets[id]) this.widgets[id].visible = false;
             this.configOpen[id] = false;
             this.save();
+            this.resizeCharts();   // grid reflows — refit remaining charts
         },
 
         restoreWidget(id) {
             if (this.widgets[id]) this.widgets[id].visible = true;
             this.save();
+            this.resizeCharts();   // grid reflows — refit charts
         },
 
         openChangeWidget(id) {
@@ -1352,6 +1371,7 @@ function dashboardManager() {
             this.widgets[newId].visible             = true;
             this.save();
             this.changeTarget = null;
+            this.resizeCharts();   // grid reflows — refit charts
         },
 
         resetLayout() {

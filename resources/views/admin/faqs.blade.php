@@ -11,12 +11,6 @@
     openDelete(f) { this.faq = f; this.showDeleteModal = true; }
 }">
 
-    @if(session('success'))
-        <div class="px-3 py-2 bg-green-500/10 text-green-500 rounded-xl text-[10px] font-black uppercase tracking-widest">
-            {{ session('success') }}
-        </div>
-    @endif
-
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
             <h1 class="text-2xl sm:text-3xl font-black tracking-tighter uppercase">FAQ <span class="text-primary">Management</span></h1>

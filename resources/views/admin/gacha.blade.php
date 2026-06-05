@@ -39,10 +39,6 @@
         </div>
     </div>
 
-    @if (session('success'))
-        <div class="bg-green-500/10 border border-green-500/40 text-green-400 px-4 py-3 rounded-xl text-xs font-bold">{{ session('success') }}</div>
-    @endif
-
     {{-- Rarity breakdown --}}
     <div class="bg-card border border-border rounded-2xl overflow-hidden">
         <div class="px-6 py-4 border-b border-border flex items-center justify-between">

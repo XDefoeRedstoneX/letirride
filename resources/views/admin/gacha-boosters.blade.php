@@ -28,9 +28,6 @@
         </button>
     </div>
 
-    @if (session('success'))
-        <div class="bg-green-500/10 border border-green-500/40 text-green-400 px-4 py-3 rounded-xl text-xs font-bold">{{ session('success') }}</div>
-    @endif
 
     <div class="bg-card border border-border rounded-2xl overflow-hidden">
         <div class="px-6 py-4 border-b border-border">
@@ -88,8 +85,8 @@
     </div>
 
     <!-- Add Modal -->
-    <div x-show="showAddModal" @click="showAddModal = false" class="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/20 backdrop-blur-md" style="display: none;">
-        <div @click.away="showAddModal = false" class="bg-white dark:bg-[#0f172a] border border-border rounded-3xl shadow-2xl w-full max-w-2xl">
+    <div x-show="showAddModal" @click.self="showAddModal = false" class="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/20 backdrop-blur-md" style="display: none;">
+        <div class="bg-white dark:bg-[#0f172a] border border-border rounded-3xl shadow-2xl w-full max-w-2xl">
             <div class="p-6 sm:p-8" style="display:flex;flex-direction:column;gap:12px;">
                 <div class="modal-header">
                     <div>
@@ -111,8 +108,8 @@
     </div>
 
     <!-- Edit Modal -->
-    <div x-show="showEditModal" @click="showEditModal = false" class="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/20 backdrop-blur-md" style="display: none;">
-        <div @click.away="showEditModal = false" class="bg-white dark:bg-[#0f172a] border border-border rounded-3xl shadow-2xl w-full max-w-2xl">
+    <div x-show="showEditModal" @click.self="showEditModal = false" class="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/20 backdrop-blur-md" style="display: none;">
+        <div class="bg-white dark:bg-[#0f172a] border border-border rounded-3xl shadow-2xl w-full max-w-2xl">
             <div class="p-6 sm:p-8" style="display:flex;flex-direction:column;gap:12px;">
                 <div class="modal-header">
                     <div>
@@ -173,8 +170,8 @@
     </div>
 
     <!-- Delete Modal -->
-    <div x-show="showDeleteModal" @click="showDeleteModal = false" class="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/20 backdrop-blur-md" style="display: none;">
-        <div @click.away="showDeleteModal = false" class="bg-white dark:bg-[#0f172a] border border-border rounded-3xl shadow-2xl w-full max-w-2xl">
+    <div x-show="showDeleteModal" @click.self="showDeleteModal = false" class="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/20 backdrop-blur-md" style="display: none;">
+        <div class="bg-white dark:bg-[#0f172a] border border-border rounded-3xl shadow-2xl w-full max-w-2xl">
             <div class="p-6 sm:p-8" style="display:flex;flex-direction:column;gap:12px;">
                 <div class="modal-header">
                     <div>
