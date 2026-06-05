@@ -17,7 +17,7 @@ class DiscountTypeController extends Controller
         $discounts = DiscountType::with(['targetCategory', 'targetSubcategory'])
             ->withCount(['gachaPools', 'pointShopItems'])
             ->orderBy('id')
-            ->get();
+            ->paginate(20);
 
         return view('admin.discount-types', [
             'discounts' => $discounts,

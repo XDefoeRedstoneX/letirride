@@ -52,7 +52,7 @@
 
     <div class="bg-card border border-border rounded-2xl overflow-hidden">
         <div class="px-6 py-4 border-b border-border flex items-center justify-between">
-            <h3 class="text-sm font-black uppercase tracking-widest">Tiers ({{ $tiers->count() }})</h3>
+            <h3 class="text-sm font-black uppercase tracking-widest">Tiers ({{ $tiers->total() }})</h3>
             <p class="text-[10px] text-muted-foreground font-bold uppercase tracking-widest">Lower threshold = unlocks first</p>
         </div>
         <div class="overflow-x-auto">
@@ -98,6 +98,10 @@
                 </tbody>
             </table>
         </div>
+    </div>
+
+    <div class="flex justify-center">
+        {{ $tiers->links() }}
     </div>
 
     {{-- Add Modal --}}

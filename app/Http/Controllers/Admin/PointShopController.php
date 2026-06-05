@@ -17,7 +17,7 @@ class PointShopController extends Controller
         $items = PointShopItem::with('discountType')
             ->withCount('purchases')
             ->orderBy('point_cost')
-            ->get();
+            ->paginate(20);
 
         return view('admin.point-shop', [
             'items' => $items,

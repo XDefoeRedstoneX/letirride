@@ -93,6 +93,10 @@
         </div>
     </div>
 
+    <div class="flex justify-center">
+        {{ $items->links() }}
+    </div>
+
     {{-- Add Modal --}}
     <div x-show="showAddModal" @click.self="showAddModal = false" class="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/20 backdrop-blur-md" style="display:none;">
         <div class="bg-white dark:bg-[#0f172a] border border-border rounded-3xl shadow-2xl w-full max-w-2xl">

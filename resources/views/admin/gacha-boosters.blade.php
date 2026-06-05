@@ -37,7 +37,7 @@
             <h3 class="text-sm font-black uppercase tracking-widest flex items-center gap-2">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8Z"/></svg>
                 Boosters
-                <span class="text-[10px] text-muted-foreground font-bold">({{ $boosters->count() }} total)</span>
+                <span class="text-[10px] text-muted-foreground font-bold">({{ $boosters->total() }} total)</span>
             </h3>
         </div>
         <div class="overflow-x-auto">
@@ -85,6 +85,10 @@
                 </tbody>
             </table>
         </div>
+    </div>
+
+    <div class="flex justify-center">
+        {{ $boosters->links() }}
     </div>
 
     <!-- Add Modal -->

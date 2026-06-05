@@ -18,7 +18,7 @@ class ReferralTierController extends Controller
     {
         $tiers = ReferralTier::with('discountType')
             ->orderBy('threshold')
-            ->get();
+            ->paginate(20);
 
         return view('admin.referral-tiers', [
             'tiers' => $tiers,
