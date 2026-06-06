@@ -237,7 +237,7 @@
                             </h2>
                         </div>
 
-                        <div class="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-5 gap-1 sm:gap-4 md:gap-6 pb-8">
+                        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4 md:gap-6 pb-8">
                                 <template x-for="product in group.products" :key="product.id">
                                     <div class="product-card px-border-card"
                                          :class="!product.in_stock ? 'is-out-of-stock' : ''"
