@@ -6,9 +6,17 @@
                  x-init="setTimeout(() => show = true, 50)">
 
                 {{-- Header --}}
-                <div>
-                    <h1 class="px-heading">Point <span class="gold">Shop</span></h1>
-                    <p class="px-subheading">EXCHANGE YOUR HARD-EARNED POINTS FOR EXCLUSIVE REWARDS</p>
+                <div class="flex items-start justify-between gap-4 flex-wrap">
+                    <div>
+                        <h1 class="px-heading">Point <span class="gold">Shop</span></h1>
+                        <p class="px-subheading">EXCHANGE YOUR HARD-EARNED POINTS FOR EXCLUSIVE REWARDS</p>
+                    </div>
+
+                    <a href="{{ route('points.history') }}"
+                       class="px-btn-ghost"
+                       style="padding:10px 16px;font-size:6.5px;white-space:nowrap;">
+                        Points History
+                    </a>
                 </div>
                 <div class="px-divider"><div class="px-divider-dot"></div><div class="px-divider-line"></div><div class="px-divider-dot"></div></div>
 

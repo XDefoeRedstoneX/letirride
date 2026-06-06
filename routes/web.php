@@ -52,6 +52,12 @@ Route::get('/point-shop', [PointController::class, 'index'])->name('point-shop')
 Route::get('/gacha', [GachaController::class, 'showGacha'])->name('gacha');
 Route::get('/favorites', [FavoriteController::class, 'showFavorites'])->name('favorites');
 
+// Points History (user) — auth required
+Route::middleware('auth')->group(function () {
+    Route::get('/points/history', [\App\Http\Controllers\PointsHistoryController::class, 'index'])
+        ->name('points.history');
+});
+
 // Midtrans webhooks (no auth — Midtrans calls these server-to-server)
 Route::post('/midtrans/callback', [CheckoutController::class, 'callback'])->name('midtrans.callback');
 Route::post('/gacha/pay/callback', [GachaPaymentController::class, 'callback'])->name('gacha.pay.callback');
@@ -179,6 +185,10 @@ Route::prefix('admin')
         Route::post('/point-shop', [AdminPointShopController::class, 'store'])->name('admin.point-shop.store');
         Route::patch('/point-shop/{pointShopItem}', [AdminPointShopController::class, 'update'])->name('admin.point-shop.update');
         Route::delete('/point-shop/{pointShopItem}', [AdminPointShopController::class, 'destroy'])->name('admin.point-shop.destroy');
+
+        // Points History (admin) — all users
+        Route::get('/points/history', [\App\Http\Controllers\Admin\PointsHistoryController::class, 'index'])
+            ->name('admin.points.history');
 
         // FAQs (DB-backed CRUD)
         Route::get('/faqs', [AdminFaqController::class, 'index'])->name('admin.faqs');
