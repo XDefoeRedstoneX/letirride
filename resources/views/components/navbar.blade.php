@@ -67,9 +67,9 @@
             <div style="display: flex; align-items: center; gap: 6px; flex-shrink: 0;">
                 
                 {{-- Theme Toggle (Available for all) --}}
-                <button @click="toggleTheme()" style="width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; background: var(--dark-card2); border: 2px solid var(--dark-line); color: var(--text-dim); cursor: pointer; transition: all 0.15s;"
+                <button @click="toggleTheme()" style="width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; background: var(--nav-btn-bg); border: 2px solid var(--nav-btn-border); color: var(--nav-btn-text); cursor: pointer; transition: all 0.15s;"
                         onmouseover="this.style.borderColor='var(--gold)';this.style.color='var(--gold)';"
-                        onmouseout="this.style.borderColor='var(--dark-line)';this.style.color='var(--text-dim)';">
+                        onmouseout="this.style.borderColor='var(--nav-btn-border)';this.style.color='var(--nav-btn-text)';">
                     <svg x-show="theme === 'dark'" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="square"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>
                     <svg x-show="theme === 'light'" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="square"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
                 </button>
@@ -95,32 +95,32 @@
                     </div>
 
                     {{-- Cart --}}
-                    <a href="{{ route('cart') }}" style="position: relative; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; background: var(--dark-card2, #0c1d38); border: 2px solid var(--dark-line, #122044); color: var(--text-dim); text-decoration: none; transition: all 0.15s;"
+                    <a href="{{ route('cart') }}" style="position: relative; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; background: var(--nav-btn-bg); border: 2px solid var(--nav-btn-border); color: var(--nav-btn-text); text-decoration: none; transition: all 0.15s;"
                        onmouseover="this.style.borderColor='var(--gold)';this.style.color='var(--gold)';"
-                       onmouseout="this.style.borderColor='var(--dark-line)';this.style.color='var(--text-dim)';">
+                       onmouseout="this.style.borderColor='var(--nav-btn-border)';this.style.color='var(--nav-btn-text)';">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="square"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.56-7.43H5.94"/></svg>
                         <span x-show="cartCount > 0" x-text="cartCount"
-                              style="position: absolute; top: -6px; right: -6px; min-width: 18px; height: 18px; background: #ef4444; color: white; font-family: var(--px); font-size: 7px; display: flex; align-items: center; justify-content: center; border: 2px solid var(--dark-bg);"></span>
+                              style="position: absolute; top: -6px; right: -6px; min-width: 18px; height: 18px; background: #ef4444; color: white; font-family: var(--px); font-size: 7px; display: flex; align-items: center; justify-content: center; border: 2px solid var(--nav-bg);"></span>
                     </a>
                     @endunless
 
                     {{-- User Dropdown --}}
                     <div style="position: relative;" x-data="{ open: false }">
-                        <button @click="open = !open" class="navbar-user-chip {{ $hasNewReferralUnlocks ? 'has-referral-pulse' : '' }}" style="display: flex; align-items: center; gap: 8px; padding: 4px 8px; background: var(--dark-card2); border: 2px solid var(--dark-line); cursor: pointer; transition: all 0.15s; position: relative;"
+                        <button @click="open = !open" class="navbar-user-chip {{ $hasNewReferralUnlocks ? 'has-referral-pulse' : '' }}" style="display: flex; align-items: center; gap: 8px; padding: 4px 8px; background: var(--nav-btn-bg); border: 2px solid var(--nav-btn-border); cursor: pointer; transition: all 0.15s; position: relative;"
                                 onmouseover="this.style.borderColor='var(--gold)';"
-                                onmouseout="this.style.borderColor='var(--dark-line)';">
+                                onmouseout="this.style.borderColor='var(--nav-btn-border)';">
                             <div style="width: 28px; height: 28px; overflow: hidden;">
                                 <img src="{{ Auth::user()->avatar_url }}" style="width: 100%; height: 100%; object-fit: cover;" alt="Avatar">
                             </div>
-                            <span class="hidden lg:block" style="font-family: var(--px); font-size: 8px; color: #e8f0ff; letter-spacing: 0.08em;">{{ Auth::user()->name }}</span>
-                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="square" style="color: var(--text-dim); transition: transform 0.2s;" :style="open ? 'transform: rotate(180deg)' : ''"><path d="m6 9 6 6 6-6"/></svg>
+                            <span class="hidden lg:block" style="font-family: var(--px); font-size: 8px; color: var(--nav-text); letter-spacing: 0.08em;">{{ Auth::user()->name }}</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="square" style="color: var(--nav-btn-text); transition: transform 0.2s;" :style="open ? 'transform: rotate(180deg)' : ''"><path d="m6 9 6 6 6-6"/></svg>
                             @if ($hasNewReferralUnlocks)
                                 <span class="navbar-referral-pulse" aria-label="New referral rewards unlocked"></span>
                             @endif
                         </button>
 
                         <div x-show="open" @click.away="open = false"
-                             style="position: absolute; right: 0; margin-top: 8px; width: 220px; background: var(--dark-card, #08152a); border: 3px solid var(--gold, #f59e0b); box-shadow: 4px 4px 0 var(--gold-dim, #92650a); z-index: 100; padding: 6px 0;"
+                             style="position: absolute; right: 0; margin-top: 8px; width: 220px; background: var(--nav-menu-bg); border: 3px solid var(--gold, #f59e0b); box-shadow: 4px 4px 0 var(--gold-dim, #92650a); z-index: 100; padding: 6px 0;"
                              x-transition:enter="transition ease-out duration-200"
                              x-transition:enter-start="opacity-0 scale-95"
                              x-transition:enter-end="opacity-100 scale-100">
@@ -134,9 +134,9 @@
                                 ];
                             @endphp
                             @foreach($menuItems as $mi)
-                                <a href="{{ route($mi['route']) }}" style="display: flex; align-items: center; gap: 10px; padding: 10px 16px; font-family: var(--px); font-size: 7px; letter-spacing: 0.08em; color: #e8f0ff; text-decoration: none; transition: all 0.1s;"
-                                   onmouseover="this.style.background='var(--dark-card2)';this.style.color='var(--gold)';"
-                                   onmouseout="this.style.background='transparent';this.style.color='#e8f0ff';">
+                                <a href="{{ route($mi['route']) }}" style="display: flex; align-items: center; gap: 10px; padding: 10px 16px; font-family: var(--px); font-size: 7px; letter-spacing: 0.08em; color: var(--nav-text); text-decoration: none; transition: all 0.1s;"
+                                   onmouseover="this.style.background='var(--nav-menu-hover)';this.style.color='var(--gold)';"
+                                   onmouseout="this.style.background='transparent';this.style.color='var(--nav-text)';">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="square">{!! $mi['icon'] !!}</svg>
                                     <span style="flex:1;">{{ $mi['label'] }}</span>
                                     @if (! empty($mi['pulse']))
@@ -147,13 +147,13 @@
                             @endunless
                             @if(Auth::user()->isAdmin())
                                 <a href="{{ route('admin.dashboard') }}" style="display: flex; align-items: center; gap: 10px; padding: 10px 16px; font-family: var(--px); font-size: 7px; letter-spacing: 0.08em; color: var(--gold); text-decoration: none; transition: all 0.1s;"
-                                   onmouseover="this.style.background='var(--dark-card2)';"
+                                   onmouseover="this.style.background='var(--nav-menu-hover)';"
                                    onmouseout="this.style.background='transparent';">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="square"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg>
                                     ADMIN PANEL
                                 </a>
                             @endif
-                            <div style="height: 2px; background: var(--dark-line); margin: 4px 0;"></div>
+                            <div style="height: 2px; background: var(--nav-btn-border); margin: 4px 0;"></div>
                             <form method="POST" action="{{ route('logout') }}">
                                 @csrf
                                 <button type="submit" style="display: flex; align-items: center; gap: 10px; padding: 10px 16px; font-family: var(--px); font-size: 7px; letter-spacing: 0.08em; color: #ef4444; cursor: pointer; background: none; border: none; width: 100%; text-align: left; transition: all 0.1s;"
@@ -178,7 +178,7 @@
                 @endauth
 
                 {{-- Mobile Menu Toggle --}}
-                <button @click="mobileMenuOpen = !mobileMenuOpen" class="md:hidden" style="padding: 8px; background: var(--dark-card2); border: 2px solid var(--dark-line); color: var(--text-dim); cursor: pointer;">
+                <button @click="mobileMenuOpen = !mobileMenuOpen" class="md:hidden" style="padding: 8px; background: var(--nav-btn-bg); border: 2px solid var(--nav-btn-border); color: var(--nav-btn-text); cursor: pointer;">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="square"><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></svg>
                 </button>
             </div>
@@ -186,7 +186,7 @@
     </div>
 
     {{-- Mobile Menu --}}
-    <div x-show="mobileMenuOpen" class="md:hidden" style="border-top: 2px solid var(--dark-line, #122044); background: var(--dark-bg, #050c1a);">
+    <div x-show="mobileMenuOpen" class="md:hidden" style="border-top: 2px solid var(--nav-btn-border); background: var(--nav-bg);">
         <div style="padding: 8px;">
             @unless(Auth::check() && Auth::user()->isAdmin())
             @php

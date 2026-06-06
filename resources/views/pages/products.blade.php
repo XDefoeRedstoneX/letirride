@@ -45,7 +45,19 @@
              imgs: window._ridlyNews || [],
              i: 0,
              interval: null,
+             touchStartX: 0,
              init() {
+                 this.startSlide();
+             },
+             handleTouchStart(e) {
+                 this.stopSlide();
+                 this.touchStartX = e.changedTouches[0].screenX;
+             },
+             handleTouchEnd(e) {
+                 const dx = e.changedTouches[0].screenX - this.touchStartX;
+                 if (Math.abs(dx) > 40) {
+                     dx < 0 ? this.nextSlide() : this.prevSlide();
+                 }
                  this.startSlide();
              },
              startSlide() {
@@ -71,7 +83,9 @@
              }
          }"
          @mouseenter="stopSlide()"
-         @mouseleave="startSlide()">
+         @mouseleave="startSlide()"
+         @touchstart.passive="handleTouchStart($event)"
+         @touchend.passive="handleTouchEnd($event)">
          
         {{-- Frame border image --}}
         <img src="{{ asset('components/frame/news.png') }}" class="hero-frame-img pixel-render" alt="Hero Frame">
@@ -99,6 +113,15 @@
                 style="image-rendering: pixelated; box-shadow: inset -2px -2px 0 rgba(0,0,0,0.5), inset 2px 2px 0 rgba(255,255,255,0.1), 4px 4px 0 rgba(0,0,0,0.5);">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="square" stroke-linejoin="miter" class="w-4 h-4 md:w-6 md:h-6"><path d="m9 18 6-6-6-6"/></svg>
         </button>
+
+        {{-- Dot indicators (mobile) --}}
+        <div class="hero-dots" x-show="imgs.length > 1">
+            <template x-for="(src, idx) in imgs" :key="'dot' + idx">
+                <button type="button" @click="i = idx"
+                        class="hero-dot" :class="i === idx ? 'is-active' : ''"
+                        :aria-label="'Go to slide ' + (idx + 1)"></button>
+            </template>
+        </div>
     </div>
 </section>
 
@@ -182,7 +205,7 @@
                                           :class="selectedBrand === brand.name ? 'border-primary ring-4 ring-primary/20' : 'border-border'">
 
                                          {{-- Full Frame Thumbnail Area --}}
-                                         <div class="w-full aspect-[4/3] flex items-center justify-center p-1.5 sm:p-4 bg-gradient-to-br from-slate-800 to-slate-950 dark:from-[#0a1020] dark:to-[#040812]">
+                                         <div class="w-full aspect-[4/3] flex items-center justify-center p-1.5 sm:p-4 bg-gradient-to-br from-white to-slate-100 dark:from-[#0a1020] dark:to-[#040812]">
                                              <template x-if="brand.image">
                                                 <img :src="brand.image" draggable="false" class="w-3/4 h-3/4 object-contain drop-shadow-xl transition-transform duration-500 group-hover:scale-110 pixel-render">
                                              </template>
@@ -215,7 +238,7 @@
                             </h2>
                         </div>
 
-                        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4 md:gap-6 pb-8">
+                        <div class="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-5 gap-2 sm:gap-4 md:gap-6 pb-8">
                                 <template x-for="product in group.products" :key="product.id">
                                     <div class="product-card px-border-card"
                                          :class="!product.in_stock ? 'is-out-of-stock' : ''"
@@ -258,13 +281,13 @@
                                                           x-text="'Rp ' + new Intl.NumberFormat('id-ID').format(product.price)">
                                                     </span>
                                                     <template x-if="product.product_type === 'voucher' && product.in_stock">
-                                                        <span class="stock-line" :class="product.stock <= 3 ? 'low' : 'ok'" x-text="product.stock + ' IN STOCK'"></span>
+                                                        <span class="stock-line card-stock-line" :class="product.stock <= 3 ? 'low' : 'ok'" x-text="product.stock + ' IN STOCK'"></span>
                                                     </template>
                                                 </div>
                                                 <div class="card-actions" @click.stop>
                                                     <button @click="toggleFavorite(product.id)"
                                                             :class="favorites.includes(product.id) ? 'active' : ''"
-                                                            class="fav-btn"
+                                                            class="fav-btn card-fav-btn"
                                                             title="Favorite">
                                                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
                                                              viewBox="0 0 24 24"

@@ -9,20 +9,20 @@
             </div>
             <div class="px-divider"><div class="px-divider-dot"></div><div class="px-divider-line"></div><div class="px-divider-dot"></div></div>
 
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <div class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-6">
                 <template x-for="product in favorites" :key="product.id">
-                    <div class="px-card" style="padding:20px;display:flex;flex-direction:column;gap:14px;">
-                        <div style="aspect-ratio:1;background:var(--dark-card2);border:2px solid var(--dark-line);display:flex;align-items:center;justify-content:center;padding:24px;position:relative;">
+                    <div class="px-card fav-card" style="padding:20px;display:flex;flex-direction:column;gap:14px;">
+                        <div class="fav-img-box" style="aspect-ratio:1;background:var(--dark-card2);border:2px solid var(--dark-line);display:flex;align-items:center;justify-content:center;padding:24px;position:relative;">
                             <img :src="product.image" style="max-width:80px;max-height:80px;width:100%;height:100%;object-fit:contain;image-rendering:pixelated;" />
-                            <span class="px-badge px-badge-gold" style="position:absolute;top:8px;right:8px;" x-text="product.category"></span>
+                            <span class="px-badge px-badge-gold fav-badge" style="position:absolute;top:8px;right:8px;" x-text="product.category"></span>
                         </div>
-                        <div style="display:flex;flex-direction:column;gap:6px;">
-                            <h3 style="font-family:var(--font-sans);font-size:14px;font-weight:800;color:#e8f0ff;" x-text="product.name"></h3>
-                            <p style="font-family:var(--font-sans);font-size:16px;font-weight:800;color:var(--gold);" x-text="formatRp(product.price)"></p>
+                        <div class="fav-info" style="display:flex;flex-direction:column;gap:6px;">
+                            <h3 class="fav-name" style="font-family:var(--font-sans);font-size:14px;font-weight:800;color:#e8f0ff;" x-text="product.name"></h3>
+                            <p class="fav-price" style="font-family:var(--font-sans);font-size:16px;font-weight:800;color:var(--gold);" x-text="formatRp(product.price)"></p>
                         </div>
-                        <div style="display:flex;gap:6px;margin-top:auto;">
+                        <div class="fav-actions" style="display:flex;gap:6px;margin-top:auto;">
                             <a :href="'/?buy=' + product.id" class="px-btn-gold" style="flex:1;text-align:center;padding:10px;font-size:6px;text-decoration:none;">BUY</a>
-                            <button @click="removeFavorite(product.id)" :disabled="removing === product.id" class="px-btn-danger" style="padding:10px;font-size:6px;">
+                            <button @click="removeFavorite(product.id)" :disabled="removing === product.id" class="px-btn-danger fav-remove" style="padding:10px;font-size:6px;">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="square"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
                             </button>
                         </div>

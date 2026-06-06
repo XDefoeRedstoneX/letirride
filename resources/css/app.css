@@ -101,6 +101,14 @@
   --cyan-dim: rgba(0, 212, 255, 0.15);
   --nav-bg: #ffffff;
   --nav-text: #0f172a;
+  /* Navbar action controls (theme toggle, cart, user chip, hamburger) —
+     theme-aware so they adapt to the white nav in light mode. */
+  --nav-btn-bg: #f1f5f9;
+  --nav-btn-border: #cbd5e1;
+  --nav-btn-text: #475569;
+  /* User dropdown menu surface — white in light mode. */
+  --nav-menu-bg: #ffffff;
+  --nav-menu-hover: #f1f5f9;
   --footer-bg: #ffffff;
   --footer-text: #0f172a;
   --dark-bg: #050c1a;
@@ -240,6 +248,11 @@
 
   --nav-bg: #050c1a;
   --nav-text: #e8f0ff;
+  --nav-btn-bg: #0c1d38;
+  --nav-btn-border: #122044;
+  --nav-btn-text: #5a7aaa;
+  --nav-menu-bg: #08152a;
+  --nav-menu-hover: #0c1d38;
   --footer-bg: #050c1a;
   --footer-text: #5a7aaa;
 
@@ -1473,6 +1486,63 @@ button,
   display: block;
 }
 
+/* Dot indicators — desktop hidden, mobile shown */
+.hero-dots {
+  display: none;
+}
+
+/* ── Mobile hero: drop the pixel frame, go edge-to-edge with dots ── */
+@media (max-width: 767px) {
+  .hero-section {
+    padding: 12px 12px 0;
+  }
+  /* hide the baked-in pixel frame border */
+  .hero-frame-img {
+    display: none;
+  }
+  /* content fills the box as a clean rounded card */
+  .hero-frame-content {
+    inset: 0;
+    border: 2px solid var(--border, #122044);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  /* fill, no letterbox bars */
+  .hero-news-img {
+    object-fit: cover;
+  }
+  /* hide the side arrows (swipe + dots replace them) */
+  .hero-frame-grid > button {
+    display: none !important;
+  }
+  .hero-dots {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 8px;
+    z-index: 45;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+  }
+  .hero-dot {
+    width: 7px;
+    height: 7px;
+    padding: 0;
+    border: none;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.45);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+    transition: all 0.2s ease;
+    cursor: pointer;
+  }
+  .hero-dot.is-active {
+    width: 18px;
+    background: #f59e0b;
+  }
+}
+
 /* ── Page Layout ──────────────────────────────────────────────── */
 .ridly-products {
   background: var(--background);
@@ -1892,14 +1962,14 @@ button,
 
 @media (max-width: 639px) {
   .card-body {
-    padding: 10px 8px;
-    gap: 6px;
+    padding: 6px 4px;
+    gap: 4px;
     text-align: center;
   }
   .card-title {
-    font-size: 12px;
-    min-height: 30px;
-    line-height: 1.25;
+    font-size: 10px;
+    min-height: 26px;
+    line-height: 1.2;
     overflow: hidden;
     text-overflow: ellipsis;
     display: -webkit-box;
@@ -1907,12 +1977,12 @@ button,
     -webkit-box-orient: vertical;
   }
   .price-label {
-    font-size: 8px;
-    margin-bottom: 2px;
-    letter-spacing: 0.08em;
+    font-size: 6px;
+    margin-bottom: 1px;
+    letter-spacing: 0.05em;
   }
   .price-value {
-    font-size: 13px;
+    font-size: 11px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -1921,7 +1991,7 @@ button,
     max-width: 100%;
   }
   .price-original {
-    font-size: 9px;
+    font-size: 7px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -1929,7 +1999,7 @@ button,
   .card-footer {
     flex-direction: column;
     align-items: center;
-    gap: 6px;
+    gap: 4px;
   }
   .card-footer > div:first-child {
     min-width: 0;
@@ -1941,21 +2011,21 @@ button,
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 6px;
+    gap: 4px;
   }
   .buy-btn, .buy-btn-disabled {
-    padding: 7px 4px;
-    font-size: 8px;
+    padding: 5px 2px;
+    font-size: 7px;
     flex: 1;
     text-align: center;
     white-space: nowrap;
     min-width: 0;
   }
   .fav-btn {
-    width: 30px !important;
-    height: 30px !important;
-    min-width: 30px !important;
-    min-height: 30px !important;
+    width: 24px !important;
+    height: 24px !important;
+    min-width: 24px !important;
+    min-height: 24px !important;
     padding: 0;
     flex-shrink: 0;
     display: flex;
@@ -1963,20 +2033,20 @@ button,
     justify-content: center;
   }
   .fav-btn svg {
-    width: 14px;
-    height: 14px;
+    width: 11px;
+    height: 11px;
   }
   .stock-line {
-    font-size: 9px;
+    font-size: 7px;
     font-weight: 800;
   }
   .badge-cat, .badge-topup, .badge-sale {
-    font-size: 6px;
-    padding: 2px 4px;
+    font-size: 5px;
+    padding: 1px 3px;
   }
   .stockout-text {
-    font-size: 9px;
-    padding: 4px 8px;
+    font-size: 8px;
+    padding: 3px 6px;
   }
 }
 
@@ -2296,11 +2366,74 @@ button,
   }
 }
 
+/* Favorites: name color must adapt to theme (was hardcoded near-white,
+   invisible on the white card in light mode) */
+.fav-name {
+  color: var(--foreground) !important;
+}
+
+/* Favorites image box: white in light mode (was a fixed dark color),
+   keep the dark surface in dark mode. */
+.fav-img-box {
+  background: #ffffff !important;
+  border-color: #e2e8f0 !important;
+}
+.dark .fav-img-box {
+  background: var(--dark-card2) !important;
+  border-color: var(--dark-line) !important;
+}
+
+/* ── Favorites card: compact 2-up on mobile ───────────────────── */
+@media (max-width: 639px) {
+  .fav-card {
+    padding: 10px !important;
+    gap: 8px !important;
+  }
+  .fav-img-box {
+    padding: 12px !important;
+  }
+  .fav-badge {
+    font-size: 5px;
+    padding: 1px 3px;
+  }
+  .fav-info {
+    gap: 3px !important;
+  }
+  .fav-name {
+    font-size: 11px !important;
+    line-height: 1.25;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+  }
+  .fav-price {
+    font-size: 12px !important;
+  }
+  .fav-actions {
+    gap: 4px !important;
+  }
+  .fav-actions .px-btn-gold {
+    padding: 7px 4px !important;
+    font-size: 7px !important;
+  }
+  .fav-remove {
+    padding: 7px !important;
+    flex-shrink: 0;
+  }
+  .fav-remove svg {
+    width: 11px;
+    height: 11px;
+  }
+}
+
 /* ── Buy modal: fit small screens ─────────────────────────────── */
 @media (max-width: 639px) {
   .modal-overlay {
     padding: 10px;
-    align-items: flex-start;
+    align-items: center;
   }
   /* thinner pixel border so content has room on narrow screens */
   .modal-overlay .px-frame {
@@ -2308,7 +2441,7 @@ button,
     width: 100% !important;
     max-width: 100% !important;
     max-height: calc(100dvh - 20px);
-    margin: 10px 0 !important;
+    margin: 0 !important;
   }
   .modal-overlay .px-frame-content {
     padding: 14px !important;
@@ -3764,20 +3897,43 @@ button,
 /* ── Mobile product-card overrides (placed last to win source-order
    over the base .price-* / .card-* rules defined earlier) ───────── */
 @media (max-width: 639px) {
-  .product-card .card-body { text-align: center; }
+  .product-card .card-body { text-align: center; padding: 6px 4px; gap: 4px; }
+  .product-card .card-title { font-size: 10px; min-height: 26px; }
   .product-card .card-footer {
     flex-direction: column;
     align-items: center;
-    gap: 6px;
+    gap: 4px;
   }
   .product-card .card-footer > div:first-child { width: 100%; }
-  .product-card .price-label { font-size: 8px; margin-bottom: 2px; }
-  .product-card .price-value { font-size: 13px; }
-  .product-card .price-original { font-size: 9px; }
+  .product-card .price-label { font-size: 6px; margin-bottom: 1px; }
+  .product-card .price-value { font-size: 11px; }
+  .product-card .price-original { font-size: 7px; }
   .product-card .card-actions {
     width: 100%;
     justify-content: center;
-    gap: 6px;
+    gap: 4px;
   }
-  .product-card .stock-line { font-size: 9px; }
+  /* stripped-down mobile card: hide stock line, keep image/name/price/BUY + wishlist */
+  .product-card .card-stock-line { display: none !important; }
+  .product-card .card-actions {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+  }
+  .product-card .buy-btn,
+  .product-card .buy-btn-disabled {
+    flex: 1;
+    padding: 6px 4px;
+    font-size: 8px;
+  }
+  .product-card .card-fav-btn {
+    width: 26px !important;
+    height: 26px !important;
+    min-width: 26px !important;
+    min-height: 26px !important;
+    flex-shrink: 0;
+  }
+  .product-card .card-fav-btn svg { width: 12px; height: 12px; }
 }
