@@ -146,9 +146,12 @@ class CheckoutController extends Controller
         }
 
         try {
+            // Use the post-discount unit price so the Snap popup shows the real
+            // amount and the item_details sum matches gross_amount (Midtrans
+            // rejects a mismatch). Voucher discounts are added as a line below.
             $itemDetails = $cartItems->map(fn (CartItem $item) => [
                 'id' => (string) $item->product_id,
-                'price' => (int) $item->product->price,
+                'price' => (int) $item->product->discountedPrice(),
                 'quantity' => $item->quantity,
                 'name' => substr($item->product->name, 0, 50),
             ])->values()->toArray();
@@ -278,9 +281,9 @@ class CheckoutController extends Controller
             return response()->json(['status' => $order->status]);
         }
 
-        try {
-            $midtransStatus = Transaction::status($order->noinv);
+        $midtransStatus = $this->lookupMidtransStatus($order);
 
+        if ($midtransStatus) {
             $txStatus = $midtransStatus->transaction_status ?? null;
             $fraudStatus = $midtransStatus->fraud_status ?? 'accept';
 
@@ -289,13 +292,38 @@ class CheckoutController extends Controller
             } elseif (in_array($txStatus, ['cancel', 'deny', 'expire'], true)) {
                 $this->failOrder($order);
             }
-        } catch (\Exception $e) {
-            Log::warning('Midtrans verify failed: '.$e->getMessage(), ['order' => $order->noinv]);
         }
 
         $order->refresh();
 
         return response()->json(['status' => $order->status]);
+    }
+
+    /**
+     * Query Midtrans for an order's transaction status. Tries the stored order_id
+     * first, then the bare invoice (without the "::timestamp" suffix) as a
+     * fallback so a charge is still found if the id diverged. Returns the status
+     * object, or null when no transaction exists / the API errored.
+     */
+    private function lookupMidtransStatus(Order $order): ?object
+    {
+        $candidates = array_values(array_unique(array_filter([
+            $order->noinv,
+            Str::contains((string) $order->noinv, '::') ? Str::before((string) $order->noinv, '::') : null,
+        ])));
+
+        foreach ($candidates as $orderId) {
+            try {
+                return Transaction::status($orderId);
+            } catch (\Exception $e) {
+                Log::warning('Midtrans status lookup failed', [
+                    'order_id' => $orderId,
+                    'error' => $e->getMessage(),
+                ]);
+            }
+        }
+
+        return null;
     }
 
     public function pay(Order $order): JsonResponse

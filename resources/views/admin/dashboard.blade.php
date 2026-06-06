@@ -92,13 +92,14 @@
                     <span x-text="reorderMode ? 'Done' : 'Reorder'">Reorder</span>
                 </button>
 
-                {{-- Reset Layout --}}
-                <button @click="resetLayout()"
-                        title="Reset dashboard to default layout"
-                        class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-transparent text-[9px] font-black uppercase tracking-widest text-muted-foreground bg-foreground/5 hover:bg-red-500/10 hover:text-red-500 hover:border-red-500/20 transition-all duration-100">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg>
-                    Reset Layout
+                {{-- Templates --}}
+                <button @click="showTemplates = true"
+                        title="Apply a preset dashboard layout"
+                        class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-transparent text-[9px] font-black uppercase tracking-widest text-muted-foreground bg-foreground/5 hover:bg-primary/10 hover:text-primary hover:border-primary/20 transition-all duration-100">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg>
+                    Templates
                 </button>
+
             </div>
         </div>
     </div>
@@ -110,7 +111,7 @@
     <span class="hidden lg:col-span-1 lg:col-span-2 lg:col-span-3 ring-2 ring-offset-1 ring-primary justify-start justify-end"></span>
     <div id="dashboard-grid"
          :class="reorderMode ? 'reorder-active' : ''"
-         class="grid grid-cols-1 lg:grid-cols-3 gap-6 grid-flow-row-dense items-start">
+         class="grid grid-cols-1 lg:grid-cols-3 gap-6 grid-flow-row-dense" style="grid-auto-rows:1px;">
 
     {{-- KPI CARDS --}}
     <div data-widget-id="kpi_cards" :class="spanClass('kpi_cards')"
@@ -162,13 +163,13 @@
             </div>
         </div>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div class="kpi-grid">
             @foreach($kpiCards as $card)
                 @php
                     $maxBar  = !empty($card['sparkline']) ? max(1, max($card['sparkline'])) : 1;
                     $hasLink = !empty($card['link']);
                 @endphp
-                <div class="relative bg-card border rounded-2xl p-5 flex flex-col gap-3 h-full
+                <div class="kpi-card relative bg-card border rounded-2xl p-5 flex flex-col gap-3 h-full
                             {{ $card['alert'] ? 'border-amber-500/40' : 'border-border' }}
                             {{ $hasLink ? 'transition-all duration-150 hover:shadow-md hover:border-foreground/25 cursor-pointer' : '' }}">
                     @if($card['alert'])
@@ -186,7 +187,7 @@
                             <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="{{ $card['icon_c'] }}"><path d="{{ $card['icon'] }}"/></svg>
                         </div>
                     </div>
-                    <p class="text-2xl sm:text-3xl font-black {{ $card['color'] }} leading-none tabular-nums tracking-tight">{{ $card['value'] }}</p>
+                    <p class="kpi-value font-black {{ $card['color'] }} leading-none tabular-nums tracking-tight">{{ $card['value'] }}</p>
                     @if($card['delta'])
                         <div class="flex items-center gap-2">
                             @if($card['delta']['type'] === 'up')
@@ -577,7 +578,7 @@
                         View All →
                     </a>
                 </div>
-                @include('admin.partials.widget-controls', ['id' => 'recent_orders', 'configurable' => false])
+                @include('admin.partials.widget-controls', ['id' => 'recent_orders', 'configurable' => false, 'lockFull' => true])
             </div>
             <div class="overflow-x-auto">
                 <table class="w-full text-left">
@@ -729,13 +730,13 @@
                     <p class="text-[9px] font-black text-muted-foreground uppercase tracking-widest">Store Snapshot</p>
                     @include('admin.partials.widget-controls', ['id' => 'sidebar_snapshot', 'configurable' => false])
                 </div>
-                <div class="grid grid-cols-2 gap-3">
-                    <div>
-                        <p class="text-2xl font-black tabular-nums leading-none">{{ number_format($stats['total_users']) }}</p>
+                <div class="snap-grid">
+                    <div class="snap-cell">
+                        <p class="snap-value font-black tabular-nums leading-none">{{ number_format($stats['total_users']) }}</p>
                         <p class="text-[9px] font-bold text-muted-foreground uppercase tracking-widest mt-1">Total Users</p>
                     </div>
-                    <div>
-                        <p class="text-2xl font-black tabular-nums leading-none">{{ number_format($stats['total_products']) }}</p>
+                    <div class="snap-cell">
+                        <p class="snap-value font-black tabular-nums leading-none">{{ number_format($stats['total_products']) }}</p>
                         <p class="text-[9px] font-bold text-muted-foreground uppercase tracking-widest mt-1">Active Products</p>
                     </div>
                 </div>
@@ -744,6 +745,142 @@
                     @php $allTimeRevenue = \App\Models\Order::where('status','paid')->sum('total_price_after_discount'); @endphp
                     <p class="text-sm font-black tabular-nums text-green-500">Rp {{ number_format($allTimeRevenue, 0, ',', '.') }}</p>
                 </div>
+            </div>
+
+        {{-- POINT USAGE — Gacha vs Point Shop --}}
+        @php
+            $ptGacha = $supportingData['pointUsage']['gacha'];
+            $ptShop  = $supportingData['pointUsage']['shop'];
+            $ptTotal = max(1, $ptGacha + $ptShop);
+        @endphp
+        <div data-widget-id="point_usage" :class="spanClass('point_usage')" class="bg-card border border-border rounded-2xl overflow-hidden"
+             x-show="widgetVisible('point_usage')"
+             x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0">
+                <div class="px-6 py-4 border-b border-border flex items-center gap-3">
+                    <h3 class="text-sm font-black uppercase tracking-widest flex items-center gap-2 flex-1 min-w-0">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 10 10 0 0 0 0-20"/></svg>
+                        Point Usage
+                    </h3>
+                    <span class="text-[9px] font-bold text-muted-foreground uppercase tracking-widest shrink-0 hidden sm:inline">gacha vs shop</span>
+                    @include('admin.partials.widget-controls', ['id' => 'point_usage', 'configurable' => false])
+                </div>
+                @if($ptGacha + $ptShop > 0)
+                    <div class="p-6 flex flex-col items-center gap-5">
+                        <div class="relative w-44 h-44">
+                            <canvas id="pointUsageChart"></canvas>
+                            <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none select-none">
+                                <p class="text-2xl font-black tabular-nums leading-none">{{ number_format($ptGacha + $ptShop) }}</p>
+                                <p class="text-[8px] font-bold text-muted-foreground uppercase tracking-widest mt-0.5">Points</p>
+                            </div>
+                        </div>
+                        <div class="w-full space-y-2.5">
+                            <div class="flex items-center justify-between gap-2">
+                                <div class="flex items-center gap-2 min-w-0">
+                                    <div class="w-2 h-2 rounded-sm bg-violet-500 shrink-0"></div>
+                                    <span class="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">Gacha</span>
+                                </div>
+                                <div class="flex items-center gap-2 shrink-0">
+                                    <span class="text-xs font-black tabular-nums">{{ number_format($ptGacha) }}</span>
+                                    <span class="text-[8px] font-bold text-muted-foreground w-8 text-right">{{ round(($ptGacha / $ptTotal) * 100) }}%</span>
+                                </div>
+                            </div>
+                            <div class="flex items-center justify-between gap-2">
+                                <div class="flex items-center gap-2 min-w-0">
+                                    <div class="w-2 h-2 rounded-sm bg-amber-500 shrink-0"></div>
+                                    <span class="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">Point Shop</span>
+                                </div>
+                                <div class="flex items-center gap-2 shrink-0">
+                                    <span class="text-xs font-black tabular-nums">{{ number_format($ptShop) }}</span>
+                                    <span class="text-[8px] font-bold text-muted-foreground w-8 text-right">{{ round(($ptShop / $ptTotal) * 100) }}%</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                @else
+                    <div class="flex flex-col items-center justify-center py-12 text-center px-6">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="text-muted-foreground/30 mb-3"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 10 10 0 0 0 0-20"/></svg>
+                        <p class="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">No point activity this period</p>
+                    </div>
+                @endif
+            </div>
+
+        {{-- GACHA ECONOMY --}}
+        @php $ge = $supportingData['gachaEconomy']; @endphp
+        <div data-widget-id="gacha_economy" :class="spanClass('gacha_economy')" class="bg-card border border-border rounded-2xl p-5 space-y-4"
+             x-show="widgetVisible('gacha_economy')"
+             x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0">
+                <div class="flex items-center justify-between gap-2">
+                    <p class="text-[9px] font-black text-muted-foreground uppercase tracking-widest flex items-center gap-1.5">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a10 10 0 0 1 0 20"/><path d="M12 8v4l3 3"/></svg>
+                        Gacha Economy
+                    </p>
+                    @include('admin.partials.widget-controls', ['id' => 'gacha_economy', 'configurable' => false])
+                </div>
+                <div class="snap-grid">
+                    <div class="snap-cell">
+                        <p class="snap-value font-black tabular-nums leading-none text-violet-500">{{ number_format($ge['spins']) }}</p>
+                        <p class="text-[9px] font-bold text-muted-foreground uppercase tracking-widest mt-1">Total Spins</p>
+                    </div>
+                    <div class="snap-cell">
+                        <p class="snap-value font-black tabular-nums leading-none text-amber-500">{{ number_format($ge['burned']) }}</p>
+                        <p class="text-[9px] font-bold text-muted-foreground uppercase tracking-widest mt-1">Points Burned</p>
+                    </div>
+                </div>
+                <div class="snap-grid pt-3 border-t border-border/60">
+                    <div class="snap-cell">
+                        <p class="snap-value font-black tabular-nums leading-none {{ $ge['spins'] > 0 && ($ge['pity_count'] / $ge['spins']) > 0.1 ? 'text-red-500' : 'text-foreground' }}">
+                            {{ $ge['spins'] > 0 ? round(($ge['pity_count'] / $ge['spins']) * 100, 1) . '%' : '—' }}
+                        </p>
+                        <p class="text-[9px] font-bold text-muted-foreground uppercase tracking-widest mt-1">Pity Rate</p>
+                    </div>
+                    <div class="snap-cell">
+                        <p class="text-sm font-black leading-snug truncate" title="{{ $ge['top_prize'] ?? 'N/A' }}">{{ $ge['top_prize'] ? \Illuminate\Support\Str::limit($ge['top_prize'], 16, '…') : '—' }}</p>
+                        <p class="text-[9px] font-bold text-muted-foreground uppercase tracking-widest mt-1">Top Prize</p>
+                    </div>
+                </div>
+            </div>
+
+        {{-- LOW STOCK ALERT --}}
+        <div data-widget-id="low_stock" :class="spanClass('low_stock')" class="bg-card border border-border rounded-2xl overflow-hidden"
+             x-show="widgetVisible('low_stock')"
+             x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0">
+                <div class="px-5 py-3.5 border-b border-border flex items-center justify-between gap-2">
+                    <p class="text-[9px] font-black text-muted-foreground uppercase tracking-widest flex items-center gap-1.5">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5M12 22V12"/></svg>
+                        Low Stock Alert
+                    </p>
+                    @include('admin.partials.widget-controls', ['id' => 'low_stock', 'configurable' => false])
+                </div>
+                @if(count($supportingData['lowStock']) > 0)
+                    <div class="divide-y divide-border">
+                        @foreach($supportingData['lowStock'] as $item)
+                            @php
+                                $keys = $item['available_keys'];
+                                $color = $keys === 0 ? 'text-red-500 bg-red-500/10' : ($keys <= 3 ? 'text-amber-500 bg-amber-500/10' : 'text-yellow-500 bg-yellow-500/10');
+                                $badgeBg = $keys === 0 ? 'bg-red-500' : ($keys <= 3 ? 'bg-amber-500' : 'bg-yellow-500');
+                            @endphp
+                            <div class="flex items-center justify-between px-5 py-3 gap-3">
+                                <div class="flex items-center gap-2.5 min-w-0">
+                                    <div class="w-7 h-7 rounded-lg flex items-center justify-center shrink-0 {{ $color }}">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5M12 22V12"/></svg>
+                                    </div>
+                                    <span class="text-xs font-bold truncate">{{ $item['name'] }}</span>
+                                </div>
+                                <span class="min-w-[20px] h-5 px-1.5 {{ $badgeBg }} text-white text-[9px] font-black rounded-full flex items-center justify-center tabular-nums shrink-0">{{ $keys }}</span>
+                            </div>
+                        @endforeach
+                    </div>
+                    <a href="{{ route('admin.products') }}" class="block px-5 py-3 border-t border-border text-center text-[9px] font-black uppercase tracking-widest text-primary hover:bg-primary/5 transition-colors">
+                        Manage Products →
+                    </a>
+                @else
+                    <div class="flex flex-col items-center justify-center py-12 text-center px-6">
+                        <div class="w-9 h-9 rounded-xl bg-green-500/10 flex items-center justify-center mb-3">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="text-green-500"><path d="M20 6 9 17l-5-5"/></svg>
+                        </div>
+                        <p class="text-[9px] font-bold text-green-500 uppercase tracking-widest">All products stocked</p>
+                    </div>
+                @endif
             </div>
 
     </div>{{-- end #dashboard-grid --}}
@@ -835,9 +972,84 @@
         </div>
     </div>
 
+    {{-- ================================================================ --}}
+    {{-- TEMPLATES MODAL — pick a preset layout                           --}}
+    {{-- ================================================================ --}}
+    <div x-show="showTemplates" x-cloak
+         class="fixed inset-0 z-50 flex items-center justify-center p-4"
+         x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
+         x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0">
+        {{-- Backdrop --}}
+        <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" @click="showTemplates = false"></div>
+        {{-- Panel --}}
+        <div class="relative bg-card border border-border rounded-2xl w-full max-w-2xl shadow-2xl overflow-hidden"
+             x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
+             x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95">
+            <div class="flex items-center justify-between px-6 py-4 border-b border-border">
+                <div>
+                    <h3 class="text-sm font-black uppercase tracking-widest">Layout Templates</h3>
+                    <p class="text-[9px] font-bold text-muted-foreground uppercase tracking-widest mt-0.5">Pick a preset — it replaces your current layout</p>
+                </div>
+                <button @click="showTemplates = false"
+                        class="w-8 h-8 rounded-lg flex items-center justify-center text-muted-foreground hover:bg-foreground/10 hover:text-foreground transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+                </button>
+            </div>
+            <div class="p-5 grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[60vh] overflow-y-auto">
+                <template x-for="tpl in templateList" :key="tpl.key">
+                    <button @click="applyTemplate(tpl.key)"
+                            class="flex items-start gap-3 p-4 rounded-xl border border-border hover:border-primary/40 hover:bg-primary/5 transition-all text-left">
+                        <span class="w-9 h-9 rounded-lg bg-foreground/5 flex items-center justify-center shrink-0">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-muted-foreground"><path :d="tpl.icon"></path></svg>
+                        </span>
+                        <span class="min-w-0 flex-1">
+                            <span class="block text-[10px] font-black uppercase tracking-widest leading-tight" x-text="tpl.name"></span>
+                            <span class="block text-[10px] font-bold text-muted-foreground leading-snug mt-1" x-text="tpl.desc"></span>
+                        </span>
+                    </button>
+                </template>
+            </div>
+        </div>
+    </div>
+
 </div>{{-- end space-y-8 / dashboardManager --}}
 
 <style>
+    /* ── Container-relative sizing ──────────────────────────────────────
+       Widgets can be resized to ⅓ / ⅔ / full width, so their content must
+       size off the WIDGET's own width — not the viewport. Auto-fit grids
+       reflow to the available width, and container-query units (cqi) keep
+       numbers readable at any size instead of getting cut or oversized. */
+
+    /* KPI cards: explicit column counts via container queries on the
+       widget wrapper so rows are always even (no orphaned cards).
+       Full (≈1200px) → 6 in 1 row, ⅔ (≈780px) → 3+3,
+       ⅓ / mobile → 2+2+2. */
+    [data-widget-id="kpi_cards"] { container-type: inline-size; }
+    .kpi-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+    }
+    @container (min-width: 500px) {
+        .kpi-grid { grid-template-columns: repeat(3, 1fr); }
+    }
+    @container (min-width: 920px) {
+        .kpi-grid { grid-template-columns: repeat(6, 1fr); }
+    }
+    .kpi-card { container-type: inline-size; }
+    /* Scales 1.125rem → 1.625rem with the card's own width; never overflows. */
+    .kpi-value { font-size: clamp(1.125rem, 8cqi, 1.625rem); line-height: 1; }
+
+    /* Store snapshot: two stats that stack when the widget gets narrow. */
+    .snap-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+        gap: 0.75rem;
+    }
+    .snap-cell { container-type: inline-size; }
+    .snap-value { font-size: clamp(1.125rem, 11cqi, 1.5rem); line-height: 1; }
+
     /* Reorder mode — visual affordance on draggable widgets */
     #dashboard-grid.reorder-active > [data-widget-id] {
         cursor: move;
@@ -877,6 +1089,7 @@
         status:   @json($chartData['status']),
         products: @json($supportingData['topProducts']),
         cats:     @json($supportingData['categoryRevenue']),
+        pointUsage: @json($supportingData['pointUsage']),
     };
     window._dashCharts = {};
 
@@ -1071,6 +1284,32 @@
         });
     }
 
+    // ── Builder: Point Usage (Gacha vs Point Shop) ────────────────────
+    function buildPointUsageChart(cfg) {
+        const el = document.getElementById('pointUsageChart');
+        if (!el) return;
+        const { pointUsage } = window._dashData;
+        if (!pointUsage || (pointUsage.gacha + pointUsage.shop) === 0) return;
+        window._dashCharts['point_usage'] = new Chart(el, {
+            type: 'doughnut',
+            data: {
+                labels: ['Gacha', 'Point Shop'],
+                datasets: [{
+                    data: [pointUsage.gacha, pointUsage.shop],
+                    backgroundColor: ['rgba(139,92,246,0.85)', 'rgba(245,158,11,0.85)'],
+                    borderColor: isDark ? '#111113' : '#ffffff',
+                    borderWidth: 2,
+                    hoverBorderWidth: 0,
+                }],
+            },
+            options: {
+                responsive: true,
+                cutout: '72%',
+                plugins: { legend: { display: false }, tooltip: tip },
+            },
+        });
+    }
+
     // ── Global rebuild dispatcher ──────────────────────────────────────
     window.rebuildChart = function (id, config) {
         config = config || {};
@@ -1082,6 +1321,7 @@
             case 'top_products':     buildTopProductsChart(config); break;
             case 'category_revenue': buildCategoryChart(config);    break;
             case 'user_growth':      buildUserGrowthChart(config);  break;
+            case 'point_usage':      buildPointUsageChart(config);  break;
         }
     };
 
@@ -1094,6 +1334,7 @@
     buildTopProductsChart(_cfg('top_products'));
     buildCategoryChart(  _cfg('category_revenue'));
     buildUserGrowthChart(_cfg('user_growth'));
+    buildPointUsageChart(_cfg('point_usage'));
 })();
 </script>
 
@@ -1125,6 +1366,7 @@ function dashboardManager() {
         'kpi_cards', 'revenue_trend', 'order_status', 'top_products',
         'category_revenue', 'user_growth', 'recent_orders',
         'sidebar_attention', 'sidebar_quicknav', 'sidebar_snapshot',
+        'point_usage', 'gacha_economy', 'low_stock',
     ];
 
     const DEFAULTS = {
@@ -1134,10 +1376,95 @@ function dashboardManager() {
         top_products:      { visible: true, config: { type: 'hbar',     span: 1, topN: 5 } },
         category_revenue:  { visible: true, config: { type: 'hbar',     span: 1 } },
         user_growth:       { visible: true, config: { type: 'line',     span: 1, color: 'violet', fill: true, tension: true } },
-        recent_orders:     { visible: true, config: { span: 2 } },
+        recent_orders:     { visible: true, config: { span: 3 } },
         sidebar_attention: { visible: true, config: { span: 1 } },
         sidebar_quicknav:  { visible: true, config: { span: 1 } },
         sidebar_snapshot:  { visible: true, config: { span: 1 } },
+        point_usage:       { visible: true, config: { span: 1 } },
+        gacha_economy:     { visible: true, config: { span: 1 } },
+        low_stock:         { visible: true, config: { span: 1 } },
+    };
+
+    // Widgets that only work at full width (e.g. wide data tables that would be
+    // cut/cramped at ⅓ or ⅔). Their width is locked to full regardless of any
+    // previously-saved preference.
+    const FULL_ONLY = ['recent_orders'];
+
+    // ── Preset layouts ────────────────────────────────────────────────
+    // Each template only lists the widgets/config it wants to change; the rest
+    // fall back to DEFAULTS when applied. `order` sets the on-screen sequence.
+    const TEMPLATES = {
+        default: {
+            name: 'Default',
+            desc: 'The balanced standard layout.',
+            icon: 'M4 4h6v6H4zM14 4h6v6h-6zM14 14h6v6h-6zM4 14h6v6H4z',
+            widgets: {},
+            order: ['kpi_cards', 'revenue_trend', 'order_status', 'top_products', 'category_revenue', 'user_growth', 'recent_orders', 'sidebar_attention', 'sidebar_quicknav', 'sidebar_snapshot'],
+        },
+        analytics: {
+            name: 'Analytics',
+            desc: 'Charts-first: trends, products & categories up top.',
+            icon: 'M3 3v18h18M7 16l4-8 4 4 4-8',
+            widgets: {
+                revenue_trend:     { visible: true, config: { span: 2, type: 'line' } },
+                order_status:      { visible: true, config: { span: 1, type: 'doughnut' } },
+                user_growth:       { visible: true, config: { span: 1, type: 'line' } },
+                top_products:      { visible: true, config: { span: 1, type: 'hbar', topN: 10 } },
+                category_revenue:  { visible: true, config: { span: 1, type: 'doughnut' } },
+                sidebar_attention: { visible: false },
+                sidebar_quicknav:  { visible: false },
+                sidebar_snapshot:  { visible: false },
+            },
+            order: ['kpi_cards', 'revenue_trend', 'order_status', 'user_growth', 'top_products', 'category_revenue', 'recent_orders', 'sidebar_attention', 'sidebar_quicknav', 'sidebar_snapshot'],
+        },
+        sales: {
+            name: 'Sales & Orders',
+            desc: 'Revenue, order status and the live order feed.',
+            icon: 'M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6',
+            widgets: {
+                revenue_trend:     { visible: true, config: { span: 2, type: 'bar', metric: 'revenue' } },
+                order_status:      { visible: true, config: { span: 1, type: 'doughnut' } },
+                top_products:      { visible: true, config: { span: 1, type: 'hbar' } },
+                sidebar_attention: { visible: true, config: { span: 1 } },
+                sidebar_snapshot:  { visible: true, config: { span: 1 } },
+                user_growth:       { visible: false },
+                category_revenue:  { visible: false },
+                sidebar_quicknav:  { visible: false },
+            },
+            order: ['kpi_cards', 'revenue_trend', 'order_status', 'recent_orders', 'sidebar_attention', 'top_products', 'sidebar_snapshot', 'user_growth', 'category_revenue', 'sidebar_quicknav'],
+        },
+        operations: {
+            name: 'Operations',
+            desc: 'Action items, quick links and recent orders.',
+            icon: 'M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0zM12 9v4M12 17h.01',
+            widgets: {
+                order_status:      { visible: true, config: { span: 1, type: 'bar' } },
+                sidebar_attention: { visible: true, config: { span: 1 } },
+                sidebar_quicknav:  { visible: true, config: { span: 1 } },
+                sidebar_snapshot:  { visible: true, config: { span: 1 } },
+                revenue_trend:     { visible: false },
+                user_growth:       { visible: false },
+                top_products:      { visible: false },
+                category_revenue:  { visible: false },
+            },
+            order: ['kpi_cards', 'sidebar_attention', 'sidebar_quicknav', 'sidebar_snapshot', 'order_status', 'recent_orders', 'revenue_trend', 'user_growth', 'top_products', 'category_revenue'],
+        },
+        minimal: {
+            name: 'Minimal',
+            desc: 'Just KPIs and the latest orders.',
+            icon: 'M3 3h18v18H3zM3 9h18',
+            widgets: {
+                revenue_trend:     { visible: false },
+                order_status:      { visible: false },
+                top_products:      { visible: false },
+                category_revenue:  { visible: false },
+                user_growth:       { visible: false },
+                sidebar_attention: { visible: false },
+                sidebar_quicknav:  { visible: false },
+                sidebar_snapshot:  { visible: false },
+            },
+            order: ['kpi_cards', 'recent_orders', 'revenue_trend', 'order_status', 'top_products', 'category_revenue', 'user_growth', 'sidebar_attention', 'sidebar_quicknav', 'sidebar_snapshot'],
+        },
     };
 
     const CATALOG = [
@@ -1151,15 +1478,19 @@ function dashboardManager() {
         { id: 'sidebar_attention', name: 'Needs Attention', desc: 'Pending orders & tickets',      iconPath: 'M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z' },
         { id: 'sidebar_quicknav',  name: 'Quick Navigate',  desc: 'Shortcuts to admin sections',  iconPath: 'M13 2 3 14h9l-1 8 10-12h-9l1-8z' },
         { id: 'sidebar_snapshot',  name: 'Store Snapshot',  desc: 'All-time users & revenue',     iconPath: 'M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z' },
+        { id: 'point_usage',       name: 'Point Usage',     desc: 'Gacha vs Point Shop spending',  iconPath: 'M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z' },
+        { id: 'gacha_economy',     name: 'Gacha Economy',   desc: 'Spins, points burned & pity',   iconPath: 'M12 2a10 10 0 0 1 0 20M12 2a10 10 0 0 0 0 20M12 8v4l3 3' },
+        { id: 'low_stock',         name: 'Low Stock Alert', desc: 'Products running low on keys',  iconPath: 'm7.5 4.27 9 5.15M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z' },
     ];
 
     return {
-        widgets:      {},
-        configOpen:   {},
-        changeTarget: null,
-        order:        [],
-        reorderMode:  false,
-        sortable:     null,
+        widgets:       {},
+        configOpen:    {},
+        changeTarget:  null,
+        showTemplates: false,
+        order:         [],
+        reorderMode:   false,
+        sortable:      null,
 
         init() {
             const saved = JSON.parse(localStorage.getItem(LS_KEY) || '{}');
@@ -1184,10 +1515,18 @@ function dashboardManager() {
                 this.order = [...DEFAULT_ORDER];
             }
 
-            // Apply the saved DOM order and wire up drag-and-drop once rendered
+            // Apply the saved DOM order, wire up drag-and-drop, and run masonry
             this.$nextTick(() => {
                 this.applyOrder();
                 this.initSortable();
+                this.layoutMasonry();
+            });
+
+            // Debounced masonry recalc on window resize
+            let _masonryTimer;
+            window.addEventListener('resize', () => {
+                clearTimeout(_masonryTimer);
+                _masonryTimer = setTimeout(() => this.layoutMasonry(), 150);
             });
         },
 
@@ -1219,6 +1558,7 @@ function dashboardManager() {
                     this.order = Array.from(grid.querySelectorAll(':scope > [data-widget-id]'))
                         .map(el => el.dataset.widgetId);
                     this.saveOrder();
+                    this.layoutMasonry();
                 },
             });
         },
@@ -1249,16 +1589,65 @@ function dashboardManager() {
         },
 
         // ── Widget width (column span: 1 = ⅓, 2 = ⅔, 3 = full) ──────────
+        isFullOnly(id) {
+            return FULL_ONLY.includes(id);
+        },
+
         getWidgetSpan(id) {
+            if (this.isFullOnly(id)) return 3;
             return this.widgets[id]?.config?.span ?? 1;
         },
 
         setWidgetSpan(id, n) {
             if (!this.widgets[id]) return;
+            if (this.isFullOnly(id)) n = 3;            // ignore narrow widths
             if (!this.widgets[id].config) this.widgets[id].config = {};
             this.widgets[id].config.span = n;
             this.save();
-            // Charts auto-resize via Chart.js ResizeObserver when the container width changes
+            // Changing one widget's span reflows the whole grid (grid-flow-dense),
+            // so every chart may have a new width. Chart.js's own ResizeObserver
+            // doesn't reliably catch a CSS class swap, so resize them explicitly
+            // once the new layout has settled.
+            this.resizeCharts();
+        },
+
+        // Force every Chart.js instance to re-fit its (possibly new) container.
+        resizeCharts() {
+            const doResize = () => {
+                Object.values(window._dashCharts || {}).forEach(c => {
+                    try { c.resize(); } catch (e) { /* chart torn down */ }
+                });
+            };
+            // rAF catches the immediate reflow; the timeouts cover any late layout.
+            this.$nextTick(() => requestAnimationFrame(doResize));
+            setTimeout(doResize, 120);
+            setTimeout(doResize, 320);
+            // Re-pack masonry after charts resize
+            setTimeout(() => this.layoutMasonry(), 350);
+        },
+
+        // Masonry layout: measure each widget's actual height and set
+        // grid-row-end so widgets pack tightly without dead vertical space.
+        layoutMasonry() {
+            const grid = document.getElementById('dashboard-grid');
+            if (!grid) return;
+            const gap = 24; // gap-6 = 1.5rem = 24px
+            const rowH = 1; // grid-auto-rows: 1px
+            const step = rowH + gap;
+            grid.querySelectorAll(':scope > [data-widget-id]').forEach(el => {
+                // Reset so we can measure natural height
+                el.style.gridRowEnd = '';
+                // Skip hidden widgets
+                if (el.offsetParent === null) return;
+            });
+            // Force reflow before measuring
+            void grid.offsetHeight;
+            grid.querySelectorAll(':scope > [data-widget-id]').forEach(el => {
+                if (el.offsetParent === null) return;
+                const h = el.scrollHeight;
+                const span = Math.ceil((h + gap) / step);
+                el.style.gridRowEnd = `span ${span}`;
+            });
         },
 
         spanClass(id) {
@@ -1284,17 +1673,20 @@ function dashboardManager() {
 
         toggleConfig(id) {
             this.configOpen[id] = !this.configOpen[id];
+            this.$nextTick(() => this.layoutMasonry());
         },
 
         removeWidget(id) {
             if (this.widgets[id]) this.widgets[id].visible = false;
             this.configOpen[id] = false;
             this.save();
+            this.resizeCharts();   // grid reflows — refit remaining charts
         },
 
         restoreWidget(id) {
             if (this.widgets[id]) this.widgets[id].visible = true;
             this.save();
+            this.resizeCharts();   // grid reflows — refit charts
         },
 
         openChangeWidget(id) {
@@ -1316,11 +1708,47 @@ function dashboardManager() {
             this.widgets[newId].visible             = true;
             this.save();
             this.changeTarget = null;
+            this.resizeCharts();   // grid reflows — refit charts
         },
 
         resetLayout() {
             localStorage.removeItem(LS_KEY);
             localStorage.removeItem(ORDER_KEY);
+            window.location.reload();
+        },
+
+        // List of presets for the Templates dropdown.
+        get templateList() {
+            return Object.entries(TEMPLATES).map(([key, t]) => ({
+                key, name: t.name, desc: t.desc, icon: t.icon,
+            }));
+        },
+
+        // Apply a preset: merge its overrides onto DEFAULTS, persist, and reload
+        // so every widget (and its chart) renders fresh from the saved config.
+        applyTemplate(key) {
+            const tpl = TEMPLATES[key];
+            if (!tpl) return;
+
+            const widgets = JSON.parse(JSON.stringify(DEFAULTS));
+            Object.keys(tpl.widgets || {}).forEach(id => {
+                if (!widgets[id]) return;
+                const override = tpl.widgets[id] || {};
+                widgets[id] = {
+                    ...widgets[id],
+                    ...override,
+                    config: { ...(widgets[id].config || {}), ...(override.config || {}) },
+                };
+            });
+
+            // Wide table widgets stay full width no matter the template.
+            FULL_ONLY.forEach(id => { if (widgets[id]?.config) widgets[id].config.span = 3; });
+
+            let order = (Array.isArray(tpl.order) && tpl.order.length) ? tpl.order.slice() : DEFAULT_ORDER.slice();
+            DEFAULT_ORDER.forEach(id => { if (!order.includes(id)) order.push(id); });
+
+            localStorage.setItem(LS_KEY, JSON.stringify(widgets));
+            localStorage.setItem(ORDER_KEY, JSON.stringify(order));
             window.location.reload();
         },
 

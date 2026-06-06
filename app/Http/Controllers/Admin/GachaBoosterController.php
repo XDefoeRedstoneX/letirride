@@ -12,7 +12,7 @@ class GachaBoosterController extends Controller
 {
     public function index(): View
     {
-        $boosters = GachaBooster::orderBy('point_cost')->get();
+        $boosters = GachaBooster::orderBy('point_cost')->paginate(20);
 
         return view('admin.gacha-boosters', ['boosters' => $boosters]);
     }

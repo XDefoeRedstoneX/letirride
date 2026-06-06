@@ -500,15 +500,17 @@
                         }
 
                         const csrfToken = this.csrfToken, orderId = data.order_id, self = this;
+                        // Always reconcile with Midtrans (via verify) on any exit
+                        // — including closing the popup with the X — so a completed
+                        // payment is detected even when onSuccess never fires.
+                        const reconcile = async function() {
+                            try { await fetch('/checkout/verify/' + orderId, { method: 'POST', headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': csrfToken } }); } catch(err) {}
+                        };
                         window.snap.pay(data.snap_token, {
-                            onSuccess: async function() {
-                                try { await fetch('/checkout/verify/' + orderId, { method: 'POST', headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': csrfToken } }); } catch(err) {}
-                                self.paying = false;
-                                window.location.href = '/transactions';
-                            },
-                            onPending: function() { self.paying = false; window.location.href = '/transactions'; },
+                            onSuccess: async function() { await reconcile(); self.paying = false; window.location.href = '/transactions'; },
+                            onPending: async function() { await reconcile(); self.paying = false; window.location.href = '/transactions'; },
                             onError:   function() { window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: 'Payment failed.', type: 'error' } })); self.paying = false; },
-                            onClose:   function() { window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: 'Payment cancelled. Order still pending.', type: 'warning' } })); self.paying = false; window.location.href = '/transactions'; }
+                            onClose:   async function() { await reconcile(); self.paying = false; window.location.href = '/transactions'; }
                         });
                     } catch (e) {
                         this.paying = false;

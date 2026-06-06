@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 
 class DashboardController extends Controller
@@ -402,9 +403,73 @@ class DashboardController extends Controller
             ->values()
             ->toArray();
 
+        // ── Point Usage: Gacha vs Point Shop ────────────────────────────
+        $gachaPoints = Schema::hasTable('gacha_histories')
+            ? (int) DB::table('gacha_histories')
+                ->whereBetween('created_at', [$start, $end])
+                ->sum('points_spent')
+            : 0;
+
+        $shopPoints = Schema::hasTable('point_shop_purchases')
+            ? (int) DB::table('point_shop_purchases')
+                ->whereBetween('created_at', [$start, $end])
+                ->sum('points_spent')
+            : 0;
+
+        // ── Gacha Economy ───────────────────────────────────────────────
+        $gachaEconomy = ['spins' => 0, 'burned' => 0, 'pity_count' => 0, 'top_prize' => null];
+        if (Schema::hasTable('gacha_histories')) {
+            $gachaStats = DB::table('gacha_histories')
+                ->selectRaw('COUNT(*) as spins, COALESCE(SUM(points_spent), 0) as burned, SUM(CASE WHEN pity_triggered = 1 THEN 1 ELSE 0 END) as pity_count')
+                ->whereBetween('created_at', [$start, $end])
+                ->first();
+
+            $gachaEconomy['spins']      = (int) $gachaStats->spins;
+            $gachaEconomy['burned']     = (int) $gachaStats->burned;
+            $gachaEconomy['pity_count'] = (int) $gachaStats->pity_count;
+
+            if (Schema::hasTable('gacha_pools')) {
+                $topPrize = DB::table('gacha_histories as gh')
+                    ->join('gacha_pools as gp', 'gp.id', '=', 'gh.gacha_pool_id')
+                    ->selectRaw('gp.prize_name, COUNT(*) as cnt')
+                    ->whereBetween('gh.created_at', [$start, $end])
+                    ->groupBy('gp.id', 'gp.prize_name')
+                    ->orderByDesc('cnt')
+                    ->first();
+
+                $gachaEconomy['top_prize'] = $topPrize?->prize_name;
+            }
+        }
+
+        // ── Low Stock Alert ─────────────────────────────────────────────
+        $lowStock = [];
+        if (Schema::hasTable('product_keys')) {
+            $lowStock = DB::table('products as p')
+                ->leftJoin('product_keys as pk', function ($join) {
+                    $join->on('pk.product_id', '=', 'p.id')
+                        ->where('pk.status', '=', 'available');
+                })
+                ->selectRaw('p.id, p.name, COUNT(pk.id) as available_keys')
+                ->where('p.is_active', true)
+                ->groupBy('p.id', 'p.name')
+                ->havingRaw('COUNT(pk.id) <= 5')
+                ->orderBy('available_keys')
+                ->limit(8)
+                ->get()
+                ->map(fn ($r) => [
+                    'name'           => Str::limit($r->name, 28, '…'),
+                    'available_keys' => (int) $r->available_keys,
+                ])
+                ->values()
+                ->toArray();
+        }
+
         return [
             'topProducts'     => $topProducts,
             'categoryRevenue' => $categoryRevenue,
+            'pointUsage'      => ['gacha' => $gachaPoints, 'shop' => $shopPoints],
+            'gachaEconomy'    => $gachaEconomy,
+            'lowStock'        => $lowStock,
         ];
     }
 

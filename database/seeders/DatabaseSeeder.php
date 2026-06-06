@@ -41,7 +41,7 @@ class DatabaseSeeder extends Seeder
         $this->seedGachaPools();
         $this->seedGachaBoosters();
         $this->seedNews();
-        $this->seedFaqs();
+        $this->call(FaqSeeder::class);
         $this->seedTickets($now);
         $this->seedFavorites($now);
         $this->seedCartItems($now);
@@ -715,26 +715,6 @@ class DatabaseSeeder extends Seeder
             ['id' => 3, 'name' => 'News 3', 'image' => 'news/3.jpg', 'sort_order' => 3, 'is_active' => true],
             ['id' => 4, 'name' => 'News 4', 'image' => 'news/4.jpg', 'sort_order' => 4, 'is_active' => true],
         ], ['id'], ['name', 'image', 'sort_order', 'is_active']);
-    }
-
-    private function seedFaqs(): void
-    {
-        if (! Schema::hasTable('faqs')) {
-            return;
-        }
-
-        DB::table('faqs')->upsert([
-            ['id' => 1, 'question' => 'How long does delivery take?', 'answer' => 'Key delivery is instant upon successful payment.'],
-            ['id' => 2, 'question' => 'What payment methods do you accept?', 'answer' => 'We accept Credit Cards, PayPal, and Crypto.'],
-            ['id' => 3, 'question' => 'Are the keys region locked?', 'answer' => 'Yes, please check the product description for region warnings.'],
-            ['id' => 4, 'question' => 'How do I use gacha points?', 'answer' => 'You can spend points in the Gacha tab to win discounts.'],
-            ['id' => 5, 'question' => 'Can I get a refund?', 'answer' => 'Refunds are only issued for bugged/invalid keys verified by support.'],
-            ['id' => 6, 'question' => 'Is my credit card safe?', 'answer' => 'Yes, we use Stripe and do not store your card details.'],
-            ['id' => 7, 'question' => 'How do I redeem a Steam key?', 'answer' => 'Open Steam, click "Games", then "Redeem a Steam Wallet Code".'],
-            ['id' => 8, 'question' => 'Do discounts expire?', 'answer' => 'Some do! Check your "My Discounts" page for expiration dates.'],
-            ['id' => 9, 'question' => 'Can I stack discounts?', 'answer' => 'No, only one discount code can be used per order.'],
-            ['id' => 10, 'question' => 'How do I contact support?', 'answer' => 'Open a ticket in the Support dashboard.'],
-        ], ['id'], ['question', 'answer']);
     }
 
     private function seedPointShopItems(): void

@@ -31,12 +31,6 @@
         <button @click="openAdd()" class="px-5 py-2.5 bg-primary text-primary-foreground rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-primary/90 transition-colors">+ ADD DISCOUNT</button>
     </div>
 
-    @if (session('success'))
-        <div class="bg-green-500/10 border border-green-500/40 text-green-400 px-4 py-3 rounded-xl text-xs font-bold">{{ session('success') }}</div>
-    @endif
-    @if (session('error'))
-        <div class="bg-red-500/10 border border-red-500/40 text-red-400 px-4 py-3 rounded-xl text-xs font-bold">{{ session('error') }}</div>
-    @endif
     @if ($errors->any())
         <div class="bg-red-500/10 border border-red-500/40 text-red-400 px-4 py-3 rounded-xl text-xs font-bold">{{ $errors->first() }}</div>
     @endif
@@ -77,6 +71,10 @@
                 </tbody>
             </table>
         </div>
+    </div>
+
+    <div class="flex justify-center">
+        {{ $discounts->links() }}
     </div>
 
     {{-- Add Modal --}}

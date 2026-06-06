@@ -4,7 +4,7 @@
       $id           — widget identifier string (e.g. 'revenue_trend')
       $configurable — bool, default true; shows the ⚙ Edit button when true
 --}}
-@php $configurable = $configurable ?? true; @endphp
+@php $configurable = $configurable ?? true; $lockFull = $lockFull ?? false; @endphp
 
 <div class="flex items-center gap-1 shrink-0 ml-2">
 
@@ -35,6 +35,10 @@
             {{-- Width / size --}}
             <div class="px-3.5 pt-1.5 pb-2">
                 <p class="text-[8px] font-black text-muted-foreground uppercase tracking-widest mb-1.5">Width</p>
+                @if($lockFull)
+                    {{-- Wide table widget: full width only (⅓ / ⅔ would cut content). --}}
+                    <div class="px-1.5 py-1 rounded text-[8px] font-black uppercase tracking-widest border bg-primary/15 text-primary border-primary/30 text-center">Full width only</div>
+                @else
                 <div class="flex gap-1">
                     <button @click="setWidgetSpan('{{ $id }}', 1)"
                             :class="getWidgetSpan('{{ $id }}') === 1 ? 'bg-primary/15 text-primary border-primary/30' : 'bg-foreground/5 text-muted-foreground border-border hover:bg-foreground/10 hover:text-foreground'"
@@ -46,6 +50,7 @@
                             :class="getWidgetSpan('{{ $id }}') === 3 ? 'bg-primary/15 text-primary border-primary/30' : 'bg-foreground/5 text-muted-foreground border-border hover:bg-foreground/10 hover:text-foreground'"
                             class="flex-1 px-1.5 py-1 rounded text-[8px] font-black uppercase tracking-widest border transition-all">Full</button>
                 </div>
+                @endif
             </div>
 
             <div class="h-px bg-border mx-3 my-1"></div>

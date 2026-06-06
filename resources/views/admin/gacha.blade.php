@@ -39,10 +39,6 @@
         </div>
     </div>
 
-    @if (session('success'))
-        <div class="bg-green-500/10 border border-green-500/40 text-green-400 px-4 py-3 rounded-xl text-xs font-bold">{{ session('success') }}</div>
-    @endif
-
     {{-- Rarity breakdown --}}
     <div class="bg-card border border-border rounded-2xl overflow-hidden">
         <div class="px-6 py-4 border-b border-border flex items-center justify-between">
@@ -102,7 +98,7 @@
             <h3 class="text-sm font-black uppercase tracking-widest flex items-center gap-2">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7 11V7a5 5 0 0 1 10 0v4"/><rect width="18" height="12" x="3" y="11" rx="2"/><circle cx="12" cy="17" r="1"/></svg>
                 Prize Pool
-                <span class="text-[10px] text-muted-foreground font-bold">({{ $pools->count() }} prizes)</span>
+                <span class="text-[10px] text-muted-foreground font-bold">({{ $pools->total() }} prizes)</span>
             </h3>
             <p class="text-[9px] text-muted-foreground font-bold uppercase tracking-widest">Per-prize odds = rarity chance ÷ prize count</p>
         </div>
@@ -146,6 +142,10 @@
                 </tbody>
             </table>
         </div>
+    </div>
+
+    <div class="flex justify-center">
+        {{ $pools->links() }}
     </div>
 
     <!-- Add Prize Modal -->

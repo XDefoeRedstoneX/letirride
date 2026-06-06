@@ -82,6 +82,10 @@
         </div>
     </div>
 
+    <div class="flex justify-center">
+        {{ $news->links() }}
+    </div>
+
     {{-- ── ADD MODAL ───────────────────────────────────────────────── --}}
     <div x-show="showAddModal"
          class="fixed inset-0 z-50 flex items-center justify-center p-4"
