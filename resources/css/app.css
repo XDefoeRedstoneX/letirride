@@ -95,6 +95,9 @@
 
   /* Products Page Tokens */
   --gold: #f59e0b;
+  /* Gold used as TEXT — darker in light mode so it's readable on white;
+     stays bright in dark mode (see .dark override). */
+  --gold-text: #b45309;
   --gold-dim: #92650a;
   --gold-glow: rgba(245, 158, 11, 0.25);
   --cyan: #00d4ff;
@@ -253,6 +256,7 @@
   --nav-btn-text: #5a7aaa;
   --nav-menu-bg: #08152a;
   --nav-menu-hover: #0c1d38;
+  --gold-text: #f59e0b;
   --footer-bg: #050c1a;
   --footer-text: #5a7aaa;
 
@@ -2808,7 +2812,7 @@ button,
 }
 
 .px-heading .gold {
-  color: var(--gold);
+  color: var(--gold-text);
 }
 
 .px-subheading {

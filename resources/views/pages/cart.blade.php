@@ -11,7 +11,7 @@
         })" x-init="init()">
             <div style="display:flex;align-items:center;justify-content:space-between;">
                 <div><h1 class="px-heading">Order <span class="gold">Receipt</span></h1><p class="px-subheading">REVIEW YOUR ITEMS BEFORE CHECKOUT</p></div>
-                <div style="width:48px;height:48px;display:flex;align-items:center;justify-content:center;background:rgba(245,158,11,0.1);border:2px solid rgba(245,158,11,0.25);color:var(--gold);">
+                <div style="width:48px;height:48px;display:flex;align-items:center;justify-content:center;background:rgba(245,158,11,0.1);border:2px solid rgba(245,158,11,0.25);color:var(--gold-text);">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="square" class="pixel-render"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.56-7.43H5.94"/></svg>
                 </div>
             </div>
@@ -20,7 +20,7 @@
                 <div class="lg:col-span-2 space-y-4">
                     <template x-for="item in items" :key="item.id">
                         <div class="px-card" style="padding:20px;display:flex;align-items:center;gap:20px;">
-                            <div style="width:80px;height:80px;background:var(--dark-card2);border:2px solid var(--dark-line);display:flex;align-items:center;justify-content:center;padding:12px;flex-shrink:0;"><img :src="item.image" class="w-full h-full object-contain pixel-render" /></div>
+                            <div class="cart-img-box" style="width:80px;height:80px;background:var(--dark-card2);border:2px solid var(--dark-line);display:flex;align-items:center;justify-content:center;padding:12px;flex-shrink:0;"><img :src="item.image" class="w-full h-full object-contain pixel-render" /></div>
                             <div style="flex:1;display:flex;flex-direction:column;gap:8px;">
                                 <div style="display:flex;align-items:center;justify-content:space-between;">
                                     <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
@@ -29,14 +29,14 @@
                                     </div>
                                     <button @click="removeItem(item)" style="color:var(--text-dim);cursor:pointer;background:none;border:none;" onmouseover="this.style.color='#ef4444'" onmouseout="this.style.color='var(--text-dim)'"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="square"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg></button>
                                 </div>
-                                <h3 style="font-family:var(--font-sans);font-size:14px;font-weight:800;color:#e8f0ff;" x-text="item.name"></h3>
+                                <h3 style="font-family:var(--font-sans);font-size:14px;font-weight:800;color:var(--foreground);" x-text="item.name"></h3>
                                 <div style="display:flex;align-items:center;justify-content:space-between;">
                                     <div style="display:flex;align-items:center;gap:8px;">
                                         <button @click="updateQty(item,-1)" class="px-btn-ghost" style="width:28px;height:28px;padding:0;display:flex;align-items:center;justify-content:center;font-size:14px;font-family:var(--font-sans);">−</button>
-                                        <span style="font-family:var(--font-sans);font-size:14px;font-weight:800;color:#e8f0ff;width:24px;text-align:center;" x-text="item.quantity"></span>
+                                        <span style="font-family:var(--font-sans);font-size:14px;font-weight:800;color:var(--foreground);width:24px;text-align:center;" x-text="item.quantity"></span>
                                         <button @click="updateQty(item,1)" class="px-btn-ghost" style="width:28px;height:28px;padding:0;display:flex;align-items:center;justify-content:center;font-size:14px;font-family:var(--font-sans);">+</button>
                                     </div>
-                                    <p style="font-family:var(--font-sans);font-size:16px;font-weight:800;color:var(--gold);" x-text="formatRp(item.price * item.quantity)"></p>
+                                    <p style="font-family:var(--font-sans);font-size:16px;font-weight:800;color:var(--gold-text);" x-text="formatRp(item.price * item.quantity)"></p>
                                 </div>
                                 <template x-if="item.product_type === 'direct_topup'">
                                     <div style="margin-top:8px;padding:14px;background:rgba(245,158,11,0.08);border:2px solid rgba(245,158,11,0.2);">
@@ -51,7 +51,7 @@
                             </div>
                         </div>
                     </template>
-                    <div x-show="items.length === 0" class="px-empty-state" style="border:3px dashed var(--dark-line);"><div class="empty-icon"><svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="square"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.56-7.43H5.94"/></svg></div><p class="empty-text">YOUR CART IS EMPTY</p><a href="{{ route('home') }}" class="empty-link">START SHOPPING →</a></div>
+                    <div x-show="items.length === 0" class="px-empty-state" style="border:3px dashed var(--border);"><div class="empty-icon"><svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="square"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.56-7.43H5.94"/></svg></div><p class="empty-text">YOUR CART IS EMPTY</p><a href="{{ route('home') }}" class="empty-link">START SHOPPING →</a></div>
                 </div>
 
                 <div class="space-y-6">
@@ -61,7 +61,7 @@
                         <div style="display:flex;flex-direction:column;gap:14px;">
                             <div style="display:flex;justify-content:space-between;">
                                 <span style="font-family:var(--px);font-size:7px;letter-spacing:0.1em;color:var(--text-dim);">SUBTOTAL</span>
-                                <span style="font-family:var(--font-sans);font-size:14px;font-weight:700;color:#e8f0ff;" x-text="formatRp(subtotal)"></span>
+                                <span style="font-family:var(--font-sans);font-size:14px;font-weight:700;color:var(--foreground);" x-text="formatRp(subtotal)"></span>
                             </div>
 
                             {{-- ============ CUSTOM VOUCHER COMBOBOX ============ --}}
@@ -83,8 +83,8 @@
                                             </div>
                                             <template x-if="selectedDiscount">
                                                 <div style="flex:1;min-width:0;text-align:left;">
-                                                    <div style="font-family:var(--font-sans);font-size:12px;font-weight:800;color:#e8f0ff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" x-text="selectedDiscount.name"></div>
-                                                    <div style="font-family:var(--px);font-size:6px;letter-spacing:0.1em;color:var(--gold);margin-top:2px;" x-text="targetLabel(selectedDiscount)"></div>
+                                                    <div style="font-family:var(--font-sans);font-size:12px;font-weight:800;color:var(--foreground);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" x-text="selectedDiscount.name"></div>
+                                                    <div style="font-family:var(--px);font-size:6px;letter-spacing:0.1em;color:var(--gold-text);margin-top:2px;" x-text="targetLabel(selectedDiscount)"></div>
                                                 </div>
                                             </template>
                                             <template x-if="!selectedDiscount">
@@ -142,7 +142,7 @@
                                                                       :class="d.target_subcategory_id ? 'is-brand' : (d.target_category_id ? 'is-cat' : 'is-store')"
                                                                       x-text="targetLabel(d)"></span>
                                                             </div>
-                                                            <div style="font-family:var(--font-sans);font-size:12px;font-weight:800;color:#e8f0ff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" x-text="d.name"></div>
+                                                            <div style="font-family:var(--font-sans);font-size:12px;font-weight:800;color:var(--foreground);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" x-text="d.name"></div>
                                                             <template x-if="!voucherEligible(d)">
                                                                 <div style="font-family:var(--px);font-size:6px;letter-spacing:0.1em;color:#f87171;" x-text="ineligibleReason(d)"></div>
                                                             </template>
@@ -180,10 +180,10 @@
                                 </div>
                             </template>
 
-                            <div style="height:2px;background:var(--dark-line);"></div>
+                            <div style="height:2px;background:var(--border);"></div>
                             <div style="display:flex;justify-content:space-between;">
-                                <span style="font-family:var(--px);font-size:8px;letter-spacing:0.1em;color:#e8f0ff;">GRAND TOTAL</span>
-                                <span style="font-family:var(--font-sans);font-size:22px;font-weight:800;color:var(--gold);" x-text="formatRp(total)"></span>
+                                <span style="font-family:var(--px);font-size:8px;letter-spacing:0.1em;color:var(--foreground);">GRAND TOTAL</span>
+                                <span style="font-family:var(--font-sans);font-size:22px;font-weight:800;color:var(--gold-text);" x-text="formatRp(total)"></span>
                             </div>
                         </div>
 
@@ -210,9 +210,9 @@
         .voucher-combo-btn {
             width: 100%;
             padding: 12px 14px;
-            background: var(--dark-card2);
-            border: 2px solid var(--dark-line);
-            color: #e8f0ff;
+            background: var(--muted);
+            border: 2px solid var(--border);
+            color: var(--foreground);
             font-family: var(--font-sans);
             font-size: 12px;
             cursor: pointer;
@@ -241,7 +241,7 @@
             left: 0;
             right: 0;
             margin-top: 6px;
-            background: var(--dark-card);
+            background: var(--popover);
             border: 2px solid var(--gold);
             box-shadow: 0 12px 32px rgba(0,0,0,0.5), 0 0 0 1px rgba(245,158,11,0.2);
             z-index: 50;
@@ -252,11 +252,11 @@
 
         .voucher-combo-search {
             padding: 12px;
-            border-bottom: 2px solid var(--dark-line);
+            border-bottom: 2px solid var(--border);
             display: flex;
             align-items: center;
             gap: 8px;
-            background: var(--dark-card2);
+            background: var(--muted);
         }
         .voucher-combo-search input {
             flex: 1;
@@ -265,7 +265,7 @@
             outline: none;
             font-family: var(--font-sans);
             font-size: 12px;
-            color: #e8f0ff;
+            color: var(--foreground);
         }
         .voucher-combo-search input::placeholder { color: var(--text-dim); font-family: var(--px); font-size: 9px; letter-spacing: 0.08em; }
 
@@ -322,6 +322,17 @@
         .voucher-target-chip.is-store { color: #a78bfa; border-color: rgba(167,139,250,0.4); background: rgba(167,139,250,0.08); }
         .voucher-target-chip.is-cat   { color: #60a5fa; border-color: rgba(96,165,250,0.4); background: rgba(96,165,250,0.08); }
         .voucher-target-chip.is-brand { color: #f59e0b; border-color: rgba(245,158,11,0.4); background: rgba(245,158,11,0.08); }
+
+        /* Product thumbnail: white in light mode, dark navy in dark mode */
+        .cart-img-box { background: #ffffff !important; border-color: #e2e8f0 !important; }
+        .dark .cart-img-box { background: var(--dark-card2) !important; border-color: var(--dark-line) !important; }
+
+        /* Restore the dark voucher surfaces in dark mode (base rules above are
+           light-mode defaults). */
+        .dark .voucher-combo-btn { background: var(--dark-card2); border-color: var(--dark-line); color: #e8f0ff; }
+        .dark .voucher-combo-panel { background: var(--dark-card); }
+        .dark .voucher-combo-search { background: var(--dark-card2); border-bottom-color: var(--dark-line); }
+        .dark .voucher-combo-search input { color: #e8f0ff; }
     </style>
 
     <script>
