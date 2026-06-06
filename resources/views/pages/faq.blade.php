@@ -49,7 +49,7 @@
             {{-- Contact Support --}}
             <div class="px-card-static flex flex-col md:flex-row items-center md:justify-between gap-4 text-center md:text-left" style="padding:18px;max-width:800px;margin:0 auto;width:100%;border-color:rgba(245,158,11,0.2);">
                 <div>
-                    <h3 style="font-family:var(--font-sans);font-size:16px;font-weight:800;color:#e8f0ff;">Still have questions?</h3>
+                    <h3 style="font-family:var(--font-sans);font-size:16px;font-weight:800;color:var(--foreground);">Still have questions?</h3>
                     <p style="font-family:var(--px);font-size:6px;color:var(--text-dim);letter-spacing:0.1em;margin-top:6px;line-height:1.6;">OUR SUPPORT TEAM IS READY TO HELP YOU 24/7</p>
                 </div>
                 <a href="{{ route('tickets') }}" class="px-btn-gold w-full md:w-auto" style="padding:14px 24px;font-size:7px;text-decoration:none;white-space:nowrap;text-align:center;">CONTACT SUPPORT</a>

@@ -99,19 +99,19 @@
                     <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:2px solid var(--dark-line);">
                         <div style="display:flex;align-items:center;gap:12px;">
                             <div style="width:36px;height:36px;background:var(--dark-card2);border:2px solid var(--dark-line);display:flex;align-items:center;justify-content:center;padding:6px;"><img src="{{ $detail->product?->imageUrl() ?? '/products/'.\App\Models\Product::FALLBACK_IMAGE }}" class="w-full h-full object-contain pixel-render" /></div>
-                            <div><p style="font-family:var(--font-sans);font-size:13px;font-weight:800;color:#e8f0ff;">{{ $detail->product->name ?? 'Unknown' }}</p><p style="font-family:var(--px);font-size:6px;color:var(--text-dim);letter-spacing:0.1em;margin-top:2px;">QTY: {{ $detail->quantity }}</p></div>
+                            <div><p style="font-family:var(--font-sans);font-size:13px;font-weight:800;color:var(--foreground);">{{ $detail->product->name ?? 'Unknown' }}</p><p style="font-family:var(--px);font-size:6px;color:var(--text-dim);letter-spacing:0.1em;margin-top:2px;">QTY: {{ $detail->quantity }}</p></div>
                         </div>
-                        <p style="font-family:var(--font-sans);font-size:13px;font-weight:800;color:#e8f0ff;">Rp {{ number_format($detail->total_price_in_cart, 0, ',', '.') }}</p>
+                        <p style="font-family:var(--font-sans);font-size:13px;font-weight:800;color:var(--foreground);">Rp {{ number_format($detail->total_price_in_cart, 0, ',', '.') }}</p>
                     </div>
                     @endforeach
                 </div>
                 <div style="display:flex;flex-direction:column;gap:10px;padding-top:16px;margin-top:16px;border-top:3px solid var(--dark-line);">
-                    <div style="display:flex;justify-content:space-between;"><span style="font-family:var(--px);font-size:7px;letter-spacing:0.1em;color:var(--text-dim);">SUBTOTAL</span><span style="font-family:var(--font-sans);font-size:13px;font-weight:700;color:#e8f0ff;">Rp {{ number_format($order->subtotal, 0, ',', '.') }}</span></div>
+                    <div style="display:flex;justify-content:space-between;"><span style="font-family:var(--px);font-size:7px;letter-spacing:0.1em;color:var(--text-dim);">SUBTOTAL</span><span style="font-family:var(--font-sans);font-size:13px;font-weight:700;color:var(--foreground);">Rp {{ number_format($order->subtotal, 0, ',', '.') }}</span></div>
                     @if($order->discount_amount > 0)
                     <div style="display:flex;justify-content:space-between;"><span style="font-family:var(--px);font-size:7px;letter-spacing:0.1em;color:#22c55e;">DISCOUNT</span><span style="font-family:var(--font-sans);font-size:13px;font-weight:700;color:#22c55e;">- Rp {{ number_format($order->discount_amount, 0, ',', '.') }}</span></div>
                     @endif
                     <div style="height:2px;background:var(--dark-line);"></div>
-                    <div style="display:flex;justify-content:space-between;align-items:center;"><span style="font-family:var(--px);font-size:8px;letter-spacing:0.1em;color:#e8f0ff;">TOTAL</span><span style="font-family:var(--font-sans);font-size:22px;font-weight:800;color:var(--gold);">Rp {{ number_format($order->total_price_after_discount, 0, ',', '.') }}</span></div>
+                    <div style="display:flex;justify-content:space-between;align-items:center;"><span style="font-family:var(--px);font-size:8px;letter-spacing:0.1em;color:var(--foreground);">TOTAL</span><span style="font-family:var(--font-sans);font-size:22px;font-weight:800;color:var(--gold);">Rp {{ number_format($order->total_price_after_discount, 0, ',', '.') }}</span></div>
                 </div>
             </div>
 
@@ -122,7 +122,7 @@
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="square"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
                 </div>
                 <div>
-                    <p style="font-family:var(--font-sans);font-size:13px;font-weight:800;color:#e8f0ff;">{{ $order->productKeys->count() }} code(s) ready</p>
+                    <p style="font-family:var(--font-sans);font-size:13px;font-weight:800;color:var(--foreground);">{{ $order->productKeys->count() }} code(s) ready</p>
                     <p style="font-family:var(--px);font-size:6px;color:var(--text-dim);letter-spacing:0.1em;margin-top:2px;">VIEW YOUR CODES IN INVENTORY</p>
                 </div>
             </div>

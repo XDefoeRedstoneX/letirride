@@ -61,7 +61,7 @@
                                                 <span style="font-family:var(--font-sans);font-size:12px;font-weight:700;color:var(--text-dim);">{{ optional($a['date'])->format('M d, Y') }}</span>
                                             </td>
                                             <td style="padding:12px 6px;border-bottom:1px solid rgba(255,255,255,0.06);">
-                                                <span style="font-family:var(--font-sans);font-size:12px;font-weight:800;color:#e8f0ff;">{{ $a['description'] }}</span>
+                                                <span style="font-family:var(--font-sans);font-size:12px;font-weight:800;color:var(--foreground);">{{ $a['description'] }}</span>
                                             </td>
                                             <td style="padding:12px 6px;border-bottom:1px solid rgba(255,255,255,0.06);">
                                                 <span style="font-family:var(--font-sans);font-size:12px;font-weight:700;color:var(--text-dim);">{{ $a['category'] }}</span>
@@ -101,7 +101,7 @@
                                                 <span style="font-family:var(--font-sans);font-size:12px;font-weight:700;color:var(--text-dim);">{{ optional($a['date'])->format('M d, Y') }}</span>
                                             </td>
                                             <td style="padding:12px 6px;border-bottom:1px solid rgba(255,255,255,0.06);">
-                                                <span style="font-family:var(--font-sans);font-size:12px;font-weight:800;color:#e8f0ff;">{{ $a['description'] }}</span>
+                                                <span style="font-family:var(--font-sans);font-size:12px;font-weight:800;color:var(--foreground);">{{ $a['description'] }}</span>
                                             </td>
                                             <td style="padding:12px 6px;border-bottom:1px solid rgba(255,255,255,0.06);">
                                                 <span style="font-family:var(--font-sans);font-size:12px;font-weight:700;color:var(--text-dim);">{{ $a['category'] }}</span>

@@ -17,7 +17,7 @@
                             <span class="px-badge px-badge-gold fav-badge" style="position:absolute;top:8px;right:8px;" x-text="product.category"></span>
                         </div>
                         <div class="fav-info" style="display:flex;flex-direction:column;gap:6px;">
-                            <h3 class="fav-name" style="font-family:var(--font-sans);font-size:14px;font-weight:800;color:#e8f0ff;" x-text="product.name"></h3>
+                            <h3 class="fav-name" style="font-family:var(--font-sans);font-size:14px;font-weight:800;color:var(--foreground);" x-text="product.name"></h3>
                             <p class="fav-price" style="font-family:var(--font-sans);font-size:16px;font-weight:800;color:var(--gold);" x-text="formatRp(product.price)"></p>
                         </div>
                         <div class="fav-actions" style="display:flex;gap:6px;margin-top:auto;">

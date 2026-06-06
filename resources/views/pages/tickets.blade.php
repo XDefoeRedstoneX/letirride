@@ -27,7 +27,7 @@
                         <div style="width:64px;height:64px;background:rgba(34,197,94,0.15);border:3px solid #22c55e;display:flex;align-items:center;justify-content:center;color:#22c55e;">
                             <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="square"><polyline points="20 6 9 17 4 12"/></svg>
                         </div>
-                        <h2 style="font-family:var(--font-sans);font-size:20px;font-weight:800;color:#e8f0ff;">Message Sent Successfully!</h2>
+                        <h2 style="font-family:var(--font-sans);font-size:20px;font-weight:800;color:var(--foreground);">Message Sent Successfully!</h2>
                         <p style="font-family:var(--font-sans);font-size:13px;color:var(--text-dim);max-width:360px;line-height:1.6;">Thank you for reaching out. We've received your inquiry and our team is on it.</p>
                         <div style="background:var(--dark-card2);border:2px solid var(--dark-line);padding:14px;width:100%;max-width:340px;">
                             <p style="font-family:var(--px);font-size:6px;letter-spacing:0.12em;color:var(--gold);margin-bottom:6px;">NEXT STEP</p>

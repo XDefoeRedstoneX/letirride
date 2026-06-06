@@ -175,7 +175,7 @@
                 <div style="width:56px;height:56px;background:rgba(239,68,68,0.12);border:3px solid #ef4444;color:#ef4444;display:flex;align-items:center;justify-content:center;margin:0 auto;">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="square" class="pixel-render"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
                 </div>
-                <h3 style="font-family:var(--font-sans);font-size:16px;font-weight:800;color:#e8f0ff;letter-spacing:0.02em;">Enter Your Password</h3>
+                <h3 style="font-family:var(--font-sans);font-size:16px;font-weight:800;color:var(--foreground);letter-spacing:0.02em;">Enter Your Password</h3>
                 <p style="font-family:var(--font-sans);font-size:13px;color:var(--text-dim);line-height:1.5;">To confirm account deletion, please enter your current password.</p>
                 <input type="password" x-model="deletePassword" placeholder="Your password" class="px-input" style="padding:12px 16px;font-size:13px;text-align:center;" @keydown.enter="confirmDeleteWithPassword()">
                 <p x-show="deleteError" x-text="deleteError" style="font-family:var(--font-sans);font-size:12px;color:#ef4444;"></p>

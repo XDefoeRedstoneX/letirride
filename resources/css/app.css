@@ -671,8 +671,8 @@ button,
   align-items: center;
   justify-content: center;
   gap: 8px;
-  border: 2px solid var(--dark-line);
-  background: var(--dark-card, rgba(255, 255, 255, 0.03));
+  border: 2px solid var(--border);
+  background: var(--card);
 }
 
 .gacha-card-img {
@@ -685,7 +685,7 @@ button,
   font-size: 10px;
   font-weight: 800;
   text-align: center;
-  color: #e8f0ff;
+  color: var(--foreground);
 }
 
 /* ===========================================================
@@ -957,8 +957,8 @@ button,
 }
 
 .gacha-booster-card {
-  background: var(--dark-card2);
-  border: 2px solid var(--dark-line);
+  background: var(--card);
+  border: 2px solid var(--border);
   padding: 14px;
   display: flex;
   align-items: center;
@@ -975,13 +975,13 @@ button,
   font-family: var(--font-sans);
   font-size: 12px;
   font-weight: 800;
-  color: #e8f0ff;
+  color: var(--foreground);
 }
 
 .gacha-booster-desc {
   font-family: var(--font-sans);
   font-size: 10px;
-  color: var(--text-dim);
+  color: var(--muted-foreground);
   margin-top: 2px;
 }
 
@@ -1003,7 +1003,7 @@ button,
 .gacha-booster-empty {
   font-family: var(--font-sans);
   font-size: 10px;
-  color: var(--text-dim);
+  color: var(--muted-foreground);
   text-align: center;
   padding: 12px;
 }
@@ -1320,10 +1320,13 @@ button,
 .px-frame-content {
   grid-column: 2;
   grid-row: 2;
-  background: var(--dark-card, #08152a);
+  background: var(--card);
   min-width: 0;
   overflow-y: auto;
   min-height: 0;
+}
+.dark .px-frame-content {
+  background: var(--dark-card, #08152a);
 }
 
 /* ── Coverflow Slider ─────────────────────────────────────────── */
@@ -2387,6 +2390,18 @@ button,
   border-color: var(--dark-line) !important;
 }
 
+/* Point-shop image + cost boxes: white surfaces in light mode, dark in dark. */
+.ps-img-box,
+.ps-cost-box {
+  background: #ffffff !important;
+  border-color: #e2e8f0 !important;
+}
+.dark .ps-img-box,
+.dark .ps-cost-box {
+  background: var(--dark-card2) !important;
+  border-color: var(--dark-line) !important;
+}
+
 /* ── Favorites card: compact 2-up on mobile ───────────────────── */
 @media (max-width: 639px) {
   .fav-card {
@@ -2559,7 +2574,7 @@ button,
   font-family: var(--font-sans);
   font-size: 13px;
   font-weight: 600;
-  color: var(--gold);
+  color: var(--gold-text);
   letter-spacing: 0.06em;
 }
 
@@ -2623,7 +2638,7 @@ button,
   font-family: var(--font-sans);
   font-size: 22px;
   font-weight: 700;
-  color: var(--gold);
+  color: var(--gold-text);
 }
 
 .modal-discount-banner {

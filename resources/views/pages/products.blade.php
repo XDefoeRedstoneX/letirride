@@ -189,16 +189,27 @@
 
                 {{-- Browse By Brand (3D Coverflow) --}}
                 <div x-show="brands.length > 0" class="mb-2">
-                    <div x-data="brandSlider()" x-init="initSlider()" 
-                         class="relative w-full h-[130px] sm:h-[320px] py-1 sm:py-2 overflow-hidden" 
-                         style="perspective: 1200px; -webkit-mask-image: linear-gradient(to right, transparent, black 15%, black 85%, transparent); mask-image: linear-gradient(to right, transparent, black 15%, black 85%, transparent);"
-                         @wheel.prevent="handleWheel"
-                         @mousedown="startDrag" @mouseleave="endDrag" @mouseup="endDrag" @mousemove="doDrag"
-                         @touchstart="startDrag" @touchend="endDrag" @touchmove="doDrag">
-                        
+                    <div x-data="brandSlider()" x-init="initSlider()"
+                         class="relative w-full h-[130px] sm:h-[320px] py-1 sm:py-2 overflow-hidden group"
+                         style="perspective: 1200px; -webkit-mask-image: linear-gradient(to right, transparent, black 15%, black 85%, transparent); mask-image: linear-gradient(to right, transparent, black 15%, black 85%, transparent);">
+
+                        {{-- Left Arrow --}}
+                        <button type="button" @click.stop="step(-1)"
+                                class="absolute left-[3%] sm:left-[6%] top-1/2 -translate-y-1/2 z-[60] w-9 h-9 sm:w-12 sm:h-12 flex items-center justify-center bg-card/90 border-2 border-border rounded-xl text-muted-foreground shadow-lg backdrop-blur opacity-70 group-hover:opacity-100 transition-all hover:border-primary hover:text-primary hover:scale-110"
+                                aria-label="Previous brand">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4 sm:w-6 sm:h-6"><path d="m15 18-6-6 6-6"/></svg>
+                        </button>
+
+                        {{-- Right Arrow --}}
+                        <button type="button" @click.stop="step(1)"
+                                class="absolute right-[3%] sm:right-[6%] top-1/2 -translate-y-1/2 z-[60] w-9 h-9 sm:w-12 sm:h-12 flex items-center justify-center bg-card/90 border-2 border-border rounded-xl text-muted-foreground shadow-lg backdrop-blur opacity-70 group-hover:opacity-100 transition-all hover:border-primary hover:text-primary hover:scale-110"
+                                aria-label="Next brand">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4 sm:w-6 sm:h-6"><path d="m9 18 6-6-6-6"/></svg>
+                        </button>
+
                         <template x-for="(brand, index) in brands" :key="brand.name">
                             <div class="w-28 sm:w-56 cursor-pointer group relative"
-                                 @click="if(!isDragging) { scrollTo(index); }"
+                                 @click="scrollTo(index)"
                                  :style="getCardStyle(index)">
 
                                      <div class="flex flex-col bg-card shadow-2xl rounded-xl h-full transition-all duration-300 border-2 pointer-events-none select-none overflow-hidden"
@@ -883,12 +894,7 @@ function ridlyStore(initialProducts, initialFavorites, isAuthenticated, csrfToke
 function brandSlider() {
     return {
         currentOffset: 0,
-        isDown: false,
-        startX: 0,
-        startOffset: 0,
         brandsCount: 0,
-        isDragging: false,
-        accumulatedDelta: 0,
         lastNotifiedIdx: -1,
         initSlider() {
             this.$watch('brands', (val) => {
@@ -904,76 +910,40 @@ function brandSlider() {
             if (this.brandsCount === 0) return;
             let currentMod = Math.round(this.currentOffset) % this.brandsCount;
             if (currentMod < 0) currentMod += this.brandsCount;
-            
+
             if (this.lastNotifiedIdx === currentMod) return;
             this.lastNotifiedIdx = currentMod;
-            
+
             const centeredBrand = this.brands[currentMod];
             if (centeredBrand) {
                 this.$dispatch('brand-centered', centeredBrand.name);
             }
         },
-        handleWheel(e) {
+        // Step one card left (-1) or right (+1) via the arrow buttons.
+        step(dir) {
             if (this.brandsCount === 0) return;
-            
-            this.accumulatedDelta += e.deltaY;
-            
-            if (Math.abs(this.accumulatedDelta) > 100) {
-                if (this.accumulatedDelta > 0) {
-                    this.currentOffset += 1;
-                } else {
-                    this.currentOffset -= 1;
-                }
-                this.accumulatedDelta = 0;
-                this.snapToNearest();
-            }
+            this.currentOffset += dir;
+            this.snapToNearest();
         },
         snapToNearest() {
             this.currentOffset = Math.round(this.currentOffset);
             this.notifySelected();
         },
-        isActive(index) {
-            if (this.brandsCount === 0) return false;
-            let currentMod = Math.round(this.currentOffset) % this.brandsCount;
-            if (currentMod < 0) currentMod += this.brandsCount;
-            return index === currentMod;
-        },
-        startDrag(e) {
-            this.isDown = true;
-            this.isDragging = false;
-            const pageX = e.pageX || (e.touches && e.touches[0].pageX);
-            this.startX = pageX;
-            this.startOffset = this.currentOffset;
-        },
-        endDrag() {
-            if (!this.isDown) return;
-            this.isDown = false;
-            this.snapToNearest();
-            setTimeout(() => { this.isDragging = false; }, 50);
-        },
-        doDrag(e) {
-            if (!this.isDown) return;
-            e.preventDefault();
-            this.isDragging = true;
-            const pageX = e.pageX || (e.touches && e.touches[0].pageX);
-            const deltaX = pageX - this.startX;
-            this.currentOffset = this.startOffset - (deltaX / 150); 
-        },
         scrollTo(index) {
             let currentMod = this.currentOffset % this.brandsCount;
             if (currentMod < 0) currentMod += this.brandsCount;
-            
+
             let diff = index - currentMod;
             if (diff > this.brandsCount / 2) diff -= this.brandsCount;
             if (diff < -this.brandsCount / 2) diff += this.brandsCount;
-            
+
             this.currentOffset += diff;
             this.snapToNearest();
         },
         getCardStyle(index) {
             const count = this.brandsCount;
             if (count === 0) return 'display: none;';
-            
+
             let diff = index - this.currentOffset;
             let normDiff = diff % count;
             if (normDiff > count / 2) normDiff -= count;
@@ -983,14 +953,14 @@ function brandSlider() {
             const zIndex = 50 - Math.round(absDiff * 10);
 
             const scale = Math.max(0.6, 1 - (absDiff * 0.15));
-            const rotateY = 0; 
-            
+            const rotateY = 0;
+
             const spacing = window.innerWidth < 640 ? 90 : 150;
-            const translateZ = -absDiff * 40; 
+            const translateZ = -absDiff * 40;
             const transform = `translate(calc(-50% + ${normDiff * spacing}px), -50%) translateZ(${translateZ}px) rotateY(${rotateY}deg) scale(${scale})`;
 
             const opacity = absDiff > 4 ? 0 : (1 - (absDiff * 0.15));
-            const pointerEvents = absDiff < 0.5 ? 'auto' : 'none'; 
+            const pointerEvents = absDiff < 0.5 ? 'auto' : 'none';
 
             return `
                 position: absolute;
@@ -1000,7 +970,7 @@ function brandSlider() {
                 opacity: ${opacity};
                 pointer-events: ${pointerEvents};
                 transform: ${transform};
-                transition: ${this.isDown ? 'none' : 'transform 0.4s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.4s'};
+                transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.4s;
             `;
         }
     };

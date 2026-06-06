@@ -27,7 +27,7 @@
                     </div>
                     <div>
                         <p style="font-family:var(--px);font-size:7px;letter-spacing:0.12em;color:var(--text-dim);">AVAILABLE POINTS</p>
-                        <p style="font-family:var(--font-sans);font-size:32px;font-weight:800;color:var(--gold);" x-text="formatNum(userPoints)"></p>
+                        <p style="font-family:var(--font-sans);font-size:32px;font-weight:800;color:var(--gold-text);" x-text="formatNum(userPoints)"></p>
                     </div>
                 </div>
 
@@ -35,18 +35,18 @@
                 <div class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-6">
                     <template x-for="(item, index) in items" :key="item.id">
                         <div class="px-card point-card" style="display:flex;flex-direction:column;gap:14px;">
-                              <div style="aspect-ratio:1;background:var(--dark-card2);border:2px solid var(--dark-line);display:flex;align-items:center;justify-content:center;position:relative;padding:12px;">
+                              <div class="ps-img-box" style="aspect-ratio:1;background:var(--dark-card2);border:2px solid var(--dark-line);display:flex;align-items:center;justify-content:center;position:relative;padding:12px;">
                                   <img :src="item.image" style="width:100%;height:100%;object-fit:contain;image-rendering:pixelated;" />
                                 <span class="px-badge px-badge-gold" style="position:absolute;top:8px;right:8px;" x-text="item.reward_type"></span>
                             </div>
                             <div style="display:flex;flex-direction:column;gap:4px;">
-                                <h3 style="font-family:var(--font-sans);font-size:14px;font-weight:800;color:#e8f0ff;" x-text="item.name"></h3>
+                                <h3 style="font-family:var(--font-sans);font-size:14px;font-weight:800;color:var(--foreground);" x-text="item.name"></h3>
                                 <p style="font-family:var(--font-sans);font-size:11px;color:var(--text-dim);line-height:1.5;" x-text="item.description"></p>
                             </div>
-                            <div class="point-card-foot" style="display:flex;align-items:center;justify-content:space-between;margin-top:auto;padding-top:10px;border-top:2px solid var(--dark-line);gap:8px;">
+                            <div class="point-card-foot" style="display:flex;align-items:center;justify-content:space-between;margin-top:auto;padding-top:10px;border-top:2px solid var(--border);gap:8px;">
                                 <div>
                                     <p style="font-family:var(--px);font-size:6px;letter-spacing:0.1em;color:var(--text-dim);">COST</p>
-                                    <div style="display:flex;align-items:center;gap:4px;color:var(--gold);">
+                                    <div style="display:flex;align-items:center;gap:4px;color:var(--gold-text);">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="square"><circle cx="12" cy="12" r="10"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/></svg>
                                         <span style="font-family:var(--font-sans);font-size:18px;font-weight:800;" x-text="formatNum(item.point_cost)"></span>
                                     </div>
@@ -77,13 +77,13 @@
                         <div style="width:64px;height:64px;background:rgba(245,158,11,0.15);border:2px solid rgba(245,158,11,0.3);display:flex;align-items:center;justify-content:center;color:var(--gold);margin:0 auto 16px;">
                             <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square"><circle cx="8" cy="8" r="6"/><path d="M18.09 10.37A6 6 0 1 1 10.34 18"/><path d="M7 6h1v4"/><path d="m16.71 13.88.7.71-2.82 2.82"/></svg>
                         </div>
-                        <h3 style="font-family:var(--font-sans);font-size:18px;font-weight:800;color:#e8f0ff;">Confirm Redemption</h3>
+                        <h3 style="font-family:var(--font-sans);font-size:18px;font-weight:800;color:var(--foreground);">Confirm Redemption</h3>
                         <p style="font-family:var(--font-sans);font-size:13px;color:var(--text-dim);margin-top:6px;">Are you sure you want to redeem:</p>
-                        <p style="font-family:var(--font-sans);font-size:16px;font-weight:800;color:var(--gold);margin-top:4px;" x-text="confirmItem ? confirmItem.name : ''"></p>
+                        <p style="font-family:var(--font-sans);font-size:16px;font-weight:800;color:var(--gold-text);margin-top:4px;" x-text="confirmItem ? confirmItem.name : ''"></p>
 
-                        <div style="background:var(--dark-card2);border:2px solid var(--dark-line);padding:14px;margin-top:16px;display:flex;flex-direction:column;gap:8px;">
-                            <div style="display:flex;justify-content:space-between;"><span style="font-family:var(--px);font-size:6px;letter-spacing:0.1em;color:var(--text-dim);">COST</span><span style="font-family:var(--font-sans);font-size:13px;font-weight:800;color:var(--gold);" x-text="confirmItem ? formatNum(confirmItem.point_cost) + ' PTS' : ''"></span></div>
-                            <div style="display:flex;justify-content:space-between;"><span style="font-family:var(--px);font-size:6px;letter-spacing:0.1em;color:var(--text-dim);">BALANCE AFTER</span><span style="font-family:var(--font-sans);font-size:13px;font-weight:800;color:#e8f0ff;" x-text="confirmItem ? formatNum(userPoints - confirmItem.point_cost) + ' PTS' : ''"></span></div>
+                        <div class="ps-cost-box" style="background:var(--dark-card2);border:2px solid var(--dark-line);padding:14px;margin-top:16px;display:flex;flex-direction:column;gap:8px;">
+                            <div style="display:flex;justify-content:space-between;"><span style="font-family:var(--px);font-size:6px;letter-spacing:0.1em;color:var(--text-dim);">COST</span><span style="font-family:var(--font-sans);font-size:13px;font-weight:800;color:var(--gold-text);" x-text="confirmItem ? formatNum(confirmItem.point_cost) + ' PTS' : ''"></span></div>
+                            <div style="display:flex;justify-content:space-between;"><span style="font-family:var(--px);font-size:6px;letter-spacing:0.1em;color:var(--text-dim);">BALANCE AFTER</span><span style="font-family:var(--font-sans);font-size:13px;font-weight:800;color:var(--foreground);" x-text="confirmItem ? formatNum(userPoints - confirmItem.point_cost) + ' PTS' : ''"></span></div>
                         </div>
 
                         <div style="display:flex;gap:8px;margin-top:16px;">

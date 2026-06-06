@@ -2,6 +2,18 @@
     use \Illuminate\Support\Js;
 @endphp
 <x-app-layout>
+    <style>
+        /* Keep the line total from colliding with the +/- stepper. */
+        .cart-qtyrow { gap: 12px; }
+        .cart-price  { white-space: nowrap; flex-shrink: 0; }
+
+        /* Compact cart line items on mobile so the price stays inside the card. */
+        @media (max-width: 639px) {
+            .cart-item    { padding: 12px !important; gap: 12px !important; }
+            .cart-img-box { width: 56px !important; height: 56px !important; padding: 8px !important; }
+            .cart-price   { font-size: 13px !important; }
+        }
+    </style>
     <div class="px-page">
         <div class="px-page-inner space-y-8" x-data="cartPage({
             items: {{ Js::from($cartItems ?? []) }},
@@ -19,7 +31,7 @@
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 <div class="lg:col-span-2 space-y-4">
                     <template x-for="item in items" :key="item.id">
-                        <div class="px-card" style="padding:20px;display:flex;align-items:center;gap:20px;">
+                        <div class="px-card cart-item" style="padding:20px;display:flex;align-items:center;gap:20px;">
                             <div class="cart-img-box" style="width:80px;height:80px;background:var(--dark-card2);border:2px solid var(--dark-line);display:flex;align-items:center;justify-content:center;padding:12px;flex-shrink:0;"><img :src="item.image" class="w-full h-full object-contain pixel-render" /></div>
                             <div style="flex:1;display:flex;flex-direction:column;gap:8px;">
                                 <div style="display:flex;align-items:center;justify-content:space-between;">
@@ -30,13 +42,13 @@
                                     <button @click="removeItem(item)" style="color:var(--text-dim);cursor:pointer;background:none;border:none;" onmouseover="this.style.color='#ef4444'" onmouseout="this.style.color='var(--text-dim)'"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="square"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg></button>
                                 </div>
                                 <h3 style="font-family:var(--font-sans);font-size:14px;font-weight:800;color:var(--foreground);" x-text="item.name"></h3>
-                                <div style="display:flex;align-items:center;justify-content:space-between;">
-                                    <div style="display:flex;align-items:center;gap:8px;">
+                                <div class="cart-qtyrow" style="display:flex;align-items:center;justify-content:space-between;">
+                                    <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
                                         <button @click="updateQty(item,-1)" class="px-btn-ghost" style="width:28px;height:28px;padding:0;display:flex;align-items:center;justify-content:center;font-size:14px;font-family:var(--font-sans);">−</button>
                                         <span style="font-family:var(--font-sans);font-size:14px;font-weight:800;color:var(--foreground);width:24px;text-align:center;" x-text="item.quantity"></span>
                                         <button @click="updateQty(item,1)" class="px-btn-ghost" style="width:28px;height:28px;padding:0;display:flex;align-items:center;justify-content:center;font-size:14px;font-family:var(--font-sans);">+</button>
                                     </div>
-                                    <p style="font-family:var(--font-sans);font-size:16px;font-weight:800;color:var(--gold-text);" x-text="formatRp(item.price * item.quantity)"></p>
+                                    <p class="cart-price" style="font-family:var(--font-sans);font-size:16px;font-weight:800;color:var(--gold-text);" x-text="formatRp(item.price * item.quantity)"></p>
                                 </div>
                                 <template x-if="item.product_type === 'direct_topup'">
                                     <div style="margin-top:8px;padding:14px;background:rgba(245,158,11,0.08);border:2px solid rgba(245,158,11,0.2);">

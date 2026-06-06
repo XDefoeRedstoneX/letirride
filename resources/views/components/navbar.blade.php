@@ -32,7 +32,7 @@
             {{-- Logo --}}
             <a href="/" style="display: flex; align-items: center; flex-shrink: 0; text-decoration: none;">
                 <span style="font-family: var(--px, 'Press Start 2P', monospace); font-size: 16px; color: var(--gold, #f59e0b); letter-spacing: 0.05em;">RIDLY</span>
-                <span style="font-family: var(--px, 'Press Start 2P', monospace); font-size: 16px; color: #e8f0ff;">.</span>
+                <span style="font-family: var(--px, 'Press Start 2P', monospace); font-size: 16px; color: var(--nav-text);">.</span>
             </a>
 
             {{-- Desktop Navigation --}}

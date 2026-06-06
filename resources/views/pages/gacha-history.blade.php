@@ -12,17 +12,17 @@
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-4" style="max-width:900px;margin:0 auto;">
                 <div class="px-card-static" style="padding:18px;text-align:center;">
                     <p style="font-family:var(--px);font-size:7px;letter-spacing:0.12em;color:var(--text-dim);">HARD PITY</p>
-                    <p style="font-family:var(--font-sans);font-size:24px;font-weight:800;color:#e8f0ff;margin-top:4px;">{{ $pity['pity_counter'] }}<span style="font-size:14px;color:var(--text-dim);"> / {{ $hardPityThreshold }}</span></p>
+                    <p style="font-family:var(--font-sans);font-size:24px;font-weight:800;color:var(--foreground);margin-top:4px;">{{ $pity['pity_counter'] }}<span style="font-size:14px;color:var(--text-dim);"> / {{ $hardPityThreshold }}</span></p>
                     <p style="font-family:var(--font-sans);font-size:10px;color:var(--text-dim);margin-top:2px;">Epic+ guaranteed in {{ max(0, $hardPityThreshold - $pity['pity_counter']) }} spins</p>
                 </div>
                 <div class="px-card-static" style="padding:18px;text-align:center;">
                     <p style="font-family:var(--px);font-size:7px;letter-spacing:0.12em;color:var(--text-dim);">MINI PITY</p>
-                    <p style="font-family:var(--font-sans);font-size:24px;font-weight:800;color:#e8f0ff;margin-top:4px;">{{ $pity['mini_pity_counter'] }}<span style="font-size:14px;color:var(--text-dim);"> / {{ $miniPityThreshold }}</span></p>
+                    <p style="font-family:var(--font-sans);font-size:24px;font-weight:800;color:var(--foreground);margin-top:4px;">{{ $pity['mini_pity_counter'] }}<span style="font-size:14px;color:var(--text-dim);"> / {{ $miniPityThreshold }}</span></p>
                     <p style="font-family:var(--font-sans);font-size:10px;color:var(--text-dim);margin-top:2px;">Uncommon+ in {{ max(0, $miniPityThreshold - $pity['mini_pity_counter']) }} spins</p>
                 </div>
                 <div class="px-card-static" style="padding:18px;text-align:center;">
                     <p style="font-family:var(--px);font-size:7px;letter-spacing:0.12em;color:var(--text-dim);">TOTAL SPINS</p>
-                    <p style="font-family:var(--font-sans);font-size:24px;font-weight:800;color:#e8f0ff;margin-top:4px;">{{ number_format($pity['total_spins']) }}</p>
+                    <p style="font-family:var(--font-sans);font-size:24px;font-weight:800;color:var(--foreground);margin-top:4px;">{{ number_format($pity['total_spins']) }}</p>
                     <p style="font-family:var(--font-sans);font-size:10px;color:var(--text-dim);margin-top:2px;">Free spins: {{ $pity['free_spins'] }}</p>
                 </div>
             </div>
@@ -74,7 +74,7 @@
                                                     'size' => 36,
                                                 ])
                                                 <div>
-                                                    <p style="font-family:var(--font-sans);font-size:12px;font-weight:800;color:#e8f0ff;">{{ $pool?->prize_name ?? '—' }}</p>
+                                                    <p style="font-family:var(--font-sans);font-size:12px;font-weight:800;color:var(--foreground);">{{ $pool?->prize_name ?? '—' }}</p>
                                                     @if($pool?->discountType?->name)
                                                         <p style="font-family:var(--font-sans);font-size:9px;color:var(--text-dim);">{{ $pool->discountType->name }}</p>
                                                     @endif
@@ -86,7 +86,7 @@
                                                 {{ strtoupper(str_replace('_', ' ', $rarity)) }}
                                             </span>
                                         </td>
-                                        <td style="padding:12px 16px;font-family:var(--font-sans);font-size:11px;color:#e8f0ff;white-space:nowrap;">
+                                        <td style="padding:12px 16px;font-family:var(--font-sans);font-size:11px;color:var(--foreground);white-space:nowrap;">
                                             @if($row->cost_type === 'money')
                                                 <span style="color:#22c55e;font-weight:800;">RP 15K</span>
                                             @else

@@ -46,7 +46,7 @@
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="square" class="pixel-render"><path d="M12 9v4"/><path d="M12 17h.01"/><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z"/></svg>
             </div>
 
-            <h3 style="font-family:var(--font-sans);font-size:16px;font-weight:800;color:#e8f0ff;letter-spacing:0.02em;" x-text="title"></h3>
+            <h3 style="font-family:var(--font-sans);font-size:16px;font-weight:800;color:var(--foreground);letter-spacing:0.02em;" x-text="title"></h3>
             <p style="font-family:var(--font-sans);font-size:13px;color:var(--text-dim);line-height:1.5;" x-text="message"></p>
 
             <div style="display:flex;flex-direction:column;gap:10px;margin-top:6px;">
