@@ -56,30 +56,16 @@
                 <img src="{{ asset('bg/DAY/D12-layer_8.png') }}" class="absolute bottom-0 w-full h-auto object-bottom" alt="">
             </div>
 
-            <!-- STREET (Layer 8 position, Layer 1 speed) -->
+            <!-- STREET AND FOREGROUND BUILDINGS (All sharing street speed) -->
             <div class="absolute inset-0 w-full h-full will-change-transform" :style="`z-index: 2; transform: translate3d(0, -${scrollY * 1.0}px, 0)`">
-                <img src="{{ asset('bg/DAY/D14-street.png') }}" class="absolute bottom-0 w-full h-auto object-bottom" alt="">
-            </div>
-
-            <!-- LAYER 7 -->
-            <div class="absolute inset-0 w-full h-full will-change-transform" :style="`z-index: 3; transform: translate3d(0, -${scrollY * 0.3}px, 0)`">
+                <!-- Layers 7, 6, 5, 4 combined to move with street -->
                 <img src="{{ asset('bg/DAY/D8-layer_7.png') }}" class="absolute bottom-0 w-full h-auto object-bottom" alt="">
-            </div>
-
-            <!-- LAYER 6 -->
-            <div class="absolute inset-0 w-full h-full will-change-transform" :style="`z-index: 4; transform: translate3d(0, -${scrollY * 0.4}px, 0)`">
                 <img src="{{ asset('bg/DAY/D12-layer_6.png') }}" class="absolute bottom-0 w-full h-auto object-bottom" alt="">
-            </div>
-
-            <!-- LAYER 5 -->
-            <div class="absolute inset-0 w-full h-full will-change-transform" :style="`z-index: 5; transform: translate3d(0, -${scrollY * 0.5}px, 0)`">
                 <img src="{{ asset('bg/DAY/D13-layer_5.png') }}" class="absolute bottom-0 w-full h-auto object-bottom" alt="">
-            </div>
-
-            <!-- LAYER 4 -->
-            <div class="absolute inset-0 w-full h-full will-change-transform" :style="`z-index: 6; transform: translate3d(0, -${scrollY * 0.65}px, 0)`">
                 <img src="{{ asset('bg/DAY/D5-layer_4.png') }}" class="absolute bottom-0 w-full h-auto object-bottom" alt="">
                 <img src="{{ asset('bg/DAY/D7-layer_4.png') }}" class="absolute bottom-0 w-full h-auto object-bottom" alt="">
+                <!-- Street itself -->
+                <img src="{{ asset('bg/DAY/D14-street.png') }}" class="absolute bottom-0 w-full h-auto object-bottom" alt="">
             </div>
 
             <!-- LAYER 3 -->
@@ -101,8 +87,16 @@
 
             <!-- UNDERGROUND (In front of Layer 1, synced with Layer 1) -->
             <div class="absolute inset-0 w-full h-full will-change-transform" :style="`z-index: 10; transform: translate3d(0, -${scrollY * 1.0}px, 0)`">
-                <!-- Using calc(100% - 2px) to prevent tiny 1px seam gaps when scrolling -->
-                <div class="absolute w-full h-[500vh] bg-repeat-y bg-top" style="top: calc(100% - 2px); background-image: url('{{ asset('bg/DAY/underground_day.png') }}'); background-size: 100% auto;"></div>
+                <div class="absolute w-full h-[800vh]" style="top: calc(100% - 2px);">
+                    <!-- Solid backing to plug transparent holes AND cover the bottom -->
+                    <div class="absolute top-0 left-0 w-full h-full bg-repeat-y bg-top" style="background-image: url('{{ asset('bg/DAY/halfunderground_day.png') }}'); background-size: 100% auto;"></div>
+                    
+                    <!-- Main underground layers -->
+                    <div class="relative w-full">
+                        <img src="{{ asset('bg/under.png') }}" class="w-full h-auto block" alt="">
+                        <div class="w-full h-[300vh] bg-repeat-y bg-top" style="background-image: url('{{ asset('bg/DAY/underground_day.png') }}'); background-size: 100% auto;"></div>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -116,30 +110,16 @@
                 <img src="{{ asset('bg/NIGHT/N8-layer_8.png') }}" class="absolute bottom-0 w-full h-auto object-bottom" alt="">
             </div>
 
-            <!-- STREET (Layer 8 position, Layer 1 speed) -->
+            <!-- STREET AND FOREGROUND BUILDINGS (All sharing street speed) -->
             <div class="absolute inset-0 w-full h-full will-change-transform" :style="`z-index: 2; transform: translate3d(0, -${scrollY * 1.0}px, 0)`">
-                <img src="{{ asset('bg/NIGHT/N12-street.png') }}" class="absolute bottom-0 w-full h-auto object-bottom" alt="">
-            </div>
-
-            <!-- LAYER 7 -->
-            <div class="absolute inset-0 w-full h-full will-change-transform" :style="`z-index: 3; transform: translate3d(0, -${scrollY * 0.3}px, 0)`">
+                <!-- Layers 7, 6, 5, 4 combined to move with street -->
                 <img src="{{ asset('bg/NIGHT/N11-layer_7.png') }}" class="absolute bottom-0 w-full h-auto object-bottom" alt="">
-            </div>
-
-            <!-- LAYER 6 -->
-            <div class="absolute inset-0 w-full h-full will-change-transform" :style="`z-index: 4; transform: translate3d(0, -${scrollY * 0.4}px, 0)`">
                 <img src="{{ asset('bg/NIGHT/N9-layer_6.png') }}" class="absolute bottom-0 w-full h-auto object-bottom" alt="">
-            </div>
-
-            <!-- LAYER 5 -->
-            <div class="absolute inset-0 w-full h-full will-change-transform" :style="`z-index: 5; transform: translate3d(0, -${scrollY * 0.5}px, 0)`">
                 <img src="{{ asset('bg/NIGHT/N10-layer_5.png') }}" class="absolute bottom-0 w-full h-auto object-bottom" alt="">
-            </div>
-
-            <!-- LAYER 4 -->
-            <div class="absolute inset-0 w-full h-full will-change-transform" :style="`z-index: 6; transform: translate3d(0, -${scrollY * 0.65}px, 0)`">
                 <img src="{{ asset('bg/NIGHT/N5-layer_4.png') }}" class="absolute bottom-0 w-full h-auto object-bottom" alt="">
                 <img src="{{ asset('bg/NIGHT/N7-layer4.png') }}" class="absolute bottom-0 w-full h-auto object-bottom" alt="">
+                <!-- Street itself -->
+                <img src="{{ asset('bg/NIGHT/N12-street.png') }}" class="absolute bottom-0 w-full h-auto object-bottom" alt="">
             </div>
 
             <!-- LAYER 3 -->
@@ -161,8 +141,16 @@
 
             <!-- UNDERGROUND (In front of Layer 1, synced with Layer 1) -->
             <div class="absolute inset-0 w-full h-full will-change-transform" :style="`z-index: 10; transform: translate3d(0, -${scrollY * 1.0}px, 0)`">
-                <!-- Using calc(100% - 2px) to prevent tiny 1px seam gaps when scrolling -->
-                <div class="absolute w-full h-[500vh] bg-repeat-y bg-top" style="top: calc(100% - 2px); background-image: url('{{ asset('bg/NIGHT/underground_night.png') }}'); background-size: 100% auto;"></div>
+                <div class="absolute w-full h-[800vh]" style="top: calc(100% - 2px);">
+                    <!-- Solid backing to plug transparent holes AND cover the bottom -->
+                    <div class="absolute top-0 left-0 w-full h-full bg-repeat-y bg-top" style="background-image: url('{{ asset('bg/NIGHT/halfunderground_night.png') }}'); background-size: 100% auto;"></div>
+                    
+                    <!-- Main underground layers -->
+                    <div class="relative w-full">
+                        <img src="{{ asset('bg/under.png') }}" class="w-full h-auto block" alt="">
+                        <div class="w-full h-[300vh] bg-repeat-y bg-top" style="background-image: url('{{ asset('bg/NIGHT/underground_night.png') }}'); background-size: 100% auto;"></div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
