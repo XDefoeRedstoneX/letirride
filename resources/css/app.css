@@ -1892,13 +1892,14 @@ button,
 
 @media (max-width: 639px) {
   .card-body {
-    padding: 3px 2px;
-    gap: 1px;
+    padding: 10px 8px;
+    gap: 6px;
+    text-align: center;
   }
   .card-title {
-    font-size: 6px;
-    min-height: 0;
-    line-height: 1.1;
+    font-size: 12px;
+    min-height: 30px;
+    line-height: 1.25;
     overflow: hidden;
     text-overflow: ellipsis;
     display: -webkit-box;
@@ -1906,12 +1907,12 @@ button,
     -webkit-box-orient: vertical;
   }
   .price-label {
-    font-size: 3px;
-    margin-bottom: 0px;
-    letter-spacing: 0.01em;
+    font-size: 8px;
+    margin-bottom: 2px;
+    letter-spacing: 0.08em;
   }
   .price-value {
-    font-size: 5px;
+    font-size: 13px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -1920,39 +1921,41 @@ button,
     max-width: 100%;
   }
   .price-original {
-    font-size: 4px;
+    font-size: 9px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
   }
   .card-footer {
     flex-direction: column;
-    align-items: stretch;
-    gap: 1px;
+    align-items: center;
+    gap: 6px;
   }
   .card-footer > div:first-child {
     min-width: 0;
+    width: 100%;
     overflow: hidden;
   }
   .card-actions {
     width: 100%;
     display: flex;
     align-items: center;
-    gap: 1px;
+    justify-content: center;
+    gap: 6px;
   }
   .buy-btn, .buy-btn-disabled {
-    padding: 2px 0px;
-    font-size: 3px;
+    padding: 7px 4px;
+    font-size: 8px;
     flex: 1;
     text-align: center;
     white-space: nowrap;
     min-width: 0;
   }
   .fav-btn {
-    width: 14px !important;
-    height: 14px !important;
-    min-width: 14px !important;
-    min-height: 14px !important;
+    width: 30px !important;
+    height: 30px !important;
+    min-width: 30px !important;
+    min-height: 30px !important;
     padding: 0;
     flex-shrink: 0;
     display: flex;
@@ -1960,20 +1963,20 @@ button,
     justify-content: center;
   }
   .fav-btn svg {
-    width: 6px;
-    height: 6px;
+    width: 14px;
+    height: 14px;
   }
   .stock-line {
-    font-size: 5px;
+    font-size: 9px;
     font-weight: 800;
   }
   .badge-cat, .badge-topup, .badge-sale {
-    font-size: 3px;
-    padding: 1px 2px;
+    font-size: 6px;
+    padding: 2px 4px;
   }
   .stockout-text {
-    font-size: 4px;
-    padding: 2px 4px;
+    font-size: 9px;
+    padding: 4px 8px;
   }
 }
 
@@ -2270,6 +2273,56 @@ button,
   padding: 16px;
   background: rgba(0, 0, 0, 0.85);
   backdrop-filter: blur(6px);
+}
+
+/* ── Point Shop card ──────────────────────────────────────────── */
+.point-card {
+  padding: 20px;
+}
+@media (max-width: 639px) {
+  .point-card {
+    padding: 12px;
+    gap: 10px !important;
+  }
+  .point-card-foot {
+    flex-direction: column;
+    align-items: stretch !important;
+    gap: 8px !important;
+  }
+  .point-card-btn {
+    width: 100%;
+    text-align: center;
+    padding: 9px 8px !important;
+  }
+}
+
+/* ── Buy modal: fit small screens ─────────────────────────────── */
+@media (max-width: 639px) {
+  .modal-overlay {
+    padding: 10px;
+    align-items: flex-start;
+  }
+  /* thinner pixel border so content has room on narrow screens */
+  .modal-overlay .px-frame {
+    --frame-size: 22px;
+    width: 100% !important;
+    max-width: 100% !important;
+    max-height: calc(100dvh - 20px);
+    margin: 10px 0 !important;
+  }
+  .modal-overlay .px-frame-content {
+    padding: 14px !important;
+    gap: 12px !important;
+  }
+  .modal-title { font-size: 15px; }
+  .modal-cat { font-size: 10px; margin-top: 4px; }
+  .modal-close { width: 30px; height: 30px; }
+  .modal-img-wrap { aspect-ratio: 16 / 10; }
+  .modal-topup-box { padding: 12px; gap: 10px; }
+  .modal-price-row { padding: 12px 14px; }
+  .modal-price-val { font-size: 18px; }
+  .modal-actions { gap: 8px; }
+  .modal-btn-primary, .modal-btn-secondary { padding: 12px 8px; }
 }
 
 .modal-box {
@@ -3706,4 +3759,25 @@ button,
   background: #f59e0b;
   flex-shrink: 0;
   animation: navbar-referral-pulse 1.6s ease-in-out infinite;
+}
+
+/* ── Mobile product-card overrides (placed last to win source-order
+   over the base .price-* / .card-* rules defined earlier) ───────── */
+@media (max-width: 639px) {
+  .product-card .card-body { text-align: center; }
+  .product-card .card-footer {
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+  }
+  .product-card .card-footer > div:first-child { width: 100%; }
+  .product-card .price-label { font-size: 8px; margin-bottom: 2px; }
+  .product-card .price-value { font-size: 13px; }
+  .product-card .price-original { font-size: 9px; }
+  .product-card .card-actions {
+    width: 100%;
+    justify-content: center;
+    gap: 6px;
+  }
+  .product-card .stock-line { font-size: 9px; }
 }

@@ -197,7 +197,6 @@
                     ['route' => 'favorites', 'label' => 'FAVORITES'],
                     ['route' => 'about', 'label' => 'ABOUT US'],
                     ['route' => 'faq', 'label' => 'FAQ'],
-                    ['route' => 'tickets', 'label' => 'SUPPORT'],
                 ];
             @endphp
             @foreach($mobileNav as $mn)

@@ -24,9 +24,9 @@
                 </div>
 
                 {{-- Shop Grid --}}
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                <div class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-6">
                     <template x-for="(item, index) in items" :key="item.id">
-                        <div class="px-card" style="padding:20px;display:flex;flex-direction:column;gap:14px;">
+                        <div class="px-card point-card" style="display:flex;flex-direction:column;gap:14px;">
                               <div style="aspect-ratio:1;background:var(--dark-card2);border:2px solid var(--dark-line);display:flex;align-items:center;justify-content:center;position:relative;padding:12px;">
                                   <img :src="item.image" style="width:100%;height:100%;object-fit:contain;image-rendering:pixelated;" />
                                 <span class="px-badge px-badge-gold" style="position:absolute;top:8px;right:8px;" x-text="item.reward_type"></span>
@@ -35,7 +35,7 @@
                                 <h3 style="font-family:var(--font-sans);font-size:14px;font-weight:800;color:#e8f0ff;" x-text="item.name"></h3>
                                 <p style="font-family:var(--font-sans);font-size:11px;color:var(--text-dim);line-height:1.5;" x-text="item.description"></p>
                             </div>
-                            <div style="display:flex;align-items:center;justify-content:space-between;margin-top:auto;padding-top:10px;border-top:2px solid var(--dark-line);">
+                            <div class="point-card-foot" style="display:flex;align-items:center;justify-content:space-between;margin-top:auto;padding-top:10px;border-top:2px solid var(--dark-line);gap:8px;">
                                 <div>
                                     <p style="font-family:var(--px);font-size:6px;letter-spacing:0.1em;color:var(--text-dim);">COST</p>
                                     <div style="display:flex;align-items:center;gap:4px;color:var(--gold);">
@@ -45,7 +45,7 @@
                                 </div>
                                 <button @click="openConfirm(item)"
                                         :disabled="userPoints < item.point_cost || redeeming === item.id"
-                                        class="px-btn-gold" style="padding:10px 18px;font-size:6px;"
+                                        class="px-btn-gold point-card-btn" style="padding:10px 18px;font-size:6px;"
                                         :style="userPoints < item.point_cost ? 'opacity:0.4;cursor:not-allowed;' : ''">
                                     <span x-text="redeeming === item.id ? 'REDEEMING...' : (userPoints < item.point_cost ? 'INSUFFICIENT' : 'REDEEM')"></span>
                                 </button>
