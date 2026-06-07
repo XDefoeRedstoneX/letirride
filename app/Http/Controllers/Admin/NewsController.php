@@ -68,4 +68,14 @@ class NewsController extends Controller
         return back()->with('success', $news->is_active ? 'News item set to Active.' : 'News item set to Hidden.');
     }
 
+    public function destroy(News $news)
+    {
+        if (file_exists(public_path($news->image))) {
+            @unlink(public_path($news->image));
+        }
+        
+        $news->delete();
+
+        return back()->with('success', 'News item deleted.');
+    }
 }

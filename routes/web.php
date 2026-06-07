@@ -172,6 +172,7 @@ Route::prefix('admin')
         Route::get('/news', [AdminNewsController::class, 'index'])->name('admin.news');
         Route::post('/news', [AdminNewsController::class, 'store'])->name('admin.news.store');
         Route::patch('/news/{news}', [AdminNewsController::class, 'update'])->name('admin.news.update');
+        Route::delete('/news/{news}', [AdminNewsController::class, 'destroy'])->name('admin.news.destroy');
         Route::patch('/news/{news}/toggle-active', [AdminNewsController::class, 'toggleActive'])->name('admin.news.toggle-active');
 
         // Discount types (shared catalog used by gacha + point shop)

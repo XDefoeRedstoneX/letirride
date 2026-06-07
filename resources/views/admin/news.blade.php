@@ -65,11 +65,17 @@
                             </form>
                         </td>
 
-                        <td class="px-5 py-3">
+                        <td class="px-5 py-3 flex gap-2">
                             <button @click="openEdit({{ json_encode(['id' => $n->id, 'name' => $n->name, 'image' => $n->image, 'sort_order' => $n->sort_order, 'is_active' => (bool)$n->is_active]) }})"
                                     class="px-3 py-1.5 bg-primary/10 text-primary rounded-lg text-[9px] font-black uppercase tracking-widest hover:bg-primary/20 transition-colors">
                                 Edit
                             </button>
+                            <form method="POST" action="{{ route('admin.news.destroy', $n) }}" onsubmit="return confirm('Are you sure you want to delete this news item?');">
+                                @csrf @method('DELETE')
+                                <button type="submit" class="px-3 py-1.5 bg-red-500/10 text-red-500 rounded-lg text-[9px] font-black uppercase tracking-widest hover:bg-red-500/20 transition-colors">
+                                    Delete
+                                </button>
+                            </form>
                         </td>
                     </tr>
                     @empty
@@ -99,7 +105,9 @@
                 </button>
             </div>
 
-            <form method="POST" action="{{ route('admin.news.store') }}" enctype="multipart/form-data" class="space-y-4">
+            <form method="POST" action="{{ route('admin.news.store') }}" enctype="multipart/form-data" class="space-y-4"
+                  x-data="{ imagePreview: null, isSubmitting: false }"
+                  @submit="isSubmitting = true">
                 @csrf
 
                 <div class="space-y-1.5">
@@ -110,7 +118,13 @@
 
                 <div class="space-y-1.5">
                     <label class="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Image <span class="text-muted-foreground/60">(jpg/png/gif/webp · max 4 MB)</span></label>
+                    <template x-if="imagePreview">
+                        <div class="w-full h-24 rounded-xl overflow-hidden bg-foreground/5 mb-2">
+                            <img :src="imagePreview" class="w-full h-full object-cover">
+                        </div>
+                    </template>
                     <input type="file" name="image" accept="image/*" required
+                           @change="imagePreview = URL.createObjectURL($event.target.files[0])"
                            class="w-full px-3 py-2 bg-background border border-border rounded-xl text-xs font-bold outline-none focus:border-primary transition-colors file:mr-3 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-[9px] file:font-black file:uppercase file:tracking-widest file:bg-primary/10 file:text-primary cursor-pointer">
                 </div>
 
@@ -125,9 +139,10 @@
                             class="px-4 py-2 bg-foreground/5 text-foreground rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-foreground/10 transition-colors">
                         Cancel
                     </button>
-                    <button type="submit"
-                            class="px-4 py-2 bg-primary text-primary-foreground rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-primary/90 transition-colors">
-                        Add News
+                    <button type="submit" :disabled="isSubmitting"
+                            class="px-4 py-2 bg-primary text-primary-foreground rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                        <span x-show="!isSubmitting">Add News</span>
+                        <span x-show="isSubmitting">Saving...</span>
                     </button>
                 </div>
             </form>
@@ -148,7 +163,9 @@
             </div>
 
             <template x-if="showEditModal">
-                <form :action="'/admin/news/' + item.id" method="POST" enctype="multipart/form-data" class="space-y-4">
+                <form :action="'/admin/news/' + item.id" method="POST" enctype="multipart/form-data" class="space-y-4"
+                      x-data="{ imagePreview: null, isSubmitting: false }"
+                      @submit="isSubmitting = true">
                     @csrf
                     @method('PATCH')
 
@@ -159,15 +176,16 @@
                     </div>
 
                     <div class="space-y-1.5">
-                        <label class="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Current Image</label>
+                        <label class="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Current Image Preview</label>
                         <div class="w-full h-24 rounded-xl overflow-hidden bg-foreground/5">
-                            <img :src="'/' + item.image" :alt="item.name" class="w-full h-full object-cover">
+                            <img :src="imagePreview ? imagePreview : '/' + item.image" :alt="item.name" class="w-full h-full object-cover">
                         </div>
                     </div>
 
                     <div class="space-y-1.5">
                         <label class="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Replace Image <span class="text-muted-foreground/60">(leave blank to keep current)</span></label>
                         <input type="file" name="image" accept="image/*"
+                               @change="imagePreview = URL.createObjectURL($event.target.files[0])"
                                class="w-full px-3 py-2 bg-background border border-border rounded-xl text-xs font-bold outline-none focus:border-primary transition-colors file:mr-3 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-[9px] file:font-black file:uppercase file:tracking-widest file:bg-primary/10 file:text-primary cursor-pointer">
                     </div>
 
@@ -182,9 +200,10 @@
                                 class="px-4 py-2 bg-foreground/5 text-foreground rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-foreground/10 transition-colors">
                             Cancel
                         </button>
-                        <button type="submit"
-                                class="px-4 py-2 bg-primary text-primary-foreground rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-primary/90 transition-colors">
-                            Save Changes
+                        <button type="submit" :disabled="isSubmitting"
+                                class="px-4 py-2 bg-primary text-primary-foreground rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                            <span x-show="!isSubmitting">Save Changes</span>
+                            <span x-show="isSubmitting">Saving...</span>
                         </button>
                     </div>
                 </form>
