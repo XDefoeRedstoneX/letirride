@@ -13,13 +13,24 @@ use Illuminate\Support\Facades\Log;
  * push local changes. Rows are matched across nodes by ULID; foreign keys are
  * translated ULID<->local-id on the fly. See docs/database-sync-plan.md §7.
  *
- * Applies are done with the query builder (not Eloquent), so model observers
- * never fire during apply — there is no echo back into the outbox by construction.
+ * Applies use the query builder (not Eloquent), so model observers never fire
+ * during apply, and every apply is additionally wrapped in Sync::withoutRecording()
+ * — there is no echo back into the outbox by construction or by guard.
  */
 class SyncEngine
 {
+    /**
+     * How many cycles a change may stay 'deferred' (missing FK dependency) before
+     * it is dead-lettered to sync_conflicts and skipped. Parents always precede
+     * children in id order, so a real dependency resolves within a cycle; a
+     * deferral that survives this many cycles means the parent will never arrive,
+     * and must not be allowed to wedge the whole inbound stream.
+     */
+    private const MAX_DEFERRALS = 30;
+
     private string $localNode;
     private string $remoteConnection;
+    private string $remoteNode;
     private string $adminNode;
     private array $tables;
 
@@ -27,6 +38,7 @@ class SyncEngine
     {
         $this->localNode = (string) config('sync.node_id');
         $this->remoteConnection = (string) config('sync.remote');
+        $this->remoteNode = (string) config('sync.remote_node_id');
         $this->adminNode = (string) config('sync.admin_node');
         $this->tables = (array) config('sync.tables', []);
     }
@@ -55,8 +67,12 @@ class SyncEngine
     /** Apply peer-originated changes into the local DB, in id order. */
     public function pull(): array
     {
-        $stats = ['applied' => 0, 'conflicts' => 0, 'deferred' => 0, 'skipped' => 0];
-        $watermark = $this->watermark('pull');
+        $stats = ['applied' => 0, 'conflicts' => 0, 'deferred' => 0, 'dropped' => 0, 'skipped' => 0];
+
+        $state = $this->pullState();
+        $watermark = (int) ($state->last_change_id ?? 0);
+        $deferredId = $state->deferred_change_id ?? null;
+        $deferredAttempts = (int) ($state->deferred_attempts ?? 0);
 
         $batch = $this->remote()->table('sync_changes')
             ->where('node_id', '!=', $this->localNode)
@@ -66,19 +82,37 @@ class SyncEngine
             ->get();
 
         foreach ($batch as $change) {
-            $status = $this->applyOne($change, $this->local());
+            $status = Sync::withoutRecording(fn () => $this->applyOne($change, $this->local()));
 
             if ($status === 'deferred') {
-                // Stop advancing so we retry this id (and preserve ordering) next cycle.
-                $stats['deferred']++;
-                break;
+                // Missing FK parent. Count attempts against THIS id; reset if we
+                // are now stuck on a different one.
+                $deferredAttempts = ((int) $deferredId === (int) $change->id) ? $deferredAttempts + 1 : 1;
+                $deferredId = $change->id;
+
+                if ($deferredAttempts < self::MAX_DEFERRALS) {
+                    // Hold the line to preserve ordering; retry this id next cycle.
+                    $stats['deferred']++;
+                    break;
+                }
+
+                // The dependency will never arrive: dead-letter it and move on so
+                // one poison change cannot wedge the entire inbound stream.
+                $this->logConflict($this->local(), $change, 'deferred_dropped', $this->localNode);
+                $stats['dropped']++;
+                $deferredId = null;
+                $deferredAttempts = 0;
+                $watermark = (int) $change->id;
+                continue;
             }
 
-            $watermark = $change->id;
+            $deferredId = null;
+            $deferredAttempts = 0;
+            $watermark = (int) $change->id;
             $stats[$status === 'older' ? 'conflicts' : ($status === 'applied' ? 'applied' : 'skipped')]++;
         }
 
-        $this->setWatermark('pull', $watermark);
+        $this->setPullState($watermark, $deferredId, $deferredAttempts);
 
         return $stats;
     }
@@ -88,7 +122,7 @@ class SyncEngine
     /** Push local-originated changes to the peer, where policy permits. */
     public function push(): array
     {
-        $stats = ['applied' => 0, 'conflicts' => 0, 'deferred' => 0, 'skipped' => 0];
+        $stats = ['applied' => 0, 'conflicts' => 0, 'deferred' => 0, 'dropped' => 0, 'skipped' => 0];
 
         $batch = $this->local()->table('sync_changes')
             ->where('node_id', $this->localNode)
@@ -107,7 +141,7 @@ class SyncEngine
                 continue;
             }
 
-            $status = $this->applyOne($change, $this->remote());
+            $status = Sync::withoutRecording(fn () => $this->applyOne($change, $this->remote()));
 
             if ($status === 'deferred') {
                 $stats['deferred']++;
@@ -115,7 +149,7 @@ class SyncEngine
             }
 
             $this->markPushed($change->id);
-            $stats[$status === 'older' ? 'conflicts' : 'applied']++;
+            $stats[$status === 'older' ? 'conflicts' : ($status === 'applied' ? 'applied' : 'skipped')]++;
         }
 
         return $stats;
@@ -146,8 +180,28 @@ class SyncEngine
 
         $table = $change->table_name;
         $ulid = $change->row_ulid;
+        $policy = $config['policy'] ?? null;
 
         if ($change->op === 'delete') {
+            // A delete on a bidirectional row must still lose to a more-recent
+            // update on the receiving side (LWW); otherwise a stale delete would
+            // silently drop a newer change. (Soft deletes are recorded as updates,
+            // so a real 'delete' here is an intentional hard delete.)
+            if ($policy === 'bidirectional') {
+                $existing = $target->table($table)->where('ulid', $ulid)->first();
+
+                if ($existing) {
+                    $incoming = $this->time($change->occurred_at);
+                    $current = isset($existing->updated_at) ? $this->time($existing->updated_at) : null;
+
+                    if ($current !== null && $incoming !== null && $incoming->lt($current)) {
+                        $this->logConflict($target, $change, 'lww_older', $this->winnerFor($target));
+
+                        return 'older';
+                    }
+                }
+            }
+
             $target->table($table)->where('ulid', $ulid)->delete();
 
             return 'applied';
@@ -182,12 +236,12 @@ class SyncEngine
         if ($existing) {
             // Conflict resolution (LWW) applies to bidirectional rows only; for
             // authority/admin tables the source IS the authority, so it wins.
-            if (($config['policy'] ?? null) === 'bidirectional') {
+            if ($policy === 'bidirectional') {
                 $incoming = $this->time($change->occurred_at);
                 $current = isset($existing->updated_at) ? $this->time($existing->updated_at) : null;
 
                 if ($current !== null && $incoming !== null && $incoming->lt($current)) {
-                    $this->logConflict($target, $change, 'lww_older');
+                    $this->logConflict($target, $change, 'lww_older', $this->winnerFor($target));
 
                     return 'older';
                 }
@@ -229,18 +283,26 @@ class SyncEngine
 
     // ---------------------------------------------------------- bookkeeping ----
 
-    private function watermark(string $direction): int
+    /** The pull watermark + deferral-tracking row (one global row, table_name='*'). */
+    private function pullState(): ?object
     {
-        return (int) $this->local()->table('sync_state')
-            ->where('direction', $direction)->where('table_name', '*')
-            ->value('last_change_id');
+        return $this->local()->table('sync_state')
+            ->where('direction', 'pull')->where('table_name', '*')->first();
     }
 
-    private function setWatermark(string $direction, int $id): void
+    private function setPullState(int $id, $deferredId, int $deferredAttempts): void
     {
         $this->local()->table('sync_state')->updateOrInsert(
-            ['direction' => $direction, 'table_name' => '*'],
-            ['last_change_id' => $id, 'last_synced_at' => now(), 'last_status' => 'ok', 'updated_at' => now(), 'created_at' => now()],
+            ['direction' => 'pull', 'table_name' => '*'],
+            [
+                'last_change_id' => $id,
+                'deferred_change_id' => $deferredId,
+                'deferred_attempts' => $deferredAttempts,
+                'last_synced_at' => now(),
+                'last_status' => 'ok',
+                'updated_at' => now(),
+                'created_at' => now(),
+            ],
         );
     }
 
@@ -249,13 +311,19 @@ class SyncEngine
         $this->local()->table('sync_changes')->where('id', $id)->update(['applied' => true]);
     }
 
-    private function logConflict(ConnectionInterface $target, object $change, string $reason): void
+    /** The node whose surviving copy won a conflict = the node owning $target's DB. */
+    private function winnerFor(ConnectionInterface $target): string
+    {
+        return $target->getName() === $this->remoteConnection ? $this->remoteNode : $this->localNode;
+    }
+
+    private function logConflict(ConnectionInterface $target, object $change, string $reason, string $winnerNode): void
     {
         try {
             $target->table('sync_conflicts')->insert([
                 'table_name' => $change->table_name,
                 'row_ulid' => $change->row_ulid,
-                'winner_node' => $this->localNode,
+                'winner_node' => $winnerNode,
                 'loser_node' => $change->node_id,
                 'winning_change_id' => null,
                 'losing_payload' => $change->payload,

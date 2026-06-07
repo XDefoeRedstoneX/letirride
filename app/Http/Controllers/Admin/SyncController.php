@@ -71,6 +71,11 @@ class SyncController extends Controller
     public function now(): RedirectResponse
     {
         // Run one cycle immediately (synchronous), overriding enabled/paused.
+        // A cycle can take a while over a slow CPanel link; lift PHP's execution
+        // cap (just above the sync:run lock TTL) so the request can't 504 and
+        // leave a half-finished run. The lock still prevents overlap.
+        @set_time_limit(310);
+
         Artisan::call('sync:run', ['--force' => true]);
 
         return back()->with('status', 'Sync Now: '.trim(Artisan::output()));

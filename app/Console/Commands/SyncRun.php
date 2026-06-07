@@ -60,9 +60,9 @@ class SyncRun extends Command
         }
 
         $this->info(sprintf(
-            'pull: %d applied, %d conflicts, %d deferred, %d skipped | push: %d applied, %d conflicts, %d deferred, %d skipped',
-            $stats['pull']['applied'], $stats['pull']['conflicts'], $stats['pull']['deferred'], $stats['pull']['skipped'],
-            $stats['push']['applied'], $stats['push']['conflicts'], $stats['push']['deferred'], $stats['push']['skipped'],
+            'pull: %d applied, %d conflicts, %d deferred, %d dropped, %d skipped | push: %d applied, %d conflicts, %d deferred, %d dropped, %d skipped',
+            $stats['pull']['applied'], $stats['pull']['conflicts'], $stats['pull']['deferred'], $stats['pull']['dropped'], $stats['pull']['skipped'],
+            $stats['push']['applied'], $stats['push']['conflicts'], $stats['push']['deferred'], $stats['push']['dropped'], $stats['push']['skipped'],
         ));
 
         return self::SUCCESS;
