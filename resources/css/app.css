@@ -3230,7 +3230,7 @@ button,
 .referral-banner-text {
   font-family: var(--font-sans);
   font-size: 12px;
-  color: #e8f0ff;
+  color: var(--foreground);
 }
 
 .referral-banner-text strong { color: var(--gold); font-weight: 800; }
@@ -3333,7 +3333,7 @@ button,
   font-family: var(--font-sans);
   font-size: 24px;
   font-weight: 800;
-  color: #e8f0ff;
+  color: var(--foreground);
   margin-top: 4px;
 }
 
@@ -3367,7 +3367,7 @@ button,
   margin-bottom: 12px;
 }
 
-.referral-section-sub strong { color: #e8f0ff; font-weight: 800; }
+.referral-section-sub strong { color: var(--foreground); font-weight: 800; }
 
 .referral-claim-form {
   display: flex;
@@ -3452,7 +3452,7 @@ button,
 .referral-friends-table td {
   font-family: var(--font-sans);
   font-size: 12px;
-  color: #e8f0ff;
+  color: var(--foreground);
   padding: 10px 12px;
   border-bottom: 1px solid var(--dark-line);
 }
@@ -3546,7 +3546,7 @@ button,
   font-family: var(--font-sans);
   font-size: 13px;
   font-weight: 800;
-  color: #e8f0ff;
+  color: var(--foreground);
 }
 
 .referral-how-step-desc {
@@ -3690,7 +3690,7 @@ button,
 .referral-tier-table-row td {
   padding: 11px 14px;
   font-size: 12px;
-  color: #e8f0ff;
+  color: var(--foreground);
   border-bottom: 1px solid var(--dark-line);
   vertical-align: middle;
 }
@@ -3788,7 +3788,7 @@ button,
   font-family: var(--font-sans);
   font-size: 14px;
   font-weight: 800;
-  color: #e8f0ff;
+  color: var(--foreground);
   letter-spacing: 0.02em;
 }
 
