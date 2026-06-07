@@ -14,6 +14,8 @@ use Illuminate\Notifications\Notifiable;
 
 class User extends Authenticatable
 {
+    use \App\Models\Concerns\HasUlid;
+    use \App\Models\Concerns\Syncable;
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
 

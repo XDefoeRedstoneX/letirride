@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class News extends Model
 {
+    use \App\Models\Concerns\HasUlid;
+    use \App\Models\Concerns\Syncable;
     use SoftDeletes;
 
     protected $fillable = ['name', 'image', 'sort_order', 'is_active'];

@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class GachaRarityChance extends Model
 {
+    use \App\Models\Concerns\HasUlid;
+    use \App\Models\Concerns\Syncable;
     protected $primaryKey = 'rarity';
 
     public $incrementing = false;

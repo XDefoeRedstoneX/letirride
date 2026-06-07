@@ -8,6 +8,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class PointShopItem extends Model
 {
+    use \App\Models\Concerns\HasUlid;
+    use \App\Models\Concerns\Syncable;
     public const REWARD_TYPES = ['discount', 'cashback'];
 
     /**

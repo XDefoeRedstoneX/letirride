@@ -8,6 +8,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class DiscountType extends Model
 {
+    use \App\Models\Concerns\HasUlid;
+    use \App\Models\Concerns\Syncable;
     public $timestamps = false;
 
     public const TYPES = ['percent', 'fixed'];

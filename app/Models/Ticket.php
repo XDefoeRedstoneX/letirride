@@ -9,6 +9,8 @@ use Illuminate\Support\Str;
 
 class Ticket extends Model
 {
+    use \App\Models\Concerns\HasUlid;
+    use \App\Models\Concerns\Syncable;
     public const STATUSES = ['open', 'in_progress', 'closed'];
 
     private const STATUS_COLORS = [

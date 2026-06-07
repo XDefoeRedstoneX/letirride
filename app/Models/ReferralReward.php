@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class ReferralReward extends Model
 {
+    use \App\Models\Concerns\HasUlid;
+    use \App\Models\Concerns\Syncable;
     public const UPDATED_AT = null;
 
     public const KIND_REFEREE_WELCOME = 'referee_welcome';

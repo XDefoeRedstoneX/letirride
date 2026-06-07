@@ -9,6 +9,8 @@ use Illuminate\Support\Str;
 
 class Order extends Model
 {
+    use \App\Models\Concerns\HasUlid;
+    use \App\Models\Concerns\Syncable;
     public const UPDATED_AT = null;
 
     /**

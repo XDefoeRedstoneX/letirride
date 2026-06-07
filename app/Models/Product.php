@@ -11,6 +11,8 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 #[Fillable(['category_id', 'type', 'name', 'description', 'price', 'point_multiplier', 'image', 'img', 'is_active'])]
 class Product extends Model
 {
+    use \App\Models\Concerns\HasUlid;
+    use \App\Models\Concerns\Syncable;
     public $timestamps = false;
 
     protected function casts(): array

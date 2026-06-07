@@ -29,6 +29,11 @@
         <env name="MAIL_MAILER" value="array"/>
         <env name="QUEUE_CONNECTION" value="sync"/>
         <env name="SESSION_DRIVER" value="array"/>
+        <!-- Never let tests touch the real CPanel: disable the authority switch
+             and point the sync "remote" at the in-memory test DB. -->
+        <env name="SYNC_IS_LOCAL" value="false"/>
+        <env name="SYNC_ENABLED" value="false"/>
+        <env name="SYNC_REMOTE_CONNECTION" value="sqlite"/>
         <env name="PULSE_ENABLED" value="false"/>
         <env name="TELESCOPE_ENABLED" value="false"/>
         <env name="NIGHTWATCH_ENABLED" value="false"/>

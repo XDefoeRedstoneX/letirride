@@ -64,6 +64,28 @@ return [
             ]) : [],
         ],
 
+        // Remote CPanel database, used by the local sync engine as the peer/authority.
+        // On the CPanel node this connection is unused (SYNC_IS_LOCAL=false).
+        'cpanel' => [
+            'driver' => 'mysql',
+            'url' => env('CPANEL_DB_URL'),
+            'host' => env('CPANEL_DB_HOST', '127.0.0.1'),
+            'port' => env('CPANEL_DB_PORT', '3306'),
+            'database' => env('CPANEL_DB_DATABASE', 'forge'),
+            'username' => env('CPANEL_DB_USERNAME', 'forge'),
+            'password' => env('CPANEL_DB_PASSWORD', ''),
+            'unix_socket' => env('CPANEL_DB_SOCKET', ''),
+            'charset' => env('CPANEL_DB_CHARSET', 'utf8mb4'),
+            'collation' => env('CPANEL_DB_COLLATION', 'utf8mb4_unicode_ci'),
+            'prefix' => '',
+            'prefix_indexes' => true,
+            'strict' => true,
+            'engine' => null,
+            'options' => extension_loaded('pdo_mysql') ? array_filter([
+                (PHP_VERSION_ID >= 80500 ? Mysql::ATTR_SSL_CA : PDO::MYSQL_ATTR_SSL_CA) => env('MYSQL_ATTR_SSL_CA'),
+            ]) : [],
+        ],
+
         'mariadb' => [
             'driver' => 'mariadb',
             'url' => env('DB_URL'),

@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class ReferralConfig extends Model
 {
+    use \App\Models\Concerns\HasUlid;
+    use \App\Models\Concerns\Syncable;
     /**
      * @var array<int, string>
      */

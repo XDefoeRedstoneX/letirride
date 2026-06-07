@@ -7,6 +7,8 @@ use Illuminate\Support\Collection;
 
 class GachaIcon extends Model
 {
+    use \App\Models\Concerns\HasUlid;
+    use \App\Models\Concerns\Syncable;
     /**
      * @var array<int, string>
      */

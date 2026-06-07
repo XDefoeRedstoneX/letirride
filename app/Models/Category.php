@@ -10,6 +10,8 @@ use App\Models\Subcategory;
 #[Fillable(['name', 'slug'])]
 class Category extends Model
 {
+    use \App\Models\Concerns\HasUlid;
+    use \App\Models\Concerns\Syncable;
     public $timestamps = false;
 
     public function subcategories(): HasMany

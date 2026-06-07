@@ -18,6 +18,14 @@ return Application::configure(basePath: dirname(__DIR__))
             \App\Http\Middleware\HandleReferralLink::class,
         ]);
 
+        // Financial routes route to the CPanel authority; the connection switch
+        // must happen BEFORE route-model binding so bound models (e.g. {order})
+        // resolve on the authority connection.
+        $middleware->prependToPriorityList(
+            \Illuminate\Routing\Middleware\SubstituteBindings::class,
+            \App\Http\Middleware\UseAuthorityConnection::class,
+        );
+
         $middleware->redirectGuestsTo(function (Request $request): string {
             return route('home', [
                 'auth' => 'login',
