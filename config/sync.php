@@ -62,11 +62,15 @@ return [
     */
     'tables' => [
 
-        // ---- bidirectional (true master-master) --------------------------------
+        // ---- All tables are bidirectional (true master-master) ------------------
+        // Both nodes can read AND write. Conflicts resolved by last-write-wins
+        // (LWW) on updated_at. This gives a genuine master-master replication
+        // story suitable for a Cloud Computing demonstration.
+
+        // -- user / engagement --
         'users' => [
             'policy' => 'bidirectional',
             'fks' => ['referred_by' => 'users'],
-            'column_overrides' => ['points_balance' => 'cpanel'],
         ],
         'favorites' => [
             'policy' => 'bidirectional',
@@ -89,62 +93,62 @@ return [
             'fks' => ['referrer_id' => 'users', 'referred_user_id' => 'users', 'first_purchase_order_id' => 'orders'],
         ],
 
-        // ---- cpanel_authority (money / inventory / monotonic state) ------------
+        // -- orders / financial --
         'orders' => [
-            'policy' => 'cpanel_authority',
+            'policy' => 'bidirectional',
             'fks' => ['user_id' => 'users', 'user_discount_id' => 'user_discounts'],
         ],
         'order_details' => [
-            'policy' => 'cpanel_authority',
+            'policy' => 'bidirectional',
             'fks' => ['order_id' => 'orders', 'product_id' => 'products'],
         ],
         'product_keys' => [
-            'policy' => 'cpanel_authority',
+            'policy' => 'bidirectional',
             'fks' => ['product_id' => 'products', 'order_id' => 'orders', 'reserved_for_order_id' => 'orders'],
         ],
         'gacha_payments' => [
-            'policy' => 'cpanel_authority',
+            'policy' => 'bidirectional',
             'fks' => ['user_id' => 'users'],
         ],
         'point_shop_purchases' => [
-            'policy' => 'cpanel_authority',
+            'policy' => 'bidirectional',
             'fks' => ['user_id' => 'users', 'point_shop_item_id' => 'point_shop_items'],
         ],
         'user_discounts' => [
-            'policy' => 'cpanel_authority',
+            'policy' => 'bidirectional',
             'fks' => ['user_id' => 'users', 'discount_type_id' => 'discount_types', 'order_id' => 'orders'],
         ],
         'user_gacha_states' => [
-            'policy' => 'cpanel_authority',
+            'policy' => 'bidirectional',
             'fks' => ['user_id' => 'users'],
         ],
         'user_active_boosters' => [
-            'policy' => 'cpanel_authority',
+            'policy' => 'bidirectional',
             'fks' => ['user_id' => 'users', 'gacha_booster_id' => 'gacha_boosters'],
         ],
         'referral_rewards' => [
-            'policy' => 'cpanel_authority',
+            'policy' => 'bidirectional',
             'fks' => ['referral_id' => 'referrals', 'tier_id' => 'referral_tiers', 'recipient_id' => 'users', 'order_id' => 'orders'],
         ],
         'topup_credentials' => [
-            'policy' => 'cpanel_authority',
+            'policy' => 'bidirectional',
             'fks' => ['order_detail_id' => 'order_details'],
         ],
 
-        // ---- admin_authority (catalog / config; one-way from admin_node) -------
-        'categories' => ['policy' => 'admin_authority'],
-        'subcategories' => ['policy' => 'admin_authority', 'fks' => ['category_id' => 'categories']],
-        'products' => ['policy' => 'admin_authority', 'fks' => ['category_id' => 'categories', 'subcategory_id' => 'subcategories']],
-        'product_discounts' => ['policy' => 'admin_authority', 'fks' => ['product_id' => 'products']],
-        'discount_types' => ['policy' => 'admin_authority'],
-        'faqs' => ['policy' => 'admin_authority'],
-        'news' => ['policy' => 'admin_authority'],
-        'gacha_pools' => ['policy' => 'admin_authority'],
-        'gacha_boosters' => ['policy' => 'admin_authority'],
-        'gacha_icons' => ['policy' => 'admin_authority'],
-        'gacha_rarity_chances' => ['policy' => 'admin_authority'],
-        'point_shop_items' => ['policy' => 'admin_authority'],
-        'referral_configs' => ['policy' => 'admin_authority'],
-        'referral_tiers' => ['policy' => 'admin_authority'],
+        // -- catalog / config --
+        'categories' => ['policy' => 'bidirectional'],
+        'subcategories' => ['policy' => 'bidirectional', 'fks' => ['category_id' => 'categories']],
+        'products' => ['policy' => 'bidirectional', 'fks' => ['category_id' => 'categories', 'subcategory_id' => 'subcategories']],
+        'product_discounts' => ['policy' => 'bidirectional', 'fks' => ['product_id' => 'products']],
+        'discount_types' => ['policy' => 'bidirectional'],
+        'faqs' => ['policy' => 'bidirectional'],
+        'news' => ['policy' => 'bidirectional'],
+        'gacha_pools' => ['policy' => 'bidirectional'],
+        'gacha_boosters' => ['policy' => 'bidirectional'],
+        'gacha_icons' => ['policy' => 'bidirectional'],
+        'gacha_rarity_chances' => ['policy' => 'bidirectional'],
+        'point_shop_items' => ['policy' => 'bidirectional'],
+        'referral_configs' => ['policy' => 'bidirectional'],
+        'referral_tiers' => ['policy' => 'bidirectional'],
     ],
 ];

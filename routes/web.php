@@ -26,13 +26,13 @@ use App\Http\Controllers\GachaController;
 use App\Http\Controllers\GachaPaymentController;
 use App\Http\Controllers\InventoryController;
 use App\Http\Controllers\PointController;
+use App\Http\Controllers\PointsHistoryController;
 use App\Http\Controllers\ReferralController;
 use App\Http\Controllers\StoreController;
 use App\Http\Controllers\TicketController;
 use App\Http\Controllers\TransactionController;
 use App\Http\Middleware\EnsureLocalNode;
 use App\Http\Middleware\EnsureUserIsAdmin;
-use App\Http\Middleware\UseAuthorityConnection;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [StoreController::class, 'showStore'])->name('home');
@@ -57,7 +57,7 @@ Route::get('/favorites', [FavoriteController::class, 'showFavorites'])->name('fa
 
 // Points History (user) — auth required
 Route::middleware('auth')->group(function () {
-    Route::get('/points/history', [\App\Http\Controllers\PointsHistoryController::class, 'index'])
+    Route::get('/points/history', [PointsHistoryController::class, 'index'])
         ->name('points.history');
 });
 
@@ -68,22 +68,21 @@ Route::post('/gacha/pay/callback', [GachaPaymentController::class, 'callback'])-
 Route::middleware('auth')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
-    // Point Shop & Gacha (POST actions require auth). Financial mutations run
-    // against the CPanel authority on the local node (UseAuthorityConnection).
+    // Point Shop & Gacha (POST actions require auth). In master-master mode
+    // every node writes to its own DB; the sync engine propagates changes.
     Route::post('/point-shop/redeem/{item}', [PointController::class, 'redeem'])
-        ->middleware(UseAuthorityConnection::class)
         ->name('point-shop.redeem');
     Route::post('/gacha/roll', [GachaController::class, 'roll'])
-        ->middleware(['throttle:10,1', UseAuthorityConnection::class])
+        ->middleware('throttle:10,1')
         ->name('gacha.roll');
     Route::post('/gacha/pay', [GachaPaymentController::class, 'store'])
-        ->middleware(['throttle:10,1', UseAuthorityConnection::class])
+        ->middleware('throttle:10,1')
         ->name('gacha.pay');
     Route::post('/gacha/pay/verify/{payment}', [GachaPaymentController::class, 'verify'])
-        ->middleware(['throttle:60,1', UseAuthorityConnection::class])
+        ->middleware('throttle:60,1')
         ->name('gacha.pay.verify');
     Route::post('/gacha/boosters/{booster}/activate', [GachaBoosterController::class, 'activate'])
-        ->middleware(['throttle:20,1', UseAuthorityConnection::class])
+        ->middleware('throttle:20,1')
         ->name('gacha.boosters.activate');
     Route::get('/gacha/history', [GachaController::class, 'history'])->name('gacha.history');
 
@@ -98,15 +97,13 @@ Route::middleware('auth')->group(function () {
     Route::patch('/cart/{cartItem}', [CartController::class, 'update'])->name('cart.update');
     Route::delete('/cart/{cartItem}', [CartController::class, 'destroy'])->name('cart.destroy');
 
-    // Checkout — all run against the CPanel authority on the local node so the
-    // order, key reservation, and {order} binding live on the single authority.
-    Route::middleware(UseAuthorityConnection::class)->group(function () {
-        Route::post('/checkout', [CheckoutController::class, 'process'])->name('checkout.process');
-        Route::post('/checkout/pay/{order}', [CheckoutController::class, 'pay'])->name('checkout.pay');
-        Route::get('/checkout/finish/{order}', [CheckoutController::class, 'finish'])->name('checkout.finish');
-        Route::get('/checkout/status/{order}', [CheckoutController::class, 'status'])->name('checkout.status');
-        Route::post('/checkout/verify/{order}', [CheckoutController::class, 'verify'])->name('checkout.verify');
-    });
+    // Checkout — in master-master mode, writes go to the local DB and sync
+    // propagates them to the peer. No authority connection switching needed.
+    Route::post('/checkout', [CheckoutController::class, 'process'])->name('checkout.process');
+    Route::post('/checkout/pay/{order}', [CheckoutController::class, 'pay'])->name('checkout.pay');
+    Route::get('/checkout/finish/{order}', [CheckoutController::class, 'finish'])->name('checkout.finish');
+    Route::get('/checkout/status/{order}', [CheckoutController::class, 'status'])->name('checkout.status');
+    Route::post('/checkout/verify/{order}', [CheckoutController::class, 'verify'])->name('checkout.verify');
 
     // Profile
     Route::get('/profile', [AuthController::class, 'showProfile'])->name('profile');
@@ -205,7 +202,7 @@ Route::prefix('admin')
         Route::delete('/point-shop/{pointShopItem}', [AdminPointShopController::class, 'destroy'])->name('admin.point-shop.destroy');
 
         // Points History (admin) — all users
-        Route::get('/points/history', [\App\Http\Controllers\Admin\PointsHistoryController::class, 'index'])
+        Route::get('/points/history', [App\Http\Controllers\Admin\PointsHistoryController::class, 'index'])
             ->name('admin.points.history');
 
         // FAQs (DB-backed CRUD)
