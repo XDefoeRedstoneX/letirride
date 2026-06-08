@@ -30,8 +30,13 @@
         <env name="QUEUE_CONNECTION" value="sync"/>
         <env name="SESSION_DRIVER" value="array"/>
         <!-- Never let tests touch the real CPanel: disable the authority switch
-             and point the sync "remote" at the in-memory test DB. -->
+             and point the sync "remote" at the in-memory test DB. Run as the
+             admin-authority node (cpanel) so the full management panel is reachable
+             — node-specific gating (EnsureLocalNode/EnsureAdminNode) is exercised by
+             overriding config() inline in the sync tests. -->
         <env name="SYNC_IS_LOCAL" value="false"/>
+        <env name="SYNC_NODE_ID" value="cpanel"/>
+        <env name="SYNC_ADMIN_NODE" value="cpanel"/>
         <env name="SYNC_ENABLED" value="false"/>
         <env name="SYNC_REMOTE_CONNECTION" value="sqlite"/>
         <env name="PULSE_ENABLED" value="false"/>

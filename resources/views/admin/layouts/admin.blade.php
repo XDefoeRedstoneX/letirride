@@ -50,6 +50,7 @@
             </button>
         </div>
 
+        {{-- Dashboard is visible on every node (read-only stats from this node's DB). --}}
         <div class="admin-section-title">Overview</div>
         <nav class="flex flex-col gap-0.5">
             <a href="{{ route('admin.dashboard') }}" class="admin-nav-link {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
@@ -58,6 +59,9 @@
             </a>
         </nav>
 
+        {{-- Store / gamification / people / support management renders only on the
+             admin-authority node (CPanel). On local the admin sees Dashboard + Sync. --}}
+        @if (config('sync.node_id') === config('sync.admin_node'))
         <div class="admin-section-title">Store</div>
         <nav class="flex flex-col gap-0.5">
             <a href="{{ route('admin.news') }}" class="admin-nav-link {{ request()->routeIs('admin.news') ? 'active' : '' }}">
@@ -128,13 +132,20 @@
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg>
                 FAQs
             </a>
-            @if (config('sync.is_local'))
+        </nav>
+        @endif
+
+        {{-- Sync control panel renders only on the local node. On local this is
+             the ONLY admin menu; the management sections above are hidden. --}}
+        @if (config('sync.is_local'))
+        <div class="admin-section-title">System</div>
+        <nav class="flex flex-col gap-0.5">
             <a href="{{ route('admin.sync') }}" class="admin-nav-link {{ request()->routeIs('admin.sync') ? 'active' : '' }}">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M3 21v-5h5"/></svg>
                 Sync
             </a>
-            @endif
         </nav>
+        @endif
 
         <div class="mt-auto pt-4 space-y-1 border-t border-border/30">
             <button id="admin-theme-toggle" onclick="toggleAdminTheme()" class="admin-nav-link w-full text-left">

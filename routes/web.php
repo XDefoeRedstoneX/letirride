@@ -31,8 +31,10 @@ use App\Http\Controllers\ReferralController;
 use App\Http\Controllers\StoreController;
 use App\Http\Controllers\TicketController;
 use App\Http\Controllers\TransactionController;
+use App\Http\Middleware\EnsureAdminNode;
 use App\Http\Middleware\EnsureLocalNode;
 use App\Http\Middleware\EnsureUserIsAdmin;
+use App\Http\Middleware\UseAuthorityConnection;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [StoreController::class, 'showStore'])->name('home');
@@ -68,22 +70,26 @@ Route::post('/gacha/pay/callback', [GachaPaymentController::class, 'callback'])-
 Route::middleware('auth')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
-    // Point Shop & Gacha (POST actions require auth). In master-master mode
-    // every node writes to its own DB; the sync engine propagates changes.
+    // Point Shop & Gacha (POST actions require auth). These mutate CPanel-
+    // authoritative state (points balance, pity/gacha state, payments, purchases,
+    // discount grants), so they run against the CPanel DB via UseAuthorityConnection
+    // — the single authority allocates once and the rows replicate back. See §7.4.
     Route::post('/point-shop/redeem/{item}', [PointController::class, 'redeem'])
+        ->middleware(UseAuthorityConnection::class)
         ->name('point-shop.redeem');
     Route::post('/gacha/roll', [GachaController::class, 'roll'])
-        ->middleware('throttle:10,1')
+        ->middleware([UseAuthorityConnection::class, 'throttle:10,1'])
         ->name('gacha.roll');
     Route::post('/gacha/pay', [GachaPaymentController::class, 'store'])
-        ->middleware('throttle:10,1')
+        ->middleware([UseAuthorityConnection::class, 'throttle:10,1'])
         ->name('gacha.pay');
     Route::post('/gacha/pay/verify/{payment}', [GachaPaymentController::class, 'verify'])
-        ->middleware('throttle:60,1')
+        ->middleware([UseAuthorityConnection::class, 'throttle:60,1'])
         ->name('gacha.pay.verify');
     Route::post('/gacha/boosters/{booster}/activate', [GachaBoosterController::class, 'activate'])
-        ->middleware('throttle:20,1')
+        ->middleware([UseAuthorityConnection::class, 'throttle:20,1'])
         ->name('gacha.boosters.activate');
+    // Read-only history: served from this node's local replica (eventually consistent).
     Route::get('/gacha/history', [GachaController::class, 'history'])->name('gacha.history');
 
     // Favorites (POST actions require auth)
@@ -97,13 +103,17 @@ Route::middleware('auth')->group(function () {
     Route::patch('/cart/{cartItem}', [CartController::class, 'update'])->name('cart.update');
     Route::delete('/cart/{cartItem}', [CartController::class, 'destroy'])->name('cart.destroy');
 
-    // Checkout — in master-master mode, writes go to the local DB and sync
-    // propagates them to the peer. No authority connection switching needed.
-    Route::post('/checkout', [CheckoutController::class, 'process'])->name('checkout.process');
-    Route::post('/checkout/pay/{order}', [CheckoutController::class, 'pay'])->name('checkout.pay');
-    Route::get('/checkout/finish/{order}', [CheckoutController::class, 'finish'])->name('checkout.finish');
-    Route::get('/checkout/status/{order}', [CheckoutController::class, 'status'])->name('checkout.status');
-    Route::post('/checkout/verify/{order}', [CheckoutController::class, 'verify'])->name('checkout.verify');
+    // Checkout — orders / order_details / product_keys / payments are CPanel-
+    // authoritative. The whole flow runs against the CPanel DB so key allocation
+    // and invoice numbers happen exactly once (no double-sell, no noinv clash);
+    // the resulting rows replicate back to local on the next pull. See §7.4.
+    Route::middleware(UseAuthorityConnection::class)->group(function () {
+        Route::post('/checkout', [CheckoutController::class, 'process'])->name('checkout.process');
+        Route::post('/checkout/pay/{order}', [CheckoutController::class, 'pay'])->name('checkout.pay');
+        Route::get('/checkout/finish/{order}', [CheckoutController::class, 'finish'])->name('checkout.finish');
+        Route::get('/checkout/status/{order}', [CheckoutController::class, 'status'])->name('checkout.status');
+        Route::post('/checkout/verify/{order}', [CheckoutController::class, 'verify'])->name('checkout.verify');
+    });
 
     // Profile
     Route::get('/profile', [AuthController::class, 'showProfile'])->name('profile');
@@ -114,12 +124,15 @@ Route::middleware('auth')->group(function () {
     // Inventory & Transactions (real data from DB)
     Route::get('/inventory', [InventoryController::class, 'index'])->name('inventory');
     Route::get('/transactions', [TransactionController::class, 'index'])->name('transactions');
-    Route::post('/transactions/{order}/cancel', [TransactionController::class, 'cancel'])->name('transactions.cancel');
+    Route::post('/transactions/{order}/cancel', [TransactionController::class, 'cancel'])
+        ->middleware(UseAuthorityConnection::class)
+        ->name('transactions.cancel');
 
     // Referrals (share + claim)
     Route::get('/referrals', [ReferralController::class, 'show'])->name('referrals');
+    // Reward grants (referral_rewards, points) are CPanel-authoritative.
     Route::post('/referrals/claim', [ReferralController::class, 'claim'])
-        ->middleware('throttle:10,1')
+        ->middleware([UseAuthorityConnection::class, 'throttle:10,1'])
         ->name('referrals.claim');
 
     // Forgot Password
@@ -130,6 +143,7 @@ Route::middleware('auth')->group(function () {
 Route::prefix('admin')
     ->middleware(['auth', EnsureUserIsAdmin::class])
     ->group(function () {
+        // Dashboard is available on every node (read-only stats from this node's DB).
         Route::get('/', [AdminDashboardController::class, 'index'])->name('admin.dashboard');
         Route::get('/export', [AdminDashboardController::class, 'export'])->name('admin.dashboard.export');
 
@@ -140,6 +154,11 @@ Route::prefix('admin')
             Route::post('/sync/resume', [AdminSyncController::class, 'resume'])->name('admin.sync.resume');
             Route::post('/sync/now', [AdminSyncController::class, 'now'])->name('admin.sync.now');
         });
+
+        // Full management panel — admin-authority node only (CPanel). On the local
+        // node every route here redirects to the Sync panel, so the local admin
+        // only ever sees Dashboard + Sync. See EnsureAdminNode + config('sync.admin_node').
+        Route::middleware(EnsureAdminNode::class)->group(function () {
         Route::get('/products', [AdminProductController::class, 'index'])->name('admin.products');
         Route::post('/products', [AdminProductController::class, 'store'])->name('admin.products.store');
         Route::patch('/products/{product}', [AdminProductController::class, 'update'])->name('admin.products.update');
@@ -210,6 +229,7 @@ Route::prefix('admin')
         Route::post('/faqs', [AdminFaqController::class, 'store'])->name('admin.faqs.store');
         Route::patch('/faqs/{faq}', [AdminFaqController::class, 'update'])->name('admin.faqs.update');
         Route::delete('/faqs/{faq}', [AdminFaqController::class, 'destroy'])->name('admin.faqs.destroy');
+        });
     });
 
 // Static pages (no auth required)
