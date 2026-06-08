@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\CategoryController as AdminCategoryController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\DiscountTypeController as AdminDiscountTypeController;
 use App\Http\Controllers\Admin\FaqController as AdminFaqController;
@@ -164,6 +165,15 @@ Route::prefix('admin')
         Route::patch('/products/{product}', [AdminProductController::class, 'update'])->name('admin.products.update');
         Route::delete('/products/{product}', [AdminProductController::class, 'destroy'])->name('admin.products.destroy');
         Route::post('/products/{product}/keys', [AdminProductController::class, 'addKeys'])->name('admin.products.keys');
+
+        // Categories & subcategories (taxonomy used by products + the storefront)
+        Route::get('/categories', [AdminCategoryController::class, 'index'])->name('admin.categories');
+        Route::post('/categories', [AdminCategoryController::class, 'storeCategory'])->name('admin.categories.store');
+        Route::patch('/categories/{category}', [AdminCategoryController::class, 'updateCategory'])->name('admin.categories.update');
+        Route::delete('/categories/{category}', [AdminCategoryController::class, 'destroyCategory'])->name('admin.categories.destroy');
+        Route::post('/subcategories', [AdminCategoryController::class, 'storeSubcategory'])->name('admin.subcategories.store');
+        Route::patch('/subcategories/{subcategory}', [AdminCategoryController::class, 'updateSubcategory'])->name('admin.subcategories.update');
+        Route::delete('/subcategories/{subcategory}', [AdminCategoryController::class, 'destroySubcategory'])->name('admin.subcategories.destroy');
 
         Route::get('/orders', [AdminOrderController::class, 'index'])->name('admin.orders');
 

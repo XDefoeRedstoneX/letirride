@@ -1,9 +1,19 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="dark">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
+
+    <!-- Apply saved or system theme BEFORE any CSS paints, to avoid a flash -->
+    <script>
+      (function() {
+        var stored = localStorage.theme;
+        var isDark = stored === 'dark' || (!stored && window.matchMedia('(prefers-color-scheme: dark)').matches);
+        if (isDark) document.documentElement.classList.add('dark');
+        else document.documentElement.classList.remove('dark');
+      })();
+    </script>
     <meta name="description" content="Ridly - Your premier digital voucher marketplace. Buy game credits, streaming subscriptions, and more with instant delivery.">
     <meta property="og:title" content="Ridly - Digital Voucher Marketplace">
     <meta property="og:description" content="Buy game credits, streaming subscriptions, and digital vouchers with instant delivery.">
@@ -20,17 +30,6 @@
 
     <!-- Styles & Scripts -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
-
-    <!-- Apply saved or system theme -->
-    <script>
-      (function() {
-        var stored = localStorage.theme;
-        var isDark = stored === 'dark' || (!stored && window.matchMedia('(prefers-color-scheme: dark)').matches);
-        var html = document.documentElement;
-        if (isDark) html.classList.add('dark');
-        else html.classList.remove('dark');
-      })();
-    </script>
 </head>
 <body class="antialiased bg-background text-foreground min-h-screen flex flex-col transition-colors duration-200">
     <x-pixel-city-background />
